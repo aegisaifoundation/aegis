@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 import inquirer from 'inquirer';
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { spawn } from 'child_process';
 
 const homedir = process.env.HOME || process.env.USERPROFILE || '.';
 const aegisDir = join(homedir, '.aegis');
 const configPath = join(aegisDir, 'config.json');
+const rootDir = join(dirname(fileURLToPath(import.meta.url)), '..');
+const distEntry = join(rootDir, 'dist', 'index.js');
+const srcEntry = join(rootDir, 'src', 'index.tsx');
 
 function ensureConfigDir() {
   if (!existsSync(aegisDir)) mkdirSync(aegisDir, { recursive: true });
@@ -60,7 +64,7 @@ async function interactiveFlow() {
     type: 'list',
     name: 'action',
     message: 'AEGIS — Select action',
-    choices: ['Configure', 'Show Identity (soul.md)', 'Exit']
+    choices: ['Configure', 'Show Identity (soul.md)', 'Open TUI', 'Exit']
   }]);
 
   if (answer.action === 'Configure') {
@@ -79,7 +83,43 @@ async function interactiveFlow() {
     return interactiveFlow();
   }
 
+  if (answer.action === 'Open TUI') {
+    await startTui();
+    return;
+  }
+
   process.exit(0);
+}
+
+function spawnNode(entry) {
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, [entry], {
+      stdio: 'inherit',
+      cwd: rootDir
+    });
+    child.on('exit', (code) => resolve(code ?? 0));
+  });
+}
+
+async function startTui() {
+  const cfg = loadConfig();
+  if (!cfg.installed) {
+    console.log('AEGIS is not configured yet. Run `aegis configure` first.');
+    process.exit(1);
+  }
+
+  if (existsSync(distEntry)) {
+    const code = await spawnNode(distEntry);
+    process.exit(code);
+  }
+
+  if (existsSync(srcEntry)) {
+    console.log('Built TUI not found. Please run `npm run build` in aegis-core or use the repository scripts.');
+    process.exit(1);
+  }
+
+  console.error('Unable to start AEGIS TUI. Missing dist/index.js.');
+  process.exit(1);
 }
 
 async function main() {
@@ -107,8 +147,14 @@ async function main() {
     return;
   }
 
-  // default interactive UI
-  await interactiveFlow();
+  if (cmd === 'tui' || cmd === 'start' || cmd === undefined) {
+    await startTui();
+    return;
+  }
+
+  console.log(`Unknown command: ${cmd}`);
+  console.log('Available commands: aegis, aegis configure, aegis uninstall');
+  process.exit(1);
 }
 
 main().catch((err) => {
