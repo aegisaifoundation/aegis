@@ -358,28 +358,6 @@ Protection against malicious client updates.
 
 AEGIS uses:
 
----
-
-# AEGIS CLI Commands
-
-- `aegis` — launch the AEGIS TUI terminal interface
-- `aegis start` — explicitly start the TUI interface
-- `aegis configure` — configure the current agent identity and role
-- `aegis uninstall` — clear local AEGIS CLI configuration
-
-For installation and environment setup, use `./aegis-core/scripts/install.sh install`.
-
-## Notes
-
-- The AEGIS CLI uses `~/.aegis/config.json` to store installation state.
-- AEGIS must be configured before the TUI can start.
-
----
-
-## Hybrid Encryption
-
-AEGIS uses:
-
 - Symmetric encryption for payloads
 - Asymmetric encryption for keys
 
