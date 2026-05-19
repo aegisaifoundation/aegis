@@ -1,4 +1,4 @@
-# core
+# policies
 
 ## Purpose
 Define the core behavioral foundation.

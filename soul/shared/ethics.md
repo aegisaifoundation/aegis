@@ -1,4 +1,4 @@
-# core
+# ethics
 
 ## Purpose
 Define the core behavioral foundation.

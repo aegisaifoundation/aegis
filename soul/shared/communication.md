@@ -1,4 +1,4 @@
-# core
+# communication
 
 ## Purpose
 Define the core behavioral foundation.
