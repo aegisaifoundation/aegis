@@ -1,4 +1,4 @@
-# core
+# constraints
 
 ## Purpose
 Define the core behavioral foundation.

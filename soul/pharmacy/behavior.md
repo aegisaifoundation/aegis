@@ -1,4 +1,4 @@
-# core
+# behavior
 
 ## Purpose
 Define the core behavioral foundation.
