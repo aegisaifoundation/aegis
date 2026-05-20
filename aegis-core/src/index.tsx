@@ -7,10 +7,7 @@ import { App } from './terminal/App.js';
 
 import { toolRegistry } from './tools/index.js';
 
-import { FileTool } from './tools/FileTool.js';
-import { TerminalTool } from './tools/TerminalTool.js';
-import { SystemTool } from './tools/SystemTool.js';
-import { MemoryTool } from './tools/MemoryTool.js';
+
 
 import { modelHandler } from './models/index.js';
 
@@ -27,22 +24,6 @@ async function bootstrap() {
   await agentRuntime.initialize();
 
   await agent.initialize();
-
-  toolRegistry.register(
-    new FileTool()
-  );
-
-  toolRegistry.register(
-    new TerminalTool()
-  );
-
-  toolRegistry.register(
-    new SystemTool()
-  );
-
-  toolRegistry.register(
-    new MemoryTool()
-  );
 
   const available =
     await modelHandler.checkModelAvailability();

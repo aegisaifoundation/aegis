@@ -1,5 +1,5 @@
 import { toolRegistry } from '../../tools/index.js';
-
+import { ToolLoader } from '../loaders/ToolLoader.js';
 import { AgentLoader } from '../loaders/AgentLoader.js';
 import { SoulLoader } from '../loaders/SoulLoader.js';
 import { SkillLoader } from '../loaders/SkillLoader.js';
@@ -26,6 +26,8 @@ export class AgentRuntime {
 
     const skills =
       await SkillLoader.load(agentName);
+
+    await ToolLoader.load(agentName);
 
     const tools =
       toolRegistry.getAllTools();
