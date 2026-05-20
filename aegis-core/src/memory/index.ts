@@ -1,83 +1,48 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const MEMORY_DIR = path.resolve(__dirname, '../../../.memory');
 
 export interface MemoryEntry {
-
   role: 'user' | 'assistant' | 'system';
-
   content: string;
-
   timestamp: string;
 }
 
 export class MemoryManager {
-
+  private sessionId: string;
   private sessionFile: string;
-
   private memories: MemoryEntry[] = [];
 
-  constructor(sessionFile: string) {
-
-    this.sessionFile = sessionFile;
-
+  constructor(sessionId: string = 'default') {
+    this.sessionId = sessionId;
+    this.sessionFile = path.join(MEMORY_DIR, `${this.sessionId}.json`);
   }
 
   async init() {
-
     try {
-
-      await fs.mkdir(
-        path.dirname(this.sessionFile),
-        {
-          recursive: true
-        }
-      );
-
+      await fs.mkdir(MEMORY_DIR, { recursive: true });
       try {
-
-        const data = await fs.readFile(
-          this.sessionFile,
-          'utf-8'
-        );
-
+        const data = await fs.readFile(this.sessionFile, 'utf-8');
         this.memories = JSON.parse(data);
-
       } catch (err: any) {
-
         if (err.code === 'ENOENT') {
-
           this.memories = [];
-
           await this.save();
-
         } else {
-
           throw err;
-
         }
       }
-
     } catch (err) {
-
-      console.error(
-        'Failed to initialize memory:',
-        err
-      );
-
+      console.error('Failed to initialize memory:', err);
     }
   }
 
-  async addMemory(
-    role: 'user' | 'assistant' | 'system',
-    content: string
-  ) {
-
-    this.memories.push({
-      role,
-      content,
-      timestamp: new Date().toISOString()
-    });
-
+  async addMemory(role: 'user' | 'assistant' | 'system', content: string) {
+    this.memories.push({ role, content, timestamp: new Date().toISOString() });
     await this.save();
   }
 
@@ -86,18 +51,13 @@ export class MemoryManager {
   }
 
   async clear() {
-
     this.memories = [];
-
     await this.save();
   }
 
   private async save() {
-
-    await fs.writeFile(
-      this.sessionFile,
-      JSON.stringify(this.memories, null, 2),
-      'utf-8'
-    );
+    await fs.writeFile(this.sessionFile, JSON.stringify(this.memories, null, 2), 'utf-8');
   }
 }
+
+export const memoryManager = new MemoryManager();

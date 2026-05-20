@@ -1,5 +1,0 @@
-{
-  "name": "doctor",
-  "description": "Medical diagnostic assistant",
-  "model": "gemma4:latest"
-}
