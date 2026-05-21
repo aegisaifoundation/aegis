@@ -1,12 +1,7 @@
 import { z } from 'zod';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { loadEnvironment } from '../utils/environment.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+loadEnvironment();
 
 const ConfigSchema = z.object({
   OLLAMA_HOST: z.string().default('http://127.0.0.1:11434'),

@@ -1,0 +1,6 @@
+{
+  "maxReasoningSteps": 5,
+  "maxToolExecutions": 5,
+  "streamResponses": true,
+  "enableInterruptions": true
+}
