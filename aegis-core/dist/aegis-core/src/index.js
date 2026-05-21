@@ -1,21 +1,5 @@
-import { loadEnvironment } from './utils/environment.js';
-import { memoryManager } from './memory/index.js';
-import { modelHandler } from './models/index.js';
-import { terminalTransport } from './transports/index.js';
-async function bootstrap() {
-    // Load local and workspace root env configuration
-    loadEnvironment();
-    // Initialize session memory persistence
-    await memoryManager.init();
-    // Check Ollama/model availability
-    const available = await modelHandler.checkModelAvailability();
-    if (!available) {
-        console.warn('\nWarning: Configured model might not be available in Ollama right now. Please ensure Ollama is running and the model is pulled.\n');
-    }
-    // Initialize transport client
-    await terminalTransport.initialize();
-}
-bootstrap().catch(err => {
+import { bootstrapManager } from './runtime/BootstrapManager.js';
+bootstrapManager.bootstrap().catch(err => {
     console.error('Fatal Error during AEGIS bootstrap:', err);
     process.exit(1);
 });

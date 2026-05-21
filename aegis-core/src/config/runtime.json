@@ -3,5 +3,6 @@
   "maxToolExecutions": 5,
   "streamResponses": true,
   "enableInterruptions": true,
-  "workspaceRoot": "../workspace/shared"
+  "workspaceRoot": "../workspace/shared",
+  "autoloadTools": []
 }

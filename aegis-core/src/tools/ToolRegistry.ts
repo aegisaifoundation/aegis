@@ -1,14 +1,23 @@
-import { Tool } from './Tool.js';
+import { Tool, ToolState } from './Tool.js';
+import { eventBus } from '../runtime/EventBus.js';
 
 export class ToolRegistry {
   private tools: Map<string, Tool> = new Map();
+  private states: Map<string, ToolState> = new Map();
 
   register(tool: Tool): void {
     this.tools.set(tool.name, tool);
+    this.states.set(tool.name, ToolState.REGISTERED);
+    eventBus.emit('tool_registered', { name: tool.name, version: tool.version });
   }
 
   unregister(name: string): boolean {
-    return this.tools.delete(name);
+    const deleted = this.tools.delete(name);
+    if (deleted) {
+      this.states.set(name, ToolState.DISABLED);
+      eventBus.emit('tool_unregistered', { name });
+    }
+    return deleted;
   }
 
   getTool(name: string): Tool | undefined {
@@ -21,6 +30,14 @@ export class ToolRegistry {
 
   hasTool(name: string): boolean {
     return this.tools.has(name);
+  }
+
+  setToolState(name: string, state: ToolState): void {
+    this.states.set(name, state);
+  }
+
+  getToolState(name: string): ToolState | undefined {
+    return this.states.get(name);
   }
 }
 

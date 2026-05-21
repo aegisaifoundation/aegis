@@ -1,7 +1,61 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { Command } from './Command.js';
 import { toolRegistry, ToolLoader } from '../tools/index.js';
 import { conversationContext } from '../context/ConversationContext.js';
 import { config } from '../config/index.js';
+import { eventBus } from '../runtime/EventBus.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+function getAegisCoreRoot(): string {
+  let current = __dirname;
+  while (true) {
+    const packageJson = path.join(current, 'package.json');
+    if (fs.existsSync(packageJson)) {
+      try {
+        const pkg = JSON.parse(fs.readFileSync(packageJson, 'utf8'));
+        if (pkg.name === 'aegis-core') {
+          return current;
+        }
+      } catch (e) {
+        // ignore parsing issues
+      }
+    }
+    const parent = path.dirname(current);
+    if (parent === current) {
+      break;
+    }
+    current = parent;
+  }
+  return process.cwd();
+}
+
+function updateAutoloadTools(action: 'add' | 'remove', toolPath: string): void {
+  const coreRoot = getAegisCoreRoot();
+  const configPath = path.resolve(coreRoot, 'src/config/runtime.json');
+  try {
+    if (!fs.existsSync(configPath)) return;
+    const configData = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    if (!configData.autoloadTools) {
+      configData.autoloadTools = [];
+    }
+    
+    if (action === 'add') {
+      if (!configData.autoloadTools.includes(toolPath)) {
+        configData.autoloadTools.push(toolPath);
+      }
+    } else if (action === 'remove') {
+      configData.autoloadTools = configData.autoloadTools.filter((p: string) => p !== toolPath);
+    }
+    
+    fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');
+  } catch (err) {
+    console.error(`Failed to update autoloadTools in runtime.json:`, err);
+  }
+}
 
 const toolLoader = new ToolLoader();
 
@@ -91,6 +145,7 @@ export class CommandRouter {
         try {
           const tool = await toolLoader.loadTool(toolPath);
           toolRegistry.register(tool);
+          updateAutoloadTools('add', toolPath);
           return `Successfully registered tool: ${tool.name} (version ${tool.version})`;
         } catch (err: any) {
           return `Failed to register tool: ${err.message}`;
@@ -110,6 +165,8 @@ export class CommandRouter {
           const tool = await toolLoader.loadTool(toolPath);
           const unregistered = toolRegistry.unregister(tool.name);
           toolRegistry.register(tool);
+          eventBus.emit('tool_reloaded', { name: tool.name, version: tool.version });
+          updateAutoloadTools('add', toolPath);
           return `${unregistered ? 'Unloaded previous version and successfully' : 'Successfully'} registered tool: ${tool.name} (version ${tool.version})`;
         } catch (err: any) {
           return `Failed to reregister tool: ${err.message}`;
@@ -125,8 +182,12 @@ export class CommandRouter {
           return 'Error: Please specify the tool name. Example: /unregister FileTool';
         }
         const toolName = args[0];
+        const tool = toolRegistry.getTool(toolName);
         const success = toolRegistry.unregister(toolName);
         if (success) {
+          if (tool && tool.toolPath) {
+            updateAutoloadTools('remove', tool.toolPath);
+          }
           return `Successfully unregistered tool: ${toolName}`;
         } else {
           return `Tool '${toolName}' is not currently registered.`;
