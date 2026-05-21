@@ -3,6 +3,9 @@ export class ToolRegistry {
     register(tool) {
         this.tools.set(tool.name, tool);
     }
+    unregister(name) {
+        return this.tools.delete(name);
+    }
     getTool(name) {
         return this.tools.get(name);
     }

@@ -1,0 +1,16 @@
+{
+  "name": "FolderTool",
+  "version": "1.0.0",
+  "permissions": [
+    "filesystem"
+  ],
+  "actions": [
+    "create",
+    "list",
+    "delete",
+    "createFolder",
+    "mkdir",
+    "deleteFolder",
+    "rmdir"
+  ]
+}

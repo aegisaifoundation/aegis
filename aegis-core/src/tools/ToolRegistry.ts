@@ -7,6 +7,10 @@ export class ToolRegistry {
     this.tools.set(tool.name, tool);
   }
 
+  unregister(name: string): boolean {
+    return this.tools.delete(name);
+  }
+
   getTool(name: string): Tool | undefined {
     return this.tools.get(name);
   }
@@ -21,3 +25,4 @@ export class ToolRegistry {
 }
 
 export const toolRegistry = new ToolRegistry();
+

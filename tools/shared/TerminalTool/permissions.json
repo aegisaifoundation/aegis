@@ -1,0 +1,5 @@
+{
+  "filesystem": false,
+  "network": false,
+  "shell": true
+}

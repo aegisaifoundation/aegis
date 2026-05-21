@@ -2,5 +2,6 @@
   "maxReasoningSteps": 5,
   "maxToolExecutions": 5,
   "streamResponses": true,
-  "enableInterruptions": true
+  "enableInterruptions": true,
+  "workspaceRoot": "../workspace/shared"
 }
