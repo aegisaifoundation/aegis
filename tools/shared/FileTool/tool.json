@@ -1,0 +1,16 @@
+{
+  "name": "FileTool",
+  "version": "1.0.0",
+  "permissions": [
+    "filesystem"
+  ],
+  "actions": [
+    "createFile",
+    "read",
+    "write",
+    "append",
+    "deleteFile",
+    "create",
+    "delete"
+  ]
+}

@@ -1,6 +1,7 @@
-import { toolRegistry } from '../tools/index.js';
+import { toolRegistry, ToolLoader } from '../tools/index.js';
 import { conversationContext } from '../context/ConversationContext.js';
 import { config } from '../config/index.js';
+const toolLoader = new ToolLoader();
 export class CommandRouter {
     commands = new Map();
     constructor() {
@@ -64,6 +65,43 @@ export class CommandRouter {
             description: 'Show current model config',
             execute: async () => {
                 return `Model: ${config.MODEL_NAME} (Host: ${config.OLLAMA_HOST})`;
+            }
+        });
+        this.register({
+            name: '/register',
+            description: 'Register a tool package dynamically, e.g., /register shared/FileTool',
+            execute: async (args) => {
+                if (!args || args.length === 0) {
+                    return 'Error: Please specify the tool path. Example: /register shared/FileTool';
+                }
+                const toolPath = args[0];
+                try {
+                    const tool = await toolLoader.loadTool(toolPath);
+                    toolRegistry.register(tool);
+                    return `Successfully registered tool: ${tool.name} (version ${tool.version})`;
+                }
+                catch (err) {
+                    return `Failed to register tool: ${err.message}`;
+                }
+            }
+        });
+        this.register({
+            name: '/reregister',
+            description: 'Reregister/reload a tool package, e.g., /reregister shared/FileTool',
+            execute: async (args) => {
+                if (!args || args.length === 0) {
+                    return 'Error: Please specify the tool path. Example: /reregister shared/FileTool';
+                }
+                const toolPath = args[0];
+                try {
+                    const tool = await toolLoader.loadTool(toolPath);
+                    const unregistered = toolRegistry.unregister(tool.name);
+                    toolRegistry.register(tool);
+                    return `${unregistered ? 'Unloaded previous version and successfully' : 'Successfully'} registered tool: ${tool.name} (version ${tool.version})`;
+                }
+                catch (err) {
+                    return `Failed to reregister tool: ${err.message}`;
+                }
             }
         });
         this.register({

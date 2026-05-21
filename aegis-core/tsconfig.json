@@ -14,9 +14,10 @@
     "baseUrl": ".",
     "paths": {
       "#/*": ["./*"],
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "execa": ["node_modules/execa"]
     }
   },
-  "include": ["src/**/*", "../interfaces/**/*"],
+  "include": ["src/**/*", "../interfaces/**/*", "../tools/**/*"],
   "exclude": ["node_modules", "dist"]
 }

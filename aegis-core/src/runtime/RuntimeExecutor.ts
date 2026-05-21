@@ -5,8 +5,9 @@ import { eventBus } from './EventBus.js';
 import { conversationContext } from '../context/ConversationContext.js';
 import { agent } from '../agent/index.js';
 import { toolParser } from './ToolParser.js';
-import { toolRegistry } from '../tools/index.js';
+import { toolRegistry, type ToolContext } from '../tools/index.js';
 import { RuntimeStatus } from '../types/Runtime.js';
+import { workspaceManager } from './WorkspaceManager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -109,7 +110,17 @@ export class RuntimeExecutor {
               observation = `Error: Tool '${toolCall.name}' not found.`;
             } else {
               try {
-                observation = await tool.execute(toolCall.input);
+                const context: ToolContext = {
+                  workspacePath: workspaceManager.getWorkspacePath(),
+                  sessionId: 'default',
+                  permissions: tool.permissions || {},
+                  runtimeMetadata: {
+                    maxSteps: this.maxSteps
+                  },
+                  activeAgentId: 'aegis-core-agent',
+                  runtimeConfig: runtimeConfig
+                };
+                observation = await tool.execute(toolCall.input, context);
               } catch (err: any) {
                 observation = `Error executing tool '${toolCall.name}': ${err.message || err}`;
               }

@@ -1,0 +1,10 @@
+{
+  "name": "TerminalTool",
+  "version": "1.0.0",
+  "permissions": [
+    "shell"
+  ],
+  "actions": [
+    "exec"
+  ]
+}

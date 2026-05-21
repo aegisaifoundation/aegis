@@ -6,6 +6,7 @@ import { conversationContext } from '../context/ConversationContext.js';
 import { agent } from '../agent/index.js';
 import { toolParser } from './ToolParser.js';
 import { toolRegistry } from '../tools/index.js';
+import { workspaceManager } from './WorkspaceManager.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const runtimeConfigPath = path.resolve(__dirname, '../config/runtime.json');
@@ -89,7 +90,17 @@ export class RuntimeExecutor {
                         }
                         else {
                             try {
-                                observation = await tool.execute(toolCall.input);
+                                const context = {
+                                    workspacePath: workspaceManager.getWorkspacePath(),
+                                    sessionId: 'default',
+                                    permissions: tool.permissions || {},
+                                    runtimeMetadata: {
+                                        maxSteps: this.maxSteps
+                                    },
+                                    activeAgentId: 'aegis-core-agent',
+                                    runtimeConfig: runtimeConfig
+                                };
+                                observation = await tool.execute(toolCall.input, context);
                             }
                             catch (err) {
                                 observation = `Error executing tool '${toolCall.name}': ${err.message || err}`;

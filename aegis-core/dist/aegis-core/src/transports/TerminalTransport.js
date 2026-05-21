@@ -1,12 +1,64 @@
 import React from 'react';
 import { render } from 'ink';
+import readline from 'readline';
 import { App } from '../../../interfaces/terminal/App.js';
 import { runtimeExecutor } from '../runtime/index.js';
 import { commandRouter } from '../commands/index.js';
 import { eventBus } from '../runtime/index.js';
 export class TerminalTransport {
     async initialize() {
-        render(React.createElement(App));
+        if (!process.stdin.isTTY || !process.stdin.setRawMode) {
+            console.log("Non-TTY or non-raw terminal detected. Falling back to conversational readline mode.");
+            this.startReadlineLoop();
+            return;
+        }
+        try {
+            render(React.createElement(App));
+        }
+        catch (e) {
+            console.warn("Failed to render Ink UI. Falling back to conversational readline mode.", e.message);
+            this.startReadlineLoop();
+        }
+    }
+    startReadlineLoop() {
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+            prompt: '\n> '
+        });
+        console.log("AEGIS Core booted. Type a command (e.g. /help) or prompt to begin.");
+        eventBus.on('response_chunk', (chunk) => {
+            process.stdout.write(chunk);
+        });
+        eventBus.on('response_finished', (finalText) => {
+            process.stdout.write('\n');
+        });
+        eventBus.on('tool_started', (msg) => {
+            console.log(`\n[Tool execution: ${msg.name} started]`);
+        });
+        eventBus.on('tool_finished', (msg) => {
+            console.log(`[Tool execution: ${msg.name} finished]`);
+        });
+        eventBus.on('runtime_error', (msg) => {
+            console.error(`\n[Runtime Error: ${msg}]`);
+        });
+        rl.prompt();
+        rl.on('line', async (line) => {
+            const query = line.trim();
+            if (query) {
+                try {
+                    await this.sendInput(query);
+                }
+                catch (e) {
+                    console.error(`\n[System Error: ${e.message}]`);
+                }
+            }
+            rl.prompt();
+        });
+        rl.on('close', () => {
+            console.log('Exiting Aegis.');
+            process.exit(0);
+        });
     }
     async sendInput(input) {
         const trimmed = input.trim();

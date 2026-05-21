@@ -1,0 +1,10 @@
+{
+  "name": "MemoryTool",
+  "version": "1.0.0",
+  "permissions": [],
+  "actions": [
+    "save",
+    "retrieve",
+    "clear"
+  ]
+}
