@@ -1,50 +1,29 @@
-import { Ollama } from 'ollama';
-import { config } from '../config/index.js';
+import type { ModelProvider, ChatMessage } from './ModelProvider.js';
+import { OllamaProvider } from './OllamaProvider.js';
 
-const ollama = new Ollama({ host: config.OLLAMA_HOST });
-
-export interface ChatMessage {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
-}
+export type { ModelProvider, ChatMessage };
 
 export class ModelHandler {
-  async checkModelAvailability(): Promise<boolean> {
-    try {
-      const response = await ollama.list();
-      return response.models.some(m => m.name.includes(config.MODEL_NAME));
-    } catch (error) {
-      console.error('Ollama connection error:', error);
-      return false;
-    }
+  private provider: ModelProvider;
+
+  constructor() {
+    this.provider = new OllamaProvider();
   }
 
-  async *streamChat(messages: ChatMessage[]) {
-    try {
-      const response = await ollama.chat({
-        model: config.MODEL_NAME,
-        messages: messages,
-        stream: true,
-      });
+  setProvider(provider: ModelProvider) {
+    this.provider = provider;
+  }
 
-      for await (const part of response) {
-        yield part.message.content;
-      }
-    } catch (error: any) {
-      yield `\n[Error communicating with model: ${error.message}]\n`;
-    }
+  async checkModelAvailability(): Promise<boolean> {
+    return this.provider.checkAvailability();
+  }
+
+  streamChat(messages: ChatMessage[]): AsyncGenerator<string> {
+    return this.provider.streamChat(messages);
   }
 
   async generate(prompt: string): Promise<string> {
-    try {
-      const response = await ollama.generate({
-        model: config.MODEL_NAME,
-        prompt,
-      });
-      return response.response;
-    } catch (error: any) {
-      return `Error: ${error.message}`;
-    }
+    return this.provider.generate(prompt);
   }
 }
 

@@ -8,10 +8,15 @@
     "strict": true,
     "skipLibCheck": true,
     "outDir": "./dist",
-    "rootDir": "./src",
-    "jsx": "react",
-    "resolveJsonModule": true
+    "rootDir": "../",
+    "jsx": "react-jsx",
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "#/*": ["./*"],
+      "@/*": ["./src/*"]
+    }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../interfaces/**/*"],
   "exclude": ["node_modules", "dist"]
 }
