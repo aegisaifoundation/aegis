@@ -62,18 +62,39 @@ export class ToolLoader {
         const fileUrl = pathToFileURL(indexPath).href;
         const module = await import(fileUrl);
         const manifest = module.default;
+        // Validate tool.json metadata
+        if (!metadata || typeof metadata !== 'object') {
+            throw new Error('Invalid metadata format in tool.json');
+        }
+        if (!metadata.name || typeof metadata.name !== 'string' || metadata.name.trim() === '') {
+            throw new Error('Tool metadata is missing a valid "name" field.');
+        }
+        if (!metadata.version || typeof metadata.version !== 'string' || metadata.version.trim() === '') {
+            throw new Error('Tool metadata is missing a valid "version" field.');
+        }
+        if (!Array.isArray(metadata.actions) || metadata.actions.length === 0) {
+            throw new Error('Tool metadata must list at least one action.');
+        }
+        if (metadata.permissions && !Array.isArray(metadata.permissions)) {
+            throw new Error('Tool metadata "permissions" field must be an array.');
+        }
+        // Validate manifest structure
         if (!manifest) {
             throw new Error(`Tool package at ${indexPath} does not export default manifest.`);
         }
         if (manifest.name !== metadata.name) {
             throw new Error(`Tool name mismatch: manifest has '${manifest.name}' but tool.json has '${metadata.name}'`);
         }
-        const actions = manifest.actions || {};
+        if (!manifest.actions || typeof manifest.actions !== 'object') {
+            throw new Error('Tool manifest "actions" must be an object containing execution functions.');
+        }
+        const actions = manifest.actions;
         const tool = {
             name: manifest.name,
             description: manifest.description || metadata.description || '',
             version: manifest.version || metadata.version || '1.0.0',
             permissions,
+            toolPath,
             execute: async (input, context) => {
                 let parsed = input;
                 let actionName;

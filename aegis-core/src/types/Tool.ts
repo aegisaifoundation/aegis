@@ -12,6 +12,15 @@ export interface Tool {
   description: string;
   version: string;
   permissions?: Record<string, boolean>;
+  toolPath?: string;
   execute(input: string, context: ToolContext): Promise<string>;
+}
+
+export enum ToolState {
+  DISCOVERED = 'DISCOVERED',
+  LOADED = 'LOADED',
+  REGISTERED = 'REGISTERED',
+  FAILED = 'FAILED',
+  DISABLED = 'DISABLED'
 }
 
