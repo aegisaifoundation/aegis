@@ -1,0 +1,7 @@
+{
+  "name": "template",
+  "category": "shared",
+  "description": "Template Command description",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

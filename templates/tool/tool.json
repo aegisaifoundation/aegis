@@ -1,0 +1,11 @@
+{
+  "name": "TemplateTool",
+  "version": "1.0.0",
+  "description": "Template Tool description",
+  "permissions": [
+    "filesystem"
+  ],
+  "actions": [
+    "sampleAction"
+  ]
+}
