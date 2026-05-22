@@ -1,0 +1,7 @@
+{
+  "name": "TemplatePlugin",
+  "category": "shared",
+  "description": "Boilerplate description for the Template Plugin",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

@@ -20,6 +20,13 @@ Learn how to build custom modular slash commands (Commands) to orchestrate and c
 
 ---
 
+## 🔌 [Plugin Development Guide & Template](./plugin/README.md)
+Learn how to build background infrastructure extensions (Plugins) to observe the runtime lifecycle, manage caches, persist state, or track telemetry.
+- **Location:** [templates/plugin/](./plugin/)
+- **Includes:** Core plugin configuration (`plugin.json`), permissions model (`permissions.json`), and lifecycle hooks (`initialize`, `shutdown`).
+
+---
+
 ## 💡 Quick Tips
-- When copying files from these templates to their active directories under `tools/shared/` or `commands/shared/`, remember to adjust the relative type imports from `../../aegis-core/...` to `../../../aegis-core/...`.
-- Never import live singleton registry instances directly into dynamic commands or tools; instead, always query them via `context.services` to maintain module isolation and state synchronization.
+- When copying files from these templates to their active directories under `tools/shared/`, `commands/shared/`, or `plugins/shared/`, remember to adjust the relative type imports from `../../aegis-core/...` to `../../../aegis-core/...`.
+- Never import live singleton registry instances directly into dynamic extensions; instead, always query them via `context.services` to maintain module isolation and state synchronization.
