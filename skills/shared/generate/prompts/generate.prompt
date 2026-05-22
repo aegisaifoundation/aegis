@@ -1,0 +1,4 @@
+Perform the text generation task described below. Keep your generation focused and aligned with the request.
+
+Task:
+{{prompt}}

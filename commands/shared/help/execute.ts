@@ -7,9 +7,9 @@ export default async function execute(input: string, context: CommandContext): P
     .join('\n');
   
   const examples = '\n\nExamples:\n' +
-    '  /add <tool|plugin> <path>     e.g., /add plugin shared/analytics\n' +
-    '  /remove <tool|plugin> <path>  e.g., /remove plugin shared/analytics\n' +
-    '  /update <tool|plugin> <path>  e.g., /update plugin shared/analytics';
+    '  /add <tool|plugin|skill> <path>     e.g., /add plugin shared/analytics\n' +
+    '  /remove <tool|plugin|skill> <path>  e.g., /remove tool MemoryTool\n' +
+    '  /update <tool|plugin|skill> <path>  e.g., /update skill shared/summarize';
 
   return {
     success: true,

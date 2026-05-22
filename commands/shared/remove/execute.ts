@@ -6,7 +6,7 @@ export default async function execute(input: string, context: CommandContext): P
   if (args.length < 2) {
     return {
       success: false,
-      message: 'Usage: /remove <tool|plugin> <path>. Example: /remove plugin shared/analytics'
+      message: 'Usage: /remove <tool|plugin|skill> <path>. Example: /remove plugin shared/analytics'
     };
   }
 
@@ -18,10 +18,12 @@ export default async function execute(input: string, context: CommandContext): P
     type = CapabilityType.TOOL;
   } else if (typeArg === 'plugin') {
     type = CapabilityType.PLUGIN;
+  } else if (typeArg === 'skill') {
+    type = CapabilityType.SKILL;
   } else {
     return {
       success: false,
-      message: `Error: Unsupported capability type '${args[0]}'. Allowed types are 'tool' or 'plugin'.`
+      message: `Error: Unsupported capability type '${args[0]}'. Allowed types are 'tool', 'plugin', or 'skill'.`
     };
   }
 

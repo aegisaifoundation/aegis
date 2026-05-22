@@ -1,0 +1,7 @@
+{
+  "name": "generate",
+  "category": "shared",
+  "description": "Controlled text generation behavior",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

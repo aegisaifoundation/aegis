@@ -1,0 +1,7 @@
+{
+  "name": "format",
+  "category": "shared",
+  "description": "Output formatting and normalization behavior",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

@@ -1,0 +1,9 @@
+Extract key structured information from the provided text matching the schema below.
+You must return ONLY a valid JSON object matching the keys and type signatures of the schema.
+Do NOT include any extra conversational text, markdown formatting other than optional JSON blocks, or prefix/suffix sentences.
+
+Schema to follow:
+{{schema}}
+
+Text to analyze:
+{{text}}
