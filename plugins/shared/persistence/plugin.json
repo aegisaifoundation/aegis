@@ -1,0 +1,7 @@
+{
+  "name": "persistence",
+  "category": "shared",
+  "description": "General persistence adapters: reading/writing state files from/to workspace",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

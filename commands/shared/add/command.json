@@ -1,0 +1,7 @@
+{
+  "name": "add",
+  "category": "shared",
+  "description": "Add a tool or plugin capability dynamically, e.g., /add plugin shared/analytics",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

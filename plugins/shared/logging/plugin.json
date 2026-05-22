@@ -1,0 +1,7 @@
+{
+  "name": "logging",
+  "category": "shared",
+  "description": "Centralized runtime logging infrastructure",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

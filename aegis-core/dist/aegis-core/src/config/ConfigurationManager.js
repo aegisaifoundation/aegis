@@ -50,15 +50,22 @@ export class ConfigurationManager {
             if (!configData.autoloadTools) {
                 configData.autoloadTools = [];
             }
+            let changed = false;
             if (action === 'add') {
                 if (!configData.autoloadTools.includes(toolPath)) {
                     configData.autoloadTools.push(toolPath);
+                    changed = true;
                 }
             }
             else if (action === 'remove') {
-                configData.autoloadTools = configData.autoloadTools.filter((p) => p !== toolPath);
+                if (configData.autoloadTools.includes(toolPath)) {
+                    configData.autoloadTools = configData.autoloadTools.filter((p) => p !== toolPath);
+                    changed = true;
+                }
             }
-            fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');
+            if (changed) {
+                fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');
+            }
         }
         catch (err) {
             console.error(`Failed to update autoloadTools in runtime.json:`, err);
@@ -72,18 +79,54 @@ export class ConfigurationManager {
             if (!configData.autoloadCommands) {
                 configData.autoloadCommands = [];
             }
+            let changed = false;
             if (action === 'add') {
                 if (!configData.autoloadCommands.includes(commandPath)) {
                     configData.autoloadCommands.push(commandPath);
+                    changed = true;
                 }
             }
             else if (action === 'remove') {
-                configData.autoloadCommands = configData.autoloadCommands.filter((p) => p !== commandPath);
+                if (configData.autoloadCommands.includes(commandPath)) {
+                    configData.autoloadCommands = configData.autoloadCommands.filter((p) => p !== commandPath);
+                    changed = true;
+                }
             }
-            fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');
+            if (changed) {
+                fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');
+            }
         }
         catch (err) {
             console.error(`Failed to update autoloadCommands in runtime.json:`, err);
+            throw err;
+        }
+    }
+    async updateAutoloadPlugins(action, pluginPath) {
+        const configPath = this.getConfigPath();
+        try {
+            const configData = this.getRuntimeConfig();
+            if (!configData.autoloadPlugins) {
+                configData.autoloadPlugins = [];
+            }
+            let changed = false;
+            if (action === 'add') {
+                if (!configData.autoloadPlugins.includes(pluginPath)) {
+                    configData.autoloadPlugins.push(pluginPath);
+                    changed = true;
+                }
+            }
+            else if (action === 'remove') {
+                if (configData.autoloadPlugins.includes(pluginPath)) {
+                    configData.autoloadPlugins = configData.autoloadPlugins.filter((p) => p !== pluginPath);
+                    changed = true;
+                }
+            }
+            if (changed) {
+                fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');
+            }
+        }
+        catch (err) {
+            console.error(`Failed to update autoloadPlugins in runtime.json:`, err);
             throw err;
         }
     }

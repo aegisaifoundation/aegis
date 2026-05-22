@@ -1,0 +1,7 @@
+{
+  "name": "remove",
+  "category": "shared",
+  "description": "Remove a tool or plugin capability dynamically, e.g., /remove plugin shared/analytics",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

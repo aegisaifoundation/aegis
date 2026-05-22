@@ -1,0 +1,7 @@
+{
+  "name": "encryption",
+  "category": "shared",
+  "description": "Security crypt tools: AES encryption/decryption helper methods",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

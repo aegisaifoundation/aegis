@@ -1,0 +1,8 @@
+{
+  "permissions": [
+    "event_bus",
+    "workspace",
+    "filesystem",
+    "model_provider"
+  ]
+}

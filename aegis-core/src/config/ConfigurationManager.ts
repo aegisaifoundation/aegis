@@ -54,15 +54,22 @@ export class ConfigurationManager {
         configData.autoloadTools = [];
       }
       
+      let changed = false;
       if (action === 'add') {
         if (!configData.autoloadTools.includes(toolPath)) {
           configData.autoloadTools.push(toolPath);
+          changed = true;
         }
       } else if (action === 'remove') {
-        configData.autoloadTools = configData.autoloadTools.filter((p: string) => p !== toolPath);
+        if (configData.autoloadTools.includes(toolPath)) {
+          configData.autoloadTools = configData.autoloadTools.filter((p: string) => p !== toolPath);
+          changed = true;
+        }
       }
       
-      fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');
+      if (changed) {
+        fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');
+      }
     } catch (err) {
       console.error(`Failed to update autoloadTools in runtime.json:`, err);
       throw err;
@@ -77,17 +84,54 @@ export class ConfigurationManager {
         configData.autoloadCommands = [];
       }
       
+      let changed = false;
       if (action === 'add') {
         if (!configData.autoloadCommands.includes(commandPath)) {
           configData.autoloadCommands.push(commandPath);
+          changed = true;
         }
       } else if (action === 'remove') {
-        configData.autoloadCommands = configData.autoloadCommands.filter((p: string) => p !== commandPath);
+        if (configData.autoloadCommands.includes(commandPath)) {
+          configData.autoloadCommands = configData.autoloadCommands.filter((p: string) => p !== commandPath);
+          changed = true;
+        }
       }
       
-      fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');
+      if (changed) {
+        fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');
+      }
     } catch (err) {
       console.error(`Failed to update autoloadCommands in runtime.json:`, err);
+      throw err;
+    }
+  }
+
+  async updateAutoloadPlugins(action: 'add' | 'remove', pluginPath: string): Promise<void> {
+    const configPath = this.getConfigPath();
+    try {
+      const configData = this.getRuntimeConfig();
+      if (!configData.autoloadPlugins) {
+        configData.autoloadPlugins = [];
+      }
+      
+      let changed = false;
+      if (action === 'add') {
+        if (!configData.autoloadPlugins.includes(pluginPath)) {
+          configData.autoloadPlugins.push(pluginPath);
+          changed = true;
+        }
+      } else if (action === 'remove') {
+        if (configData.autoloadPlugins.includes(pluginPath)) {
+          configData.autoloadPlugins = configData.autoloadPlugins.filter((p: string) => p !== pluginPath);
+          changed = true;
+        }
+      }
+      
+      if (changed) {
+        fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');
+      }
+    } catch (err) {
+      console.error(`Failed to update autoloadPlugins in runtime.json:`, err);
       throw err;
     }
   }

@@ -1,0 +1,7 @@
+{
+  "name": "telemetry",
+  "category": "shared",
+  "description": "Runtime metrics and performance tracking",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

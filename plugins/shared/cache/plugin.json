@@ -1,0 +1,7 @@
+{
+  "name": "cache",
+  "category": "shared",
+  "description": "In-memory key-value cache layer with TTL support",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}
