@@ -1,0 +1,7 @@
+{
+  "name": "status",
+  "category": "shared",
+  "description": "Show runtime status, model configuration, and active services.",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

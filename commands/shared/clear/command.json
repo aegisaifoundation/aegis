@@ -1,0 +1,7 @@
+{
+  "name": "clear",
+  "category": "shared",
+  "description": "Clear the active conversation context and memory.",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

@@ -1,1 +1,1 @@
-export {};
+export * from './types/Command.js';

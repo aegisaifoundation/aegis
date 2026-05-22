@@ -1,0 +1,7 @@
+{
+  "name": "reregister",
+  "category": "shared",
+  "description": "Reregister/reload a tool package, e.g., /reregister shared/FileTool",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

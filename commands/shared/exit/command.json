@@ -1,0 +1,7 @@
+{
+  "name": "exit",
+  "category": "shared",
+  "description": "Gracefully shut down the AEGIS runtime.",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

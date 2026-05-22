@@ -1,0 +1,7 @@
+{
+  "name": "reload",
+  "category": "shared",
+  "description": "Reload a specific command or all registered commands dynamically.",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

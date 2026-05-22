@@ -1,0 +1,7 @@
+{
+  "name": "tools",
+  "category": "shared",
+  "description": "List active tools",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

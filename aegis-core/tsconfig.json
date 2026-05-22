@@ -15,8 +15,13 @@
     "paths": {
       "#/*": ["./*"],
       "@/*": ["./src/*"],
-      "execa": ["node_modules/execa"]
-    }
+      "execa": ["node_modules/execa"],
+      "react": ["node_modules/react"],
+      "ink": ["node_modules/ink"],
+      "ink-text-input": ["node_modules/ink-text-input"],
+      "react/jsx-runtime": ["node_modules/react/jsx-runtime"]
+    },
+    "noImplicitAny": false
   },
   "include": ["src/**/*", "../interfaces/**/*", "../tools/**/*"],
   "exclude": ["node_modules", "dist"]
