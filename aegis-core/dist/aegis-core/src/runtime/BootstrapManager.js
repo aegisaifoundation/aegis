@@ -6,14 +6,13 @@ import { memoryManager } from '../memory/index.js';
 import { modelHandler } from '../models/index.js';
 import { terminalTransport } from '../transports/index.js';
 import { workspaceManager } from './WorkspaceManager.js';
-import { toolRegistry, ToolLoader } from '../tools/index.js';
 import { eventBus } from './EventBus.js';
 import { CommandLoader, commandRegistry } from '../commands/index.js';
 import { configurationManager } from '../config/index.js';
+import { capabilityManager, CapabilityType } from './CapabilityManager.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 export class BootstrapManager {
-    toolLoader = new ToolLoader();
     async bootstrap() {
         console.log('[System] Initializing AEGIS Core Runtime Kernel...');
         // Graceful Shutdown Registration
@@ -24,15 +23,11 @@ export class BootstrapManager {
         // 1. Load environment variables
         loadEnvironment();
         // 2. Load runtime config & initialize workspace paths
-        const coreRoot = this.getAegisCoreRoot();
-        const configPath = path.resolve(coreRoot, 'src/config/runtime.json');
         let autoloadTools = [];
         try {
-            if (fs.existsSync(configPath)) {
-                const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-                if (Array.isArray(config.autoloadTools)) {
-                    autoloadTools = config.autoloadTools;
-                }
+            const config = configurationManager.getRuntimeConfig();
+            if (Array.isArray(config.autoloadTools)) {
+                autoloadTools = config.autoloadTools;
             }
         }
         catch (e) {
@@ -67,20 +62,36 @@ export class BootstrapManager {
                 console.error(`[System] Failed to autoload command at '${cmdPath}': ${err.message}`);
             }
         }
-        // 4. Autoload runtime capabilities (tools) with isolated error boundaries
-        console.log('[System] Autoloading capability modules...');
-        for (const toolPath of autoloadTools) {
-            eventBus.emit('tool_autoload_started', { toolPath });
+        // 4. Autoload runtime plugins with isolated error boundaries
+        console.log('[System] Autoloading plugin modules...');
+        let autoloadPlugins = [];
+        try {
+            const runtimeConfig = configurationManager.getRuntimeConfig();
+            if (Array.isArray(runtimeConfig.autoloadPlugins)) {
+                autoloadPlugins = runtimeConfig.autoloadPlugins;
+            }
+        }
+        catch (e) {
+            console.warn('[System] Warning: Failed to read autoloadPlugins config. Using empty default.', e);
+        }
+        for (const pluginPath of autoloadPlugins) {
             try {
-                const tool = await this.toolLoader.loadTool(toolPath);
-                toolRegistry.register(tool);
-                eventBus.emit('tool_autoload_success', { toolPath, name: tool.name });
-                console.log(`[System] Successfully autoloaded tool: ${tool.name} (version ${tool.version})`);
+                await capabilityManager.add(CapabilityType.PLUGIN, pluginPath);
+                console.log(`[System] Successfully autoloaded plugin: ${pluginPath}`);
             }
             catch (err) {
-                eventBus.emit('tool_autoload_failed', { toolPath, error: err.message });
+                console.error(`[System] Failed to autoload plugin at '${pluginPath}': ${err.message}`);
+            }
+        }
+        // 4.5. Autoload runtime capabilities (tools) with isolated error boundaries
+        console.log('[System] Autoloading capability modules...');
+        for (const toolPath of autoloadTools) {
+            try {
+                await capabilityManager.add(CapabilityType.TOOL, toolPath);
+                console.log(`[System] Successfully autoloaded tool: ${toolPath}`);
+            }
+            catch (err) {
                 console.error(`[System] Failed to autoload tool at '${toolPath}': ${err.message}`);
-                // RESILIENCY: We do not rethrow; the runtime kernel degrades gracefully.
             }
         }
         // 5. Check model availability in local environment

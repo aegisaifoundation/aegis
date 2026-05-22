@@ -1,0 +1,7 @@
+{
+  "name": "synchronization",
+  "category": "shared",
+  "description": "Mock registry synchronization and coordination helper",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

@@ -1,7 +1,0 @@
-{
-  "name": "register",
-  "category": "shared",
-  "description": "Register a tool package dynamically, e.g., /register shared/FileTool",
-  "version": "1.0.0",
-  "entry": "index.ts"
-}

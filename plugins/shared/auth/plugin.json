@@ -1,0 +1,7 @@
+{
+  "name": "auth",
+  "category": "shared",
+  "description": "Lightweight authentication and session validation helpers",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

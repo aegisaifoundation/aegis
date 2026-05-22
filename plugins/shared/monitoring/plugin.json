@@ -1,0 +1,7 @@
+{
+  "name": "monitoring",
+  "category": "shared",
+  "description": "Runtime health monitoring",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

@@ -8,6 +8,10 @@ import { toolRegistry, ToolLoader } from '../tools/index.js';
 import { configurationManager, config } from '../config/index.js';
 import { CommandLoader } from './CommandLoader.js';
 
+import { pluginRegistry, PluginRegistry } from '../plugins/PluginRegistry.js';
+import { capabilityManager, CapabilityManager } from '../runtime/CapabilityManager.js';
+import { Logger } from '../plugins/PluginContext.js';
+
 export interface RuntimeServices {
   getExecutor(): typeof runtimeExecutor;
   getRegistry(): typeof commandRegistry;
@@ -20,6 +24,9 @@ export interface RuntimeServices {
   getConfigurationManager(): typeof configurationManager;
   getCommandLoader(): CommandLoader;
   getConfig(): typeof config;
+  getPluginRegistry(): PluginRegistry;
+  getCapabilityManager(): CapabilityManager;
+  getLogger(): Logger;
 }
 
 export const runtimeServices: RuntimeServices = {
@@ -34,6 +41,14 @@ export const runtimeServices: RuntimeServices = {
   getConfigurationManager: () => configurationManager,
   getCommandLoader: () => new CommandLoader(),
   getConfig: () => config,
+  getPluginRegistry: () => pluginRegistry,
+  getCapabilityManager: () => capabilityManager,
+  getLogger: () => ({
+    info: (message: string, context?: any) => eventBus.emit('log', { level: 'INFO', message, context }),
+    debug: (message: string, context?: any) => eventBus.emit('log', { level: 'DEBUG', message, context }),
+    warn: (message: string, context?: any) => eventBus.emit('log', { level: 'WARN', message, context }),
+    error: (message: string, context?: any) => eventBus.emit('log', { level: 'ERROR', message, context }),
+  }),
 };
 export type { CommandRegistry } from './CommandRegistry.js';
 export type { CommandContext } from './types/CommandContext.js';

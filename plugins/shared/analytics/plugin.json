@@ -1,0 +1,7 @@
+{
+  "name": "analytics",
+  "category": "shared",
+  "description": "Runtime behavioral analytics",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

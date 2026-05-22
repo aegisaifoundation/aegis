@@ -1,0 +1,6 @@
+{
+  "permissions": [
+    "event_bus",
+    "registry"
+  ]
+}

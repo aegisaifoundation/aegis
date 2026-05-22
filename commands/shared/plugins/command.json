@@ -1,0 +1,7 @@
+{
+  "name": "plugins",
+  "category": "shared",
+  "description": "List loaded plugins and their states",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

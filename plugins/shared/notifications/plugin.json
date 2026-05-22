@@ -1,0 +1,7 @@
+{
+  "name": "notifications",
+  "category": "shared",
+  "description": "Event-driven notifications queue and publisher",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

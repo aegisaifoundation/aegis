@@ -1,0 +1,9 @@
+{
+  "commandUsage": {
+    "update": 1,
+    "remove": 1
+  },
+  "toolUsage": {},
+  "providerInvocations": 0,
+  "totalErrors": 0
+}

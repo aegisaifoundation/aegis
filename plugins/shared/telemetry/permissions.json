@@ -1,0 +1,7 @@
+{
+  "permissions": [
+    "event_bus",
+    "workspace",
+    "filesystem"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "update",
+  "category": "shared",
+  "description": "Update a tool or plugin capability dynamically, e.g., /update plugin shared/analytics",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}
