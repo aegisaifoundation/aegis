@@ -1,0 +1,9 @@
+You are an expert summarizer. Synthesize the provided text into a concise, high-quality, structured summary.
+
+Text to summarize:
+{{text}}
+
+Constraints:
+- Emphasize key facts, decisions, and dates.
+- Keep the summary objective and professional.
+- Do not add any outside information or assumptions.

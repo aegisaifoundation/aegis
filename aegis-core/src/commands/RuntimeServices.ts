@@ -11,6 +11,8 @@ import { CommandLoader } from './CommandLoader.js';
 import { pluginRegistry, PluginRegistry } from '../plugins/PluginRegistry.js';
 import { capabilityManager, CapabilityManager } from '../runtime/CapabilityManager.js';
 import { Logger } from '../plugins/PluginContext.js';
+import { skillRegistry, SkillRegistry } from '../skills/index.js';
+
 
 export interface RuntimeServices {
   getExecutor(): typeof runtimeExecutor;
@@ -25,6 +27,7 @@ export interface RuntimeServices {
   getCommandLoader(): CommandLoader;
   getConfig(): typeof config;
   getPluginRegistry(): PluginRegistry;
+  getSkillRegistry(): SkillRegistry;
   getCapabilityManager(): CapabilityManager;
   getLogger(): Logger;
 }
@@ -42,6 +45,7 @@ export const runtimeServices: RuntimeServices = {
   getCommandLoader: () => new CommandLoader(),
   getConfig: () => config,
   getPluginRegistry: () => pluginRegistry,
+  getSkillRegistry: () => skillRegistry,
   getCapabilityManager: () => capabilityManager,
   getLogger: () => ({
     info: (message: string, context?: any) => eventBus.emit('log', { level: 'INFO', message, context }),

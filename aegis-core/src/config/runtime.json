@@ -6,10 +6,12 @@
   "workspaceRoot": "../workspace/shared",
   "autoloadTools": [],
   "autoloadPlugins": [],
+  "autoloadSkills": [],
   "autoloadCommands": [
     "shared/help",
     "shared/tools",
     "shared/plugins",
+    "shared/skills",
     "shared/add",
     "shared/remove",
     "shared/update",

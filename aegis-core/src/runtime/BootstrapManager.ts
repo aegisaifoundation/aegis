@@ -10,6 +10,8 @@ import { eventBus } from './EventBus.js';
 import { CommandLoader, commandRegistry } from '../commands/index.js';
 import { configurationManager } from '../config/index.js';
 import { capabilityManager, CapabilityType } from './CapabilityManager.js';
+import { skillLoader } from '../skills/SkillLoader.js';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -88,6 +90,28 @@ export class BootstrapManager {
         console.log(`[System] Successfully autoloaded plugin: ${pluginPath}`);
       } catch (err: any) {
         console.error(`[System] Failed to autoload plugin at '${pluginPath}': ${err.message}`);
+      }
+    }
+
+    // 4.2. Autoload runtime skills with isolated error boundaries
+    console.log('[System] Autoloading skill modules...');
+    let autoloadSkills: string[] = [];
+    try {
+      const runtimeConfig = configurationManager.getRuntimeConfig();
+      if (Array.isArray(runtimeConfig.autoloadSkills)) {
+        autoloadSkills = runtimeConfig.autoloadSkills;
+      }
+    } catch (e) {
+      console.warn('[System] Warning: Failed to read autoloadSkills config. Using empty default.', e);
+    }
+
+    for (const skillPath of autoloadSkills) {
+      try {
+        const skill = await skillLoader.loadSkill(skillPath);
+        await skillLoader.initializeSkill(skill.name);
+        console.log(`[System] Successfully autoloaded skill: ${skillPath}`);
+      } catch (err: any) {
+        console.error(`[System] Failed to autoload skill at '${skillPath}': ${err.message}`);
       }
     }
 

@@ -1,0 +1,7 @@
+{
+  "name": "extract",
+  "category": "shared",
+  "description": "Structured information extraction behavior",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

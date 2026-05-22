@@ -1,0 +1,7 @@
+{
+  "name": "summarize",
+  "category": "shared",
+  "description": "Reusable text summarization behavior",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

@@ -4,10 +4,12 @@ import { ToolLoader } from '../tools/ToolLoader.js';
 import { pluginRegistry } from '../plugins/PluginRegistry.js';
 import { PluginLoader } from '../plugins/PluginLoader.js';
 import { configurationManager } from '../config/ConfigurationManager.js';
+import { skillRegistry, skillLoader } from '../skills/index.js';
 
 export enum CapabilityType {
   TOOL = 'tool',
-  PLUGIN = 'plugin'
+  PLUGIN = 'plugin',
+  SKILL = 'skill'
 }
 
 export class CapabilityManager {
@@ -29,6 +31,12 @@ export class CapabilityManager {
         await configurationManager.updateAutoloadPlugins('add', capabilityPath);
         eventBus.emit('capability_added', { type, name: plugin.name, path: capabilityPath });
         eventBus.emit('capability_initialized', { type, name: plugin.name });
+      } else if (type === CapabilityType.SKILL) {
+        const skill = await skillLoader.loadSkill(capabilityPath);
+        await skillLoader.initializeSkill(skill.name);
+        await configurationManager.updateAutoloadSkills('add', capabilityPath);
+        eventBus.emit('capability_added', { type, name: skill.name, path: capabilityPath });
+        eventBus.emit('capability_initialized', { type, name: skill.name });
       } else {
         throw new Error(`Unsupported capability type: ${type}`);
       }
@@ -60,6 +68,16 @@ export class CapabilityManager {
         const pathToRemove = plugin.pluginPath || capabilityPath;
         await configurationManager.updateAutoloadPlugins('remove', pathToRemove);
         eventBus.emit('capability_removed', { type, name: plugin.name, path: pathToRemove });
+      } else if (type === CapabilityType.SKILL) {
+        const skills = skillRegistry.list();
+        const skill = skills.find(s => s.skillPath === capabilityPath || s.name === capabilityPath || s.name === capabilityPath.split('/').pop());
+        if (!skill) {
+          throw new Error(`Skill not found in registry: ${capabilityPath}`);
+        }
+        await skillLoader.shutdownSkill(skill.name);
+        const pathToRemove = skill.skillPath || capabilityPath;
+        await configurationManager.updateAutoloadSkills('remove', pathToRemove);
+        eventBus.emit('capability_removed', { type, name: skill.name, path: pathToRemove });
       } else {
         throw new Error(`Unsupported capability type: ${type}`);
       }

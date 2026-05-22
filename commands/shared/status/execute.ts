@@ -11,19 +11,37 @@ export default async function execute(input: string, context: CommandContext): P
     
     // Check model availability
     const modelAvailable = await modelProvider.checkModelAvailability();
-    const toolCount = toolRegistry.getAllTools().length;
+    const tools = toolRegistry.getAllTools();
+    const toolCount = tools.length;
     const commandCount = services.getRegistry().list().length;
-    const plugins = pluginRegistry.list();
-    const pluginsSummary = plugins.map((p: any) => `  - ${p.name} (v${p.version}) [${pluginRegistry.getPluginState(p.name)}]`).join('\n') || '  No plugins loaded.';
     
+    const plugins = pluginRegistry.list();
+    const pluginCount = plugins.length;
+    const pluginsSummary = plugins.map((p: any) => `  - ${p.name} (v${p.version}) [${pluginRegistry.getPluginState(p.name)}]`).join('\n') || '  No plugins loaded.';
+
+    const skillRegistry = services.getSkillRegistry();
+    const skills = skillRegistry.list();
+    const skillCount = skills.length;
+    const skillsSummary = skills.map((s: any) => `  - ${s.name} (v${s.version}) [${skillRegistry.getSkillState(s.name)}]`).join('\n') || '  No skills loaded.';
+    
+    const toolsSummary = tools.map((t: any) => `  - ${t.name}: ${t.description}`).join('\n') || '  No tools loaded.';
+
     const message = [
       `=== AEGIS Runtime Status ===`,
       `State: ${runtimeStatus}`,
       `Loaded Tools: ${toolCount}`,
       `Loaded Commands: ${commandCount}`,
+      `Loaded Plugins: ${pluginCount}`,
+      `Loaded Skills: ${skillCount}`,
+      ``,
+      `=== Loaded Tools ===`,
+      toolsSummary,
       ``,
       `=== Loaded Plugins ===`,
       pluginsSummary,
+      ``,
+      `=== Loaded Skills ===`,
+      skillsSummary,
       ``,
       `=== Model Provider Stats ===`,
       `Host: ${config.OLLAMA_HOST}`,

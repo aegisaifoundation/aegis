@@ -135,6 +135,36 @@ export class ConfigurationManager {
       throw err;
     }
   }
+
+  async updateAutoloadSkills(action: 'add' | 'remove', skillPath: string): Promise<void> {
+    const configPath = this.getConfigPath();
+    try {
+      const configData = this.getRuntimeConfig();
+      if (!configData.autoloadSkills) {
+        configData.autoloadSkills = [];
+      }
+      
+      let changed = false;
+      if (action === 'add') {
+        if (!configData.autoloadSkills.includes(skillPath)) {
+          configData.autoloadSkills.push(skillPath);
+          changed = true;
+        }
+      } else if (action === 'remove') {
+        if (configData.autoloadSkills.includes(skillPath)) {
+          configData.autoloadSkills = configData.autoloadSkills.filter((p: string) => p !== skillPath);
+          changed = true;
+        }
+      }
+      
+      if (changed) {
+        fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');
+      }
+    } catch (err) {
+      console.error(`Failed to update autoloadSkills in runtime.json:`, err);
+      throw err;
+    }
+  }
 }
 
 export const configurationManager = new ConfigurationManager();

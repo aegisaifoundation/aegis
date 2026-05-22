@@ -9,6 +9,7 @@ import { configurationManager, config } from '../config/index.js';
 import { CommandLoader } from './CommandLoader.js';
 import { pluginRegistry } from '../plugins/PluginRegistry.js';
 import { capabilityManager } from '../runtime/CapabilityManager.js';
+import { skillRegistry } from '../skills/index.js';
 export const runtimeServices = {
     getExecutor: () => runtimeExecutor,
     getRegistry: () => commandRegistry,
@@ -22,6 +23,7 @@ export const runtimeServices = {
     getCommandLoader: () => new CommandLoader(),
     getConfig: () => config,
     getPluginRegistry: () => pluginRegistry,
+    getSkillRegistry: () => skillRegistry,
     getCapabilityManager: () => capabilityManager,
     getLogger: () => ({
         info: (message, context) => eventBus.emit('log', { level: 'INFO', message, context }),
