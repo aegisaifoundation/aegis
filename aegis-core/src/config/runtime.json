@@ -4,5 +4,20 @@
   "streamResponses": true,
   "enableInterruptions": true,
   "workspaceRoot": "../workspace/shared",
-  "autoloadTools": []
+  "autoloadTools": [
+    "shared/FileTool",
+    "shared/FolderTool",
+    "shared/MemoryTool"
+  ],
+  "autoloadCommands": [
+    "shared/help",
+    "shared/tools",
+    "shared/register",
+    "shared/reregister",
+    "shared/unregister",
+    "shared/status",
+    "shared/clear",
+    "shared/reload",
+    "shared/exit"
+  ]
 }

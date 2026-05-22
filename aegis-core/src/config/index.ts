@@ -10,3 +10,6 @@ const ConfigSchema = z.object({
 });
 
 export const config = ConfigSchema.parse(process.env);
+
+export * from './ConfigurationManager.js';
+

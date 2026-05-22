@@ -59,7 +59,7 @@ export class ToolLoader {
             throw new Error(`index file (index.ts/index.js) not found in ${toolDir}`);
         }
         // Import the tool package dynamically using file URL
-        const fileUrl = pathToFileURL(indexPath).href;
+        const fileUrl = `${pathToFileURL(indexPath).href}?t=${Date.now()}`;
         const module = await import(fileUrl);
         const manifest = module.default;
         // Validate tool.json metadata

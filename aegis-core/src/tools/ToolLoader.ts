@@ -69,7 +69,7 @@ export class ToolLoader {
     }
 
     // Import the tool package dynamically using file URL
-    const fileUrl = pathToFileURL(indexPath).href;
+    const fileUrl = `${pathToFileURL(indexPath).href}?t=${Date.now()}`;
     const module = await import(fileUrl);
     const manifest = module.default;
 

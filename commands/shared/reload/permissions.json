@@ -1,0 +1,3 @@
+{
+  "permissions": ["runtime.commands", "runtime.registry"]
+}

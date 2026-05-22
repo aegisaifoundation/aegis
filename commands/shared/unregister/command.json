@@ -1,0 +1,7 @@
+{
+  "name": "unregister",
+  "category": "shared",
+  "description": "Unregister/unload a tool by name, e.g., /unregister FileTool",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

@@ -1,0 +1,7 @@
+{
+  "name": "help",
+  "category": "shared",
+  "description": "Show available commands",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

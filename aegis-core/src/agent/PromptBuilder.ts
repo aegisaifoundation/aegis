@@ -4,8 +4,20 @@ export class PromptBuilder {
   buildSystemPrompt(): string {
     const tools = toolRegistry.getAllTools();
     let prompt = `You are Aegis Core Agent, an advanced modular AI orchestrator.\n`;
-    prompt += `You can execute tasks using tools by outputting a JSON block wrapped in <tool> tags.\n`;
-    prompt += `Example: <tool>{"name": "FileTool", "input": "read file.txt"}</tool>\n\n`;
+    prompt += `You have access to dynamic tools. To execute a task, you MUST use the appropriate tool if available.\n`;
+    prompt += `To invoke a tool, output a JSON block wrapped in <tool>...</tool> tags. Do not output anything else in the same turn.\n\n`;
+    
+    prompt += `Format structure:\n`;
+    prompt += `<tool>{\n`;
+    prompt += `  "name": "ToolName",\n`;
+    prompt += `  "input": {\n`;
+    prompt += `    "action": "actionName",\n`;
+    prompt += `    ...otherParameters\n`;
+    prompt += `  }\n`;
+    prompt += `}</tool>\n\n`;
+    
+    prompt += `Example: To create a file named "note.txt" with content "hello", output:\n`;
+    prompt += `<tool>{"name": "FileTool", "input": {"action": "createFile", "path": "note.txt", "content": "hello"}}</tool>\n\n`;
     
     if (tools.length > 0) {
       prompt += `Available Tools:\n`;
