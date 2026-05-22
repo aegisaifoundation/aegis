@@ -27,6 +27,13 @@ Learn how to build background infrastructure extensions (Plugins) to observe the
 
 ---
 
+## 💡 [Skill Development Guide & Template](./skill/README.md)
+Learn how to build modular, reusable intelligence behaviors (Skills) that define LLM-based logic, prompt template parsing, and structured data handling.
+- **Location:** [templates/skill/](./skill/)
+- **Includes:** Core skill configuration (`skill.json`), permissions model (`permissions.json`), execution logic (`execute.ts`), and sample prompts.
+
+---
+
 ## 💡 Quick Tips
-- When copying files from these templates to their active directories under `tools/shared/`, `commands/shared/`, or `plugins/shared/`, remember to adjust the relative type imports from `../../aegis-core/...` to `../../../aegis-core/...`.
+- When copying files from these templates to their active directories under `tools/shared/`, `commands/shared/`, `plugins/shared/`, or `skills/shared/`, remember to adjust the relative type imports from `../../aegis-core/...` to `../../../aegis-core/...`.
 - Never import live singleton registry instances directly into dynamic extensions; instead, always query them via `context.services` to maintain module isolation and state synchronization.
