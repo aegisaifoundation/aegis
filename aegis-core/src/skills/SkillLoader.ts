@@ -10,7 +10,7 @@ import { eventBus } from '../runtime/EventBus.js';
 import { configurationManager } from '../config/ConfigurationManager.js';
 import { toolRegistry } from '../tools/ToolRegistry.js';
 import { commandRegistry } from '../commands/CommandRegistry.js';
-import { modelHandler } from '../models/index.js';
+import { providerManager } from '../providers/index.js';
 import { workspaceManager } from '../runtime/WorkspaceManager.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -154,7 +154,7 @@ export class SkillLoader {
         getConfigurationManager: () => configurationManager,
         getToolRegistry: () => toolRegistry,
         getCommandRegistry: () => commandRegistry,
-        getModelProvider: () => modelHandler,
+        getModelProvider: () => providerManager,
         getWorkspacePath: () => workspaceManager.getWorkspacePath(),
         getSkillRegistry: () => skillRegistry,
         getLogger: () => logger

@@ -8,7 +8,7 @@ import { eventBus } from '../runtime/EventBus.js';
 import { configurationManager } from '../config/ConfigurationManager.js';
 import { toolRegistry } from '../tools/ToolRegistry.js';
 import { commandRegistry } from '../commands/CommandRegistry.js';
-import { modelHandler } from '../models/index.js';
+import { providerManager } from '../providers/index.js';
 import { workspaceManager } from '../runtime/WorkspaceManager.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -134,7 +134,7 @@ export class PluginLoader {
                 getConfigurationManager: () => configurationManager,
                 getToolRegistry: () => toolRegistry,
                 getCommandRegistry: () => commandRegistry,
-                getModelProvider: () => modelHandler,
+                getModelProvider: () => providerManager,
                 getWorkspacePath: () => workspaceManager.getWorkspacePath(),
                 getPluginRegistry: () => pluginRegistry,
                 getLogger: () => logger

@@ -2,7 +2,7 @@ import { EventBus } from '../runtime/EventBus.js';
 import { ConfigurationManager } from '../config/ConfigurationManager.js';
 import { ToolRegistry } from '../tools/ToolRegistry.js';
 import { CommandRegistry } from '../commands/CommandRegistry.js';
-import { ModelHandler } from '../models/index.js';
+import { ProviderManager } from '../providers/index.js';
 
 export interface Logger {
   info(message: string, context?: any): void;
@@ -17,7 +17,7 @@ export interface PluginContext {
     getConfigurationManager(): ConfigurationManager;
     getToolRegistry(): ToolRegistry;
     getCommandRegistry(): CommandRegistry;
-    getModelProvider(): ModelHandler;
+    getModelProvider(): ProviderManager;
     getWorkspacePath(): string;
     getPluginRegistry(): any;
     getLogger(): Logger;

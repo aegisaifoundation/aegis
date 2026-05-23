@@ -23,6 +23,6 @@
     },
     "noImplicitAny": false
   },
-  "include": ["src/**/*", "../interfaces/**/*", "../tools/**/*"],
+  "include": ["src/**/*", "../interfaces/**/*", "../tools/**/*", "../providers/**/*", "../commands/**/*"],
   "exclude": ["node_modules", "dist"]
 }

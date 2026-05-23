@@ -1,15 +1,15 @@
-import { modelHandler } from '../models/index.js';
+import { providerManager } from '../providers/index.js';
 import { Message } from '../types/Message.js';
 import { messageFormatter } from './MessageFormatter.js';
 
 export class Agent {
   async *streamChat(messages: Message[]): AsyncGenerator<string> {
     const chatMessages = messageFormatter.formatMessages(messages);
-    yield* modelHandler.streamChat(chatMessages);
+    yield* providerManager.streamChat(chatMessages);
   }
 
   async generate(prompt: string): Promise<string> {
-    return await modelHandler.generate(prompt);
+    return await providerManager.generate(prompt);
   }
 }
 

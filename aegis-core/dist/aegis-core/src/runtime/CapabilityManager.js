@@ -10,6 +10,7 @@ export var CapabilityType;
     CapabilityType["TOOL"] = "tool";
     CapabilityType["PLUGIN"] = "plugin";
     CapabilityType["SKILL"] = "skill";
+    CapabilityType["PROVIDER"] = "provider";
 })(CapabilityType || (CapabilityType = {}));
 export class CapabilityManager {
     toolLoader = new ToolLoader();
@@ -37,6 +38,14 @@ export class CapabilityManager {
                 await configurationManager.updateAutoloadSkills('add', capabilityPath);
                 eventBus.emit('capability_added', { type, name: skill.name, path: capabilityPath });
                 eventBus.emit('capability_initialized', { type, name: skill.name });
+            }
+            else if (type === CapabilityType.PROVIDER) {
+                const { providerLoader } = await import('../providers/index.js');
+                const provider = await providerLoader.loadProvider(capabilityPath);
+                await providerLoader.initializeProvider(capabilityPath);
+                await configurationManager.updateAutoloadProviders('add', capabilityPath);
+                eventBus.emit('capability_added', { type, name: provider.name, path: capabilityPath });
+                eventBus.emit('capability_initialized', { type, name: provider.name });
             }
             else {
                 throw new Error(`Unsupported capability type: ${type}`);
@@ -81,6 +90,17 @@ export class CapabilityManager {
                 const pathToRemove = skill.skillPath || capabilityPath;
                 await configurationManager.updateAutoloadSkills('remove', pathToRemove);
                 eventBus.emit('capability_removed', { type, name: skill.name, path: pathToRemove });
+            }
+            else if (type === CapabilityType.PROVIDER) {
+                const { providerRegistry } = await import('../providers/index.js');
+                const provider = providerRegistry.get(capabilityPath);
+                if (!provider) {
+                    throw new Error(`Provider not found in registry: ${capabilityPath}`);
+                }
+                await provider.shutdown();
+                providerRegistry.unregister(capabilityPath);
+                await configurationManager.updateAutoloadProviders('remove', capabilityPath);
+                eventBus.emit('capability_removed', { type, name: provider.name, path: capabilityPath });
             }
             else {
                 throw new Error(`Unsupported capability type: ${type}`);

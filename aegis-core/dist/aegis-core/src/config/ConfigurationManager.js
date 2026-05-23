@@ -159,5 +159,46 @@ export class ConfigurationManager {
             throw err;
         }
     }
+    async updateDefaultProvider(providerName) {
+        const configPath = this.getConfigPath();
+        try {
+            const configData = this.getRuntimeConfig();
+            configData.defaultProvider = providerName;
+            fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');
+        }
+        catch (err) {
+            console.error(`Failed to update defaultProvider in runtime.json:`, err);
+            throw err;
+        }
+    }
+    async updateAutoloadProviders(action, providerPath) {
+        const configPath = this.getConfigPath();
+        try {
+            const configData = this.getRuntimeConfig();
+            if (!configData.autoloadProviders) {
+                configData.autoloadProviders = [];
+            }
+            let changed = false;
+            if (action === 'add') {
+                if (!configData.autoloadProviders.includes(providerPath)) {
+                    configData.autoloadProviders.push(providerPath);
+                    changed = true;
+                }
+            }
+            else if (action === 'remove') {
+                if (configData.autoloadProviders.includes(providerPath)) {
+                    configData.autoloadProviders = configData.autoloadProviders.filter((p) => p !== providerPath);
+                    changed = true;
+                }
+            }
+            if (changed) {
+                fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');
+            }
+        }
+        catch (err) {
+            console.error(`Failed to update autoloadProviders in runtime.json:`, err);
+            throw err;
+        }
+    }
 }
 export const configurationManager = new ConfigurationManager();
