@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { loadEnvironment } from '../utils/environment.js';
 import { memoryManager } from '../memory/index.js';
-import { modelHandler } from '../models/index.js';
+import { providerManager } from '../providers/index.js';
 import { terminalTransport } from '../transports/index.js';
 import { workspaceManager } from './WorkspaceManager.js';
 import { eventBus } from './EventBus.js';
@@ -126,11 +126,19 @@ export class BootstrapManager {
       }
     }
 
+    // 4.8. Initialize model providers
+    console.log('[System] Initializing model providers...');
+    try {
+      await providerManager.initialize();
+    } catch (err: any) {
+      console.error(`[System] Failed to initialize model providers: ${err.message}`);
+    }
+
     // 5. Check model availability in local environment
-    const available = await modelHandler.checkModelAvailability();
+    const available = await providerManager.checkModelAvailability();
     if (!available) {
       console.warn(
-        '\n[System] Warning: Configured model might not be available in Ollama right now. Please ensure Ollama is running and the model is pulled.\n'
+        `\n[System] Warning: Configured model might not be available in active provider '${providerManager.getActiveProviderName()}' right now. Please check provider connection status.\n`
       );
     }
 

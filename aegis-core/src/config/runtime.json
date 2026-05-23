@@ -4,7 +4,9 @@
   "streamResponses": true,
   "enableInterruptions": true,
   "workspaceRoot": "../workspace/shared",
-  "autoloadTools": [],
+  "autoloadTools": [
+    "shared/FileTool"
+  ],
   "autoloadPlugins": [],
   "autoloadSkills": [],
   "autoloadCommands": [
@@ -18,6 +20,9 @@
     "shared/status",
     "shared/clear",
     "shared/reload",
-    "shared/exit"
-  ]
+    "shared/exit",
+    "shared/provider",
+    "shared/switch"
+  ],
+  "defaultProvider": "mock"
 }

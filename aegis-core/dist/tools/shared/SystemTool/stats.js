@@ -1,16 +1,10 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = execute;
-const os_1 = __importDefault(require("os"));
-async function execute(input, context) {
-    const totalMem = os_1.default.totalmem();
-    const freeMem = os_1.default.freemem();
-    const cpus = os_1.default.cpus();
-    const platform = os_1.default.platform();
-    const uptime = os_1.default.uptime();
+import os from 'os';
+export default async function execute(input, context) {
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const cpus = os.cpus();
+    const platform = os.platform();
+    const uptime = os.uptime();
     return JSON.stringify({
         platform,
         uptime: `${(uptime / 3600).toFixed(2)} hours`,

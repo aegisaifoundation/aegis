@@ -1,0 +1,140 @@
+import { config } from '../../../aegis-core/src/config/index.js';
+export class OpenAICompatibleProvider {
+    name = 'api/openai-compatible';
+    category = 'api';
+    version = '1.0.0';
+    baseUrl;
+    apiKey;
+    model;
+    async initialize(context) {
+        const nvidiaKey = process.env.NVIDIA_API_KEY || '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';
+        this.baseUrl = context.config.baseUrl || process.env.API_PROVIDER_URL || (config.API_PROVIDER_URL && config.API_PROVIDER_URL !== 'https://api.openai.com/v1' ? config.API_PROVIDER_URL : 'https://integrate.api.nvidia.com/v1');
+        this.apiKey = context.config.apiKey || process.env.API_PROVIDER_KEY || (config.API_PROVIDER_KEY && config.API_PROVIDER_KEY !== 'mock-key' ? config.API_PROVIDER_KEY : nvidiaKey);
+        this.model = context.config.model || process.env.API_PROVIDER_MODEL || (config.API_PROVIDER_MODEL && config.API_PROVIDER_MODEL !== 'gpt-4o' ? config.API_PROVIDER_MODEL : 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning');
+    }
+    async shutdown() {
+        // No cleanup required
+    }
+    async checkAvailability() {
+        try {
+            const response = await fetch(`${this.baseUrl}/models`, {
+                headers: {
+                    'Authorization': `Bearer ${this.apiKey}`
+                }
+            });
+            return response.status === 200;
+        }
+        catch (e) {
+            console.error('API connection check failed:', e);
+            return false;
+        }
+    }
+    async *streamChat(messages) {
+        const mappedMessages = messages.map(m => {
+            let role = 'system';
+            if (m.role === 'user')
+                role = 'user';
+            if (m.role === 'assistant')
+                role = 'assistant';
+            if (m.role === 'tool')
+                role = 'tool';
+            return { role, content: m.content };
+        });
+        const requestBody = {
+            model: this.model,
+            messages: mappedMessages,
+            stream: true
+        };
+        // If using Nvidia Reasoning Model or specified reasoning budget
+        if (this.model.includes('reasoning') || this.model.includes('nemotron')) {
+            requestBody.temperature = 0.6;
+            requestBody.top_p = 0.95;
+            requestBody.max_tokens = 65536;
+            requestBody.reasoning_budget = 16384;
+            requestBody.chat_template_kwargs = { "enable_thinking": true };
+        }
+        const response = await fetch(`${this.baseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.apiKey}`
+            },
+            body: JSON.stringify(requestBody)
+        });
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`API call failed: status ${response.status}, ${errText}`);
+        }
+        if (!response.body) {
+            throw new Error('Response body is empty');
+        }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done)
+                    break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed)
+                        continue;
+                    if (trimmed === 'data: [DONE]')
+                        continue;
+                    if (trimmed.startsWith('data: ')) {
+                        try {
+                            const data = JSON.parse(trimmed.slice(6));
+                            const choice = data.choices?.[0];
+                            const reasoning = choice?.delta?.reasoning_content;
+                            const content = choice?.delta?.content;
+                            if (reasoning) {
+                                yield reasoning;
+                            }
+                            if (content) {
+                                yield content;
+                            }
+                        }
+                        catch (e) {
+                            // Ignore partial JSON
+                        }
+                    }
+                }
+            }
+        }
+        finally {
+            reader.releaseLock();
+        }
+    }
+    async generate(prompt) {
+        const requestBody = {
+            model: this.model,
+            messages: [{ role: 'user', content: prompt }]
+        };
+        if (this.model.includes('reasoning') || this.model.includes('nemotron')) {
+            requestBody.temperature = 0.6;
+            requestBody.top_p = 0.95;
+            requestBody.max_tokens = 65536;
+            requestBody.reasoning_budget = 16384;
+            requestBody.chat_template_kwargs = { "enable_thinking": true };
+        }
+        const response = await fetch(`${this.baseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.apiKey}`
+            },
+            body: JSON.stringify(requestBody)
+        });
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`API call failed: status ${response.status}, ${errText}`);
+        }
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || '';
+    }
+}
+export default new OpenAICompatibleProvider();

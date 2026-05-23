@@ -3,7 +3,7 @@ import { commandRegistry } from './CommandRegistry.js';
 import { eventBus } from '../runtime/EventBus.js';
 import { workspaceManager } from '../runtime/WorkspaceManager.js';
 import { conversationContext } from '../context/ConversationContext.js';
-import { modelHandler } from '../models/index.js';
+import { providerManager } from '../providers/index.js';
 import { toolRegistry, ToolLoader } from '../tools/index.js';
 import { configurationManager, config } from '../config/index.js';
 import { CommandLoader } from './CommandLoader.js';
@@ -16,7 +16,7 @@ export const runtimeServices = {
     getEventBus: () => eventBus,
     getWorkspacePath: () => workspaceManager.getWorkspacePath(),
     getConversationContext: () => conversationContext,
-    getModelProvider: () => modelHandler,
+    getModelProvider: () => providerManager,
     getToolRegistry: () => toolRegistry,
     getToolLoader: () => new ToolLoader(),
     getConfigurationManager: () => configurationManager,

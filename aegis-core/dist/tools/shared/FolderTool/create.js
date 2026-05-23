@@ -1,12 +1,6 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = execute;
-const promises_1 = __importDefault(require("fs/promises"));
-const pathSandbox_js_1 = require("../../../aegis-core/src/utils/pathSandbox.js");
-async function execute(input, context) {
+import fs from 'fs/promises';
+import { safeResolve } from '../../../aegis-core/src/utils/pathSandbox.js';
+export default async function execute(input, context) {
     const target = typeof input === 'string' ? input : (input.path || input.folderPath || input.filePath);
     if (!target) {
         throw new Error("Missing 'path' or 'folderPath' parameter for create action.");
@@ -14,7 +8,7 @@ async function execute(input, context) {
     if (!context.workspacePath) {
         throw new Error("Workspace path is not defined in ToolContext.");
     }
-    const targetPath = (0, pathSandbox_js_1.safeResolve)(context.workspacePath, target);
-    await promises_1.default.mkdir(targetPath, { recursive: true });
+    const targetPath = safeResolve(context.workspacePath, target);
+    await fs.mkdir(targetPath, { recursive: true });
     return `Folder created successfully: ${targetPath}`;
 }

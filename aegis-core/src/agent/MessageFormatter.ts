@@ -1,5 +1,5 @@
 import { Message } from '../types/Message.js';
-import { ChatMessage } from '../models/ModelProvider.js';
+import { ChatMessage } from '../providers/index.js';
 import { promptBuilder } from './PromptBuilder.js';
 
 export class MessageFormatter {
