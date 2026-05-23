@@ -1,0 +1,7 @@
+{
+  "name": "provider",
+  "category": "shared",
+  "description": "Show available model providers and highlight the active one.",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

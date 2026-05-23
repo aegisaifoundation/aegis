@@ -44,7 +44,7 @@ export default async function execute(input: string, context: CommandContext): P
       skillsSummary,
       ``,
       `=== Model Provider Stats ===`,
-      `Host: ${config.OLLAMA_HOST}`,
+      `Provider: ${modelProvider.getActiveProviderName()}`,
       `Model: ${config.MODEL_NAME}`,
       `Status: ${modelAvailable ? 'CONNECTED (Available)' : 'DISCONNECTED (Unavailable)'}`
     ].join('\n');

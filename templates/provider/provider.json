@@ -1,0 +1,7 @@
+{
+  "name": "my-custom-provider",
+  "category": "custom",
+  "description": "Custom AEGIS model inference provider",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

@@ -1,0 +1,7 @@
+{
+  "name": "mock",
+  "category": "mock",
+  "description": "Mock model provider for tests and validation",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}
