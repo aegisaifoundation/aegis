@@ -1,0 +1,7 @@
+{
+  "name": "local/ollama",
+  "category": "local",
+  "description": "Local Ollama inference provider",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

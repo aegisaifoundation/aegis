@@ -1,0 +1,7 @@
+{
+  "name": "switch",
+  "category": "shared",
+  "description": "Switch the active model provider.",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

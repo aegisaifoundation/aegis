@@ -1,0 +1,7 @@
+{
+  "name": "api/openai-compatible",
+  "category": "api",
+  "description": "OpenAI Compatible API inference provider",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}
