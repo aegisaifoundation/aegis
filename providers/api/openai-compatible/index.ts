@@ -102,9 +102,10 @@ export class OpenAICompatibleProvider implements Provider {
               const reasoning = choice?.delta?.reasoning_content;
               const content = choice?.delta?.content;
               
-              if (reasoning) {
-                yield reasoning;
-              }
+              // Skip yielding reasoning content to prevent printing internal thinking logs directly to the user
+              // if (reasoning) {
+              //   yield reasoning;
+              // }
               if (content) {
                 yield content;
               }

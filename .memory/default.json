@@ -106,5 +106,96 @@
     "role": "assistant",
     "content": "[Mock Response to: \"hi\"] This is a mock response from the Mock Provider. ",
     "timestamp": "2026-05-23T18:46:18.861Z"
+  },
+  {
+    "role": "user",
+    "content": "create a file named gokul.txt",
+    "timestamp": "2026-05-24T09:05:24.474Z"
+  },
+  {
+    "role": "assistant",
+    "content": "<tool>\n{\"name\": \"FileTool\", \"input\": {\"action\": \"createFile\", \"path\": \"gokul.txt\", \"content\": \"\"}}\n</tool>",
+    "timestamp": "2026-05-24T09:07:22.819Z"
+  },
+  {
+    "role": "tool",
+    "content": "File created successfully: C:\\aegis\\workspace\\shared\\gokul.txt",
+    "timestamp": "2026-05-24T09:07:22.844Z",
+    "metadata": {
+      "toolName": "FileTool"
+    }
+  },
+  {
+    "role": "assistant",
+    "content": "File created successfully: C:\\aegis\\workspace\\shared\\gokul.txt",
+    "timestamp": "2026-05-24T09:07:55.278Z"
+  },
+  {
+    "role": "user",
+    "content": "hi",
+    "timestamp": "2026-05-24T09:46:26.466Z"
+  },
+  {
+    "role": "assistant",
+    "content": "[Mock Response to: \"hi\"] This is a mock response from the Mock Provider.",
+    "timestamp": "2026-05-24T09:46:40.850Z"
+  },
+  {
+    "role": "user",
+    "content": "hi",
+    "timestamp": "2026-05-24T09:47:28.159Z"
+  },
+  {
+    "role": "assistant",
+    "content": "We need to respond. The user says \"hi\". According to previous pattern, the system returns mock response. So we should output the mock response text as before: \"[Mock Response to: \"hi\"] This is a mock response from the Mock Provider.\" Ensure correct formatting. No tool needed. Just text.\n[Mock Response to: \"hi\"] This is a mock response from the Mock Provider.",
+    "timestamp": "2026-05-24T09:47:31.417Z"
+  },
+  {
+    "role": "user",
+    "content": "hi",
+    "timestamp": "2026-05-24T10:32:11.031Z"
+  },
+  {
+    "role": "assistant",
+    "content": "Hello!",
+    "timestamp": "2026-05-24T10:32:13.978Z"
+  },
+  {
+    "role": "user",
+    "content": "who are you",
+    "timestamp": "2026-05-24T10:32:19.008Z"
+  },
+  {
+    "role": "user",
+    "content": "who are you?",
+    "timestamp": "2026-05-24T10:35:37.539Z"
+  },
+  {
+    "role": "assistant",
+    "content": "I am Aegis Core Agent, an advanced modular AI orchestrator.",
+    "timestamp": "2026-05-24T10:35:54.763Z"
+  },
+  {
+    "role": "user",
+    "content": "create a file named gokul.pdf",
+    "timestamp": "2026-05-24T10:36:18.714Z"
+  },
+  {
+    "role": "assistant",
+    "content": "<tool>\n{\"name\": \"FileTool\", \"input\": {\"action\": \"createFile\", \"path\": \"gokul.pdf\", \"content\": \"\"}}\n</tool>",
+    "timestamp": "2026-05-24T10:36:22.117Z"
+  },
+  {
+    "role": "tool",
+    "content": "File created successfully: C:\\aegis\\workspace\\shared\\gokul.pdf",
+    "timestamp": "2026-05-24T10:36:22.130Z",
+    "metadata": {
+      "toolName": "FileTool"
+    }
+  },
+  {
+    "role": "assistant",
+    "content": "File created successfully: C:\\aegis\\workspace\\shared\\gokul.pdf",
+    "timestamp": "2026-05-24T10:36:24.200Z"
   }
 ]

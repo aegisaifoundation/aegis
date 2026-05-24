@@ -39,6 +39,40 @@ Instead of centralized AI training, AEGIS uses:
 
 ---
 
+# Getting Started
+
+To set up and run AEGIS on a new computer, follow these steps:
+
+### 1. Prerequisites
+Ensure you have **Node.js (v18+)** and **npm** installed on your system.
+
+### 2. Install Dependencies
+This project uses **NPM Workspaces** to share and deduplicate packages. Clone the repository and install all workspace dependencies from the root directory:
+```bash
+npm install
+```
+
+### 3. Build the Project
+Navigate to the `aegis-core` directory and compile the TypeScript code:
+```bash
+cd aegis-core
+npm run build
+```
+
+### 4. Running the Application
+
+Inside the `aegis-core` directory:
+- **Development Mode** (with on-the-fly TypeScript execution):
+  ```bash
+  npm run dev
+  ```
+- **Production Mode** (running the compiled build):
+  ```bash
+  npm start
+  ```
+
+---
+
 # Core Vision
 
 Traditional medical AI systems require centralized patient data collection, creating major concerns:
