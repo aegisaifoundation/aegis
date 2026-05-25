@@ -46,16 +46,18 @@ export default async function initialize(context: PluginContext): Promise<void> 
   // Run initial check
   await checkHealth();
 
-  const handlers: Record<string, (...args: any[]) => void> = {
-    'plugin_failed': (msg: any) => {
+  const handlers: Record<string, (envelope: any) => void> = {
+    'plugin_failed': (envelope: any) => {
+      const msg = envelope.payload;
       healthSnapshot.failures.push(`Plugin '${msg.name}' failed: ${msg.error}`);
       checkHealth();
     },
-    'runtime_error': (error: string) => {
-      healthSnapshot.failures.push(`Runtime error: ${error}`);
+    'runtime_error': (envelope: any) => {
+      healthSnapshot.failures.push(`Runtime error: ${envelope.payload}`);
       checkHealth();
     },
-    'command_failed': (msg: any) => {
+    'command_failed': (envelope: any) => {
+      const msg = envelope.payload;
       healthSnapshot.failures.push(`Command '${msg.name}' failed: ${msg.error}`);
       checkHealth();
     }

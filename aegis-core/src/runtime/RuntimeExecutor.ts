@@ -47,6 +47,8 @@ export class RuntimeExecutor {
 
     try {
       this.status = 'THINKING';
+      eventBus.emit('execution_started', { input: userInput });
+      eventBus.emit('message_received', { role: 'user', content: userInput });
       eventBus.emit('thinking_started');
 
       // Add user message to context
@@ -88,6 +90,7 @@ export class RuntimeExecutor {
         }
 
         eventBus.emit('response_finished', assistantContent);
+        eventBus.emit('message_received', { role: 'assistant', content: assistantContent });
         eventBus.emit('thinking_finished');
 
         // Add assistant response to history
@@ -141,12 +144,15 @@ export class RuntimeExecutor {
 
       if ((this.status as string) === 'INTERRUPTED') {
         eventBus.emit('interrupt');
+        eventBus.emit('execution_completed', { input: userInput, status: 'INTERRUPTED' });
       } else {
         this.status = 'COMPLETED';
+        eventBus.emit('execution_completed', { input: userInput, status: 'COMPLETED' });
       }
     } catch (error: any) {
       this.status = 'ERROR';
       eventBus.emit('runtime_error', error.message || String(error));
+      eventBus.emit('execution_completed', { input: userInput, status: 'ERROR', error: error.message || String(error) });
     } finally {
       if ((this.status as string) !== 'INTERRUPTED') {
         this.status = 'IDLE';

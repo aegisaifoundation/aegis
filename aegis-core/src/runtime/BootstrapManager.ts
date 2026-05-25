@@ -11,6 +11,7 @@ import { CommandLoader, commandRegistry } from '../commands/index.js';
 import { configurationManager } from '../config/index.js';
 import { capabilityManager, CapabilityType } from './CapabilityManager.js';
 import { skillLoader } from '../skills/SkillLoader.js';
+import { serviceRegistry } from './ServiceRegistry.js';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -20,8 +21,15 @@ export class BootstrapManager {
   async bootstrap(): Promise<void> {
     console.log('[System] Initializing AEGIS Core Runtime Kernel...');
 
+    // Register services in ServiceRegistry
+    serviceRegistry.register('eventBus', eventBus);
+    serviceRegistry.register('providerManager', providerManager);
+    serviceRegistry.register('config', configurationManager);
+    serviceRegistry.register('workspaceManager', workspaceManager);
+
     // Graceful Shutdown Registration
     eventBus.on('runtime_shutdown_requested', async () => {
+      eventBus.emit('runtime_shutdown', { reason: 'requested' });
       console.log('\n[System] Shutdown requested. Cleaning up and exiting...');
       process.exit(0);
     });
@@ -144,6 +152,9 @@ export class BootstrapManager {
 
     // 6. Bootstrap transport interface
     await terminalTransport.initialize();
+
+    // Emit runtime_started event
+    eventBus.emit('runtime_started', { version: '2.0.0' });
   }
 
   private getAegisCoreRoot(): string {

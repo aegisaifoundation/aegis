@@ -11,8 +11,8 @@ export const App = () => {
   const [status, setStatus] = useState('idle');
 
   useEffect(() => {
-    const handleChunk = (chunk: string) => {
-      setCurrentResponse(prev => prev + chunk);
+    const handleChunk = (envelope: any) => {
+      setCurrentResponse(prev => prev + envelope.payload);
     };
 
     const handleThinkingStarted = () => {
@@ -28,23 +28,27 @@ export const App = () => {
       setStatus('thinking');
     };
 
-    const handleResponseFinished = (finalText: string) => {
-      if (finalText.trim() !== '') {
+    const handleResponseFinished = (envelope: any) => {
+      const finalText = envelope.payload;
+      if (finalText && finalText.trim() !== '') {
         setHistory(prev => [...prev, { role: 'assistant', text: finalText }]);
       }
       setCurrentResponse('');
       setStatus('idle');
     };
 
-    const handleToolStarted = (msg: { name: string; input: string }) => {
+    const handleToolStarted = (envelope: any) => {
+      const msg = envelope.payload;
       setHistory(prev => [...prev, { role: 'system', text: `[Tool execution: ${msg.name} started]` }]);
     };
 
-    const handleToolFinished = (msg: { name: string; output: string }) => {
+    const handleToolFinished = (envelope: any) => {
+      const msg = envelope.payload;
       setHistory(prev => [...prev, { role: 'system', text: `[Tool execution: ${msg.name} finished]` }]);
     };
 
-    const handleRuntimeError = (msg: string) => {
+    const handleRuntimeError = (envelope: any) => {
+      const msg = envelope.payload;
       setHistory(prev => [...prev, { role: 'system', text: `[Runtime Error: ${msg}]` }]);
       setStatus('idle');
     };

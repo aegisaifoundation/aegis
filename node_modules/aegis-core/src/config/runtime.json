@@ -9,7 +9,9 @@
     "shared/FolderTool",
     "shared/MemoryTool"
   ],
-  "autoloadPlugins": [],
+  "autoloadPlugins": [
+    "shared/logging"
+  ],
   "autoloadSkills": [],
   "autoloadCommands": [
     "shared/help",
