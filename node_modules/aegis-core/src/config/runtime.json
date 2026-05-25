@@ -7,7 +7,10 @@
   "autoloadTools": [
     "shared/FileTool",
     "shared/FolderTool",
-    "shared/MemoryTool"
+    "shared/MemoryTool",
+    "shared/memory-read",
+    "shared/memory-write",
+    "shared/memory-delete"
   ],
   "autoloadPlugins": [
     "shared/logging"

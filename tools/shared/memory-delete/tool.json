@@ -1,0 +1,8 @@
+{
+  "name": "memory-delete",
+  "description": "Delete a key from session or profile memory. Action: delete. Input format: { \"key\": \"...\" }",
+  "version": "1.0.0",
+  "actions": [
+    "delete"
+  ]
+}

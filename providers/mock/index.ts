@@ -19,8 +19,31 @@ export class MockProvider implements Provider {
   }
 
   async *streamChat(messages: ChatMessage[]): AsyncGenerator<string> {
-    const lastMsg = messages[messages.length - 1]?.content || '';
-    const responseText = `[Mock Response to: "${lastMsg}"] This is a mock response from the Mock Provider.`;
+    const lastMsg = messages[messages.length - 1];
+    const lastContent = lastMsg?.content || '';
+    const lastRole = lastMsg?.role;
+
+    let responseText = '';
+
+    if (lastRole === 'user' && lastContent.toLowerCase().includes('my name is')) {
+      const match = lastContent.match(/my name is\s+(\w+)/i);
+      const name = match ? match[1] : 'Gokul';
+      responseText = `<tool>{"name": "memory-write", "input": {"action": "write", "key": "user.name", "value": "${name}"}}</tool>`;
+    } else if (lastRole === 'tool' && messages[messages.length - 2]?.content.includes('memory-write')) {
+      responseText = "I've saved your name in my profile memory.";
+    } else if (lastRole === 'user' && lastContent.toLowerCase().includes('who am i')) {
+      responseText = `<tool>{"name": "memory-read", "input": {"action": "read", "key": "user.name"}}</tool>`;
+    } else if (lastRole === 'tool' && messages[messages.length - 2]?.content.includes('memory-read')) {
+      try {
+        const parsed = JSON.parse(lastContent);
+        responseText = `You told me your name is ${parsed.value || 'unknown'}.`;
+      } catch (e) {
+        responseText = `Your name is Gokul.`;
+      }
+    } else {
+      responseText = `[Mock Response to: "${lastContent}"] This is a mock response from the Mock Provider.`;
+    }
+
     const chunks = responseText.split(' ');
     for (const chunk of chunks) {
       yield chunk + ' ';

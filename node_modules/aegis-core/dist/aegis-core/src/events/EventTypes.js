@@ -12,4 +12,8 @@ export const EventTypes = {
     EXECUTION_COMPLETED: 'execution_completed',
     COMMAND_EXECUTED: 'command_executed',
     COMMAND_FAILED: 'command_failed',
+    MEMORY_READ: 'memory.read',
+    MEMORY_UPDATED: 'memory.updated',
+    MEMORY_DELETED: 'memory.deleted',
+    MEMORY_FAILED: 'memory.failed',
 };

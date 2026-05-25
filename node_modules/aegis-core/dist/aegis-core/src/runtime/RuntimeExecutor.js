@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { eventBus } from './EventBus.js';
+import { serviceRegistry } from './ServiceRegistry.js';
 import { conversationContext } from '../context/ConversationContext.js';
 import { agent } from '../agent/index.js';
 import { toolParser } from './ToolParser.js';
@@ -101,7 +102,9 @@ export class RuntimeExecutor {
                                         maxSteps: this.maxSteps
                                     },
                                     activeAgentId: 'aegis-core-agent',
-                                    runtimeConfig: runtimeConfig
+                                    runtimeConfig: runtimeConfig,
+                                    memoryRegistry: serviceRegistry.has('memoryRegistry') ? serviceRegistry.get('memoryRegistry') : undefined,
+                                    eventBus: serviceRegistry.has('eventBus') ? serviceRegistry.get('eventBus') : undefined
                                 };
                                 observation = await tool.execute(toolCall.input, context);
                             }

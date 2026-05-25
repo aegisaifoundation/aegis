@@ -65,8 +65,8 @@ async function runTests() {
     // This should NOT throw and crash the runtime
     eventBus.emit('test.sync.fail', {});
 
-    assert(firstExecuted === true, "Sync failing listener was executed");
-    assert(secondExecuted === true, "Healthy listener executed successfully despite previous listener failure");
+    assert(firstExecuted, "Sync failing listener was executed");
+    assert(secondExecuted, "Healthy listener executed successfully despite previous listener failure");
 
     eventBus.off('test.sync.fail', brokenListener);
     eventBus.off('test.sync.fail', healthyListener);
@@ -93,8 +93,8 @@ async function runTests() {
 
     eventBus.emit('test.async.fail', {});
 
-    assert(firstExecuted === true, "Async failing listener was executed");
-    assert(secondExecuted === true, "Healthy listener executed successfully alongside async failure");
+    assert(firstExecuted, "Async failing listener was executed");
+    assert(secondExecuted, "Healthy listener executed successfully alongside async failure");
 
     eventBus.off('test.async.fail', asyncBrokenListener);
     eventBus.off('test.async.fail', healthyListener);
@@ -129,7 +129,7 @@ async function runTests() {
     eventBus.on('doctor.patient_registered', customListener);
     eventBus.emit('doctor.patient_registered', { patientId: 42 }, "medical-system");
 
-    assert(customExecuted === true, "Custom namespaced event listener executed");
+    assert(customExecuted, "Custom namespaced event listener executed");
     eventBus.off('doctor.patient_registered', customListener);
   } catch (e: any) {
     assert(false, `Custom event validation threw: ${e.message}`);
