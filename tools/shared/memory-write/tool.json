@@ -1,0 +1,8 @@
+{
+  "name": "memory-write",
+  "description": "Write or update a key in session or profile memory. Action: write. Input format: { \"key\": \"...\", \"value\": \"...\" }",
+  "version": "1.0.0",
+  "actions": [
+    "write"
+  ]
+}

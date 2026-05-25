@@ -1,0 +1,8 @@
+{
+  "name": "memory-read",
+  "description": "Read a key from session or profile memory. Action: read. Input format: { \"key\": \"...\" }",
+  "version": "1.0.0",
+  "actions": [
+    "read"
+  ]
+}

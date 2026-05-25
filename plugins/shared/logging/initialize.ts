@@ -36,7 +36,11 @@ export default async function initialize(context: PluginContext): Promise<void> 
     'skill_executed',
     'provider_failed',
     'execution_completed',
-    'command_executed'
+    'command_executed',
+    'memory.read',
+    'memory.updated',
+    'memory.deleted',
+    'memory.failed'
   ];
 
   for (const event of eventsToSubscribe) {

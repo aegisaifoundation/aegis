@@ -14,4 +14,5 @@ export interface RuntimeContext {
   logger: Logger;
   config: any;
   workspacePath: string;
+  memoryRegistry: any;
 }

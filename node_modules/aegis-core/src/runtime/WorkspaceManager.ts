@@ -75,6 +75,7 @@ export class WorkspaceManager {
       path.resolve(workspaceDir, 'generated'),
       path.resolve(workspaceDir, 'uploads'),
       path.resolve(workspaceDir, 'temporary'),
+      path.resolve(workspaceDir, 'memory'),
     ];
 
     for (const dir of directoriesToCreate) {

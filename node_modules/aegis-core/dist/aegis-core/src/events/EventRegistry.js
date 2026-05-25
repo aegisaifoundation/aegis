@@ -36,3 +36,7 @@ eventRegistry.register({ name: EventTypes.EXECUTION_STARTED, description: 'Fired
 eventRegistry.register({ name: EventTypes.EXECUTION_COMPLETED, description: 'Fired when the execution of user input completes' });
 eventRegistry.register({ name: EventTypes.COMMAND_EXECUTED, description: 'Fired when a command executes successfully' });
 eventRegistry.register({ name: EventTypes.COMMAND_FAILED, description: 'Fired when a command execution fails' });
+eventRegistry.register({ name: EventTypes.MEMORY_READ, description: 'Fired when a memory key is read' });
+eventRegistry.register({ name: EventTypes.MEMORY_UPDATED, description: 'Fired when a memory key is updated' });
+eventRegistry.register({ name: EventTypes.MEMORY_DELETED, description: 'Fired when a memory key is deleted' });
+eventRegistry.register({ name: EventTypes.MEMORY_FAILED, description: 'Fired when a memory operation fails' });

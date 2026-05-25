@@ -17,12 +17,14 @@ export class RuntimeServices {
             runtimeConfig.providers?.[name] ||
             runtimeConfig.tools?.[name] ||
             {};
+        const memoryRegistry = serviceRegistry.has('memoryRegistry') ? serviceRegistry.get('memoryRegistry') : undefined;
         return {
             eventBus,
             providerManager,
             logger,
             config: specificConfig,
             workspacePath: workspaceManager.getWorkspacePath(),
+            memoryRegistry,
         };
     }
 }

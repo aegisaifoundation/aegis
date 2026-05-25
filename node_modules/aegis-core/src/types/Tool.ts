@@ -5,6 +5,8 @@ export interface ToolContext {
   runtimeMetadata?: Record<string, any>;
   activeAgentId?: string;
   runtimeConfig?: Record<string, any>;
+  memoryRegistry?: any;
+  eventBus?: any;
 }
 
 export interface Tool {

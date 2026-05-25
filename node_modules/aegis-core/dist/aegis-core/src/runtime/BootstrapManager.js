@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { loadEnvironment } from '../utils/environment.js';
-import { memoryManager } from '../memory/index.js';
+import { memoryManager, memoryRegistry, memoryLoader } from '../memory/index.js';
 import { providerManager } from '../providers/index.js';
 import { terminalTransport } from '../transports/index.js';
 import { workspaceManager } from './WorkspaceManager.js';
@@ -22,6 +22,7 @@ export class BootstrapManager {
         serviceRegistry.register('providerManager', providerManager);
         serviceRegistry.register('config', configurationManager);
         serviceRegistry.register('workspaceManager', workspaceManager);
+        serviceRegistry.register('memoryRegistry', memoryRegistry);
         // Graceful Shutdown Registration
         eventBus.on('runtime_shutdown_requested', async () => {
             eventBus.emit('runtime_shutdown', { reason: 'requested' });
@@ -45,6 +46,19 @@ export class BootstrapManager {
         workspaceManager.initialize();
         // 3. Initialize session memory persistence
         await memoryManager.init();
+        // Autoload memory modules
+        console.log('[System] Autoloading memory modules...');
+        try {
+            const discovered = await memoryLoader.discoverMemoryModules();
+            for (const mod of discovered) {
+                await memoryLoader.loadMemoryModule(mod);
+                await memoryLoader.initializeMemoryModule(mod);
+                console.log(`[System] Successfully loaded memory module: ${mod}`);
+            }
+        }
+        catch (err) {
+            console.warn('[System] Warning: Failed to autoload memory modules:', err.message);
+        }
         // 3.5. Autoload command modules with isolated error boundaries
         console.log('[System] Autoloading command modules...');
         const commandLoader = new CommandLoader();
@@ -140,7 +154,7 @@ export class BootstrapManager {
         // 6. Bootstrap transport interface
         await terminalTransport.initialize();
         // Emit runtime_started event
-        eventBus.emit('runtime_started', { version: '2.0.0' });
+        eventBus.emit('runtime_started', { version: '1.0.0' });
     }
     getAegisCoreRoot() {
         let current = __dirname;
