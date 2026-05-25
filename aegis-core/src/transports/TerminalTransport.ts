@@ -32,24 +32,26 @@ export class TerminalTransport implements Transport {
 
     console.log("AEGIS Core booted. Type a command (e.g. /help) or prompt to begin.");
     
-    eventBus.on('response_chunk', (chunk: string) => {
-      process.stdout.write(chunk);
+    eventBus.on('response_chunk', (envelope) => {
+      process.stdout.write(envelope.payload);
     });
 
-    eventBus.on('response_finished', (finalText: string) => {
+    eventBus.on('response_finished', (envelope) => {
       process.stdout.write('\n');
     });
 
-    eventBus.on('tool_started', (msg: { name: string; input: string }) => {
+    eventBus.on('tool_started', (envelope) => {
+      const msg = envelope.payload;
       console.log(`\n[Tool execution: ${msg.name} started]`);
     });
 
-    eventBus.on('tool_finished', (msg: { name: string; output: string }) => {
+    eventBus.on('tool_finished', (envelope) => {
+      const msg = envelope.payload;
       console.log(`[Tool execution: ${msg.name} finished]`);
     });
 
-    eventBus.on('runtime_error', (msg: string) => {
-      console.error(`\n[Runtime Error: ${msg}]`);
+    eventBus.on('runtime_error', (envelope) => {
+      console.error(`\n[Runtime Error: ${envelope.payload}]`);
     });
 
     rl.prompt();

@@ -27,20 +27,22 @@ export class TerminalTransport {
             prompt: '\n> '
         });
         console.log("AEGIS Core booted. Type a command (e.g. /help) or prompt to begin.");
-        eventBus.on('response_chunk', (chunk) => {
-            process.stdout.write(chunk);
+        eventBus.on('response_chunk', (envelope) => {
+            process.stdout.write(envelope.payload);
         });
-        eventBus.on('response_finished', (finalText) => {
+        eventBus.on('response_finished', (envelope) => {
             process.stdout.write('\n');
         });
-        eventBus.on('tool_started', (msg) => {
+        eventBus.on('tool_started', (envelope) => {
+            const msg = envelope.payload;
             console.log(`\n[Tool execution: ${msg.name} started]`);
         });
-        eventBus.on('tool_finished', (msg) => {
+        eventBus.on('tool_finished', (envelope) => {
+            const msg = envelope.payload;
             console.log(`[Tool execution: ${msg.name} finished]`);
         });
-        eventBus.on('runtime_error', (msg) => {
-            console.error(`\n[Runtime Error: ${msg}]`);
+        eventBus.on('runtime_error', (envelope) => {
+            console.error(`\n[Runtime Error: ${envelope.payload}]`);
         });
         rl.prompt();
         rl.on('line', async (line) => {

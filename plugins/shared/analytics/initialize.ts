@@ -26,12 +26,14 @@ export default async function initialize(context: PluginContext): Promise<void> 
     }
   };
 
-  const handlers: Record<string, (...args: any[]) => void> = {
-    'command_executed': (msg: any) => {
+  const handlers: Record<string, (envelope: any) => void> = {
+    'command_executed': (envelope: any) => {
+      const msg = envelope.payload;
       stats.commandUsage[msg.name] = (stats.commandUsage[msg.name] || 0) + 1;
       saveStats();
     },
-    'tool_finished': (msg: any) => {
+    'tool_finished': (envelope: any) => {
+      const msg = envelope.payload;
       stats.toolUsage[msg.name] = (stats.toolUsage[msg.name] || 0) + 1;
       saveStats();
     },

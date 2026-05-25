@@ -33,11 +33,13 @@ export default async function initialize(context: PluginContext): Promise<void> 
     }
   };
 
-  const handlers: Record<string, (...args: any[]) => void> = {
-    'command_started': (msg: any) => {
+  const handlers: Record<string, (envelope: any) => void> = {
+    'command_started': (envelope: any) => {
+      const msg = envelope.payload;
       commandStarts.set(msg.name, Date.now());
     },
-    'command_executed': (msg: any) => {
+    'command_executed': (envelope: any) => {
+      const msg = envelope.payload;
       const start = commandStarts.get(msg.name);
       if (start) {
         const duration = Date.now() - start;
@@ -50,10 +52,12 @@ export default async function initialize(context: PluginContext): Promise<void> 
         saveMetrics();
       }
     },
-    'tool_started': (msg: any) => {
+    'tool_started': (envelope: any) => {
+      const msg = envelope.payload;
       toolStarts.set(msg.name, Date.now());
     },
-    'tool_finished': (msg: any) => {
+    'tool_finished': (envelope: any) => {
+      const msg = envelope.payload;
       const start = toolStarts.get(msg.name);
       if (start) {
         const duration = Date.now() - start;

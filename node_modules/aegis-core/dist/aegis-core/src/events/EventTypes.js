@@ -1,0 +1,15 @@
+export const EventTypes = {
+    RUNTIME_STARTED: 'runtime_started',
+    RUNTIME_SHUTDOWN: 'runtime_shutdown',
+    PROVIDER_INITIALIZED: 'provider_initialized',
+    PROVIDER_FAILED: 'provider_failed',
+    PLUGIN_LOADED: 'plugin_loaded',
+    PLUGIN_FAILED: 'plugin_failed',
+    SKILL_EXECUTED: 'skill_executed',
+    SKILL_FAILED: 'skill_failed',
+    MESSAGE_RECEIVED: 'message_received',
+    EXECUTION_STARTED: 'execution_started',
+    EXECUTION_COMPLETED: 'execution_completed',
+    COMMAND_EXECUTED: 'command_executed',
+    COMMAND_FAILED: 'command_failed',
+};
