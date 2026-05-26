@@ -1,0 +1,7 @@
+{
+  "name": "new",
+  "category": "shared",
+  "description": "Create a completely fresh cognitive session context.",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

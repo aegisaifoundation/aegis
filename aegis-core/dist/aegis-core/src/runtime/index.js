@@ -5,3 +5,15 @@ export * from './RuntimeExecutor.js';
 export * from './RuntimeContext.js';
 export * from './ServiceRegistry.js';
 export * from './RuntimeServices.js';
+export * from './WorkspaceManager.js';
+export * from './BootstrapManager.js';
+// Session Continuity Subsystems
+export * from './RuntimeSessionManager.js';
+export * from './RuntimeStateManager.js';
+export * from './RuntimeSessionRegistry.js';
+export * from './SessionMountManager.js';
+export * from './SessionRecoveryManager.js';
+export * from './SessionCompatibilityValidator.js';
+export * from './SessionStateTransitionValidator.js';
+export * from './RuntimeSupervisorHooks.js';
+export * from './RuntimeContinuityValidator.js';

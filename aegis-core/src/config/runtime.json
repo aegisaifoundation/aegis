@@ -29,7 +29,17 @@
     "shared/reload",
     "shared/exit",
     "shared/provider",
-    "shared/switch"
+    "shared/switch",
+    "shared/new",
+    "shared/checkout",
+    "shared/sessions",
+    "shared/current",
+    "shared/archive",
+    "shared/resume",
+    "shared/delete-session",
+    "shared/fork-session",
+    "shared/rename-session",
+    "shared/purge-session"
   ],
   "defaultProvider": "local/ollama"
 }

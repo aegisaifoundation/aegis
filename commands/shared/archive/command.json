@@ -1,0 +1,7 @@
+{
+  "name": "archive",
+  "category": "shared",
+  "description": "Archive a cognitive session to transition its state to ARCHIVED.",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

@@ -1,4 +1,5 @@
 export interface Message {
+  id?: string;
   role: 'user' | 'assistant' | 'system' | 'tool' | 'workflow' | 'event' | 'runtime' | 'observation';
   content: string;
   timestamp: string;

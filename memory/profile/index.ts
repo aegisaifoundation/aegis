@@ -1,42 +1,194 @@
 import path from 'path';
+import fs from 'fs/promises';
+import { existsSync } from 'fs';
 import { MemoryContext } from '../../aegis-core/src/memory/MemoryContext.js';
-import { Persistence } from '../persistence/index.js';
 
-let storagePath = '';
-let data: Record<string, any> = {};
+let workspacePath = '';
+
+async function getActiveSessionId(): Promise<string> {
+  const wsRoot = path.dirname(workspacePath);
+  const statePath = path.resolve(wsRoot, 'runtime/runtime-state.json');
+  if (existsSync(statePath)) {
+    try {
+      const state = JSON.parse(await fs.readFile(statePath, 'utf8'));
+      return state.activeSessionId || 'default';
+    } catch {
+      return 'default';
+    }
+  }
+  return 'default';
+}
+
+async function getFilePath(): Promise<string> {
+  const wsRoot = path.dirname(workspacePath);
+  const activeSessionId = await getActiveSessionId();
+  return path.resolve(wsRoot, 'memory/sessions', activeSessionId, 'working-memory.md');
+}
 
 export default {
   name: 'profile',
   async initialize(context: MemoryContext): Promise<void> {
-    storagePath = path.resolve(context.workspacePath, '../memory/profile.json');
-    data = await Persistence.readJson(storagePath);
+    workspacePath = context.workspacePath;
   },
 
   async shutdown(): Promise<void> {
-    if (storagePath) {
-      await Persistence.writeJson(storagePath, data);
-    }
+    // No-op for markdown-based memory
   },
 
   async read(key: string): Promise<any> {
-    return data[key];
+    const filePath = await getFilePath();
+    if (!existsSync(filePath)) return undefined;
+    const content = await fs.readFile(filePath, 'utf8');
+    const lines = content.split('\n');
+    
+    let inTargetHeader = false;
+    const headerLower = '## temporary execution context';
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('##')) {
+        if (trimmed.toLowerCase() === headerLower) {
+          inTargetHeader = true;
+        } else {
+          inTargetHeader = false;
+        }
+        continue;
+      }
+      
+      if (inTargetHeader) {
+        const match = trimmed.match(/^-\s+(?:\*\*)?([^*:]+)(?:\*\*)?:\s*(.*)$/);
+        if (match) {
+          const itemKey = match[1].trim();
+          const itemVal = match[2].trim();
+          if (itemKey === key) {
+            try {
+              return JSON.parse(itemVal);
+            } catch {
+              return itemVal;
+            }
+          }
+        }
+      }
+    }
+    return undefined;
   },
 
   async write(key: string, value: any): Promise<void> {
-    data[key] = value;
-    await Persistence.writeJson(storagePath, data);
+    const filePath = await getFilePath();
+    const header = '## Temporary Execution Context';
+    if (!existsSync(filePath)) {
+      await fs.writeFile(filePath, `${header}\n`, 'utf8');
+    }
+    const content = await fs.readFile(filePath, 'utf8');
+    const lines = content.split('\n');
+    
+    let inTargetHeader = false;
+    const headerLower = '## temporary execution context';
+    let keyFound = false;
+    const valueStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
+    const newLine = `- **${key}**: ${valueStr}`;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim();
+      if (trimmed.startsWith('##')) {
+        if (trimmed.toLowerCase() === headerLower) {
+          inTargetHeader = true;
+        } else {
+          inTargetHeader = false;
+        }
+        continue;
+      }
+      
+      if (inTargetHeader) {
+        const match = trimmed.match(/^-\s+(?:\*\*)?([^*:]+)(?:\*\*)?:\s*(.*)$/);
+        if (match) {
+          const itemKey = match[1].trim();
+          if (itemKey === key) {
+            const indent = line.match(/^\s*/)?.[0] || '';
+            lines[i] = `${indent}${newLine}`;
+            keyFound = true;
+            break;
+          }
+        }
+      }
+    }
+    
+    if (!keyFound) {
+      inTargetHeader = false;
+      let insertIndex = -1;
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmed = line.trim();
+        if (trimmed.startsWith('##')) {
+          if (trimmed.toLowerCase() === headerLower) {
+            inTargetHeader = true;
+            continue;
+          } else if (inTargetHeader) {
+            insertIndex = i;
+            break;
+          }
+        }
+      }
+      
+      if (insertIndex === -1) {
+        if (inTargetHeader) {
+          lines.push(newLine);
+        } else {
+          lines.push('', header, newLine);
+        }
+      } else {
+        lines.splice(insertIndex, 0, newLine);
+      }
+    }
+    
+    await fs.writeFile(filePath, lines.join('\n'), 'utf8');
   },
 
   async delete(key: string): Promise<boolean> {
-    if (key in data) {
-      delete data[key];
-      await Persistence.writeJson(storagePath, data);
+    const filePath = await getFilePath();
+    if (!existsSync(filePath)) return false;
+    const content = await fs.readFile(filePath, 'utf8');
+    const lines = content.split('\n');
+    
+    let inTargetHeader = false;
+    const headerLower = '## temporary execution context';
+    let keyDeleted = false;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim();
+      if (trimmed.startsWith('##')) {
+        if (trimmed.toLowerCase() === headerLower) {
+          inTargetHeader = true;
+        } else {
+          inTargetHeader = false;
+        }
+        continue;
+      }
+      
+      if (inTargetHeader) {
+        const match = trimmed.match(/^-\s+(?:\*\*)?([^*:]+)(?:\*\*)?:\s*(.*)$/);
+        if (match) {
+          const itemKey = match[1].trim();
+          if (itemKey === key) {
+            lines.splice(i, 1);
+            keyDeleted = true;
+            break;
+          }
+        }
+      }
+    }
+    
+    if (keyDeleted) {
+      await fs.writeFile(filePath, lines.join('\n'), 'utf8');
       return true;
     }
     return false;
   },
 
   async exists(key: string): Promise<boolean> {
-    return key in data;
+    const val = await this.read(key);
+    return val !== undefined;
   }
 };

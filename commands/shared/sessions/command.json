@@ -1,0 +1,7 @@
+{
+  "name": "sessions",
+  "category": "shared",
+  "description": "List cognitive sessions with optional filtering and sorting.",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

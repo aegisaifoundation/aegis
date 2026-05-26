@@ -1,0 +1,7 @@
+{
+  "name": "resume",
+  "category": "shared",
+  "description": "Restore an archived or soft-deleted session back to ACTIVE.",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

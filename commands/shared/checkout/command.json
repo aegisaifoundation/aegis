@@ -1,0 +1,7 @@
+{
+  "name": "checkout",
+  "category": "shared",
+  "description": "Switch runtime cognition to another session.",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

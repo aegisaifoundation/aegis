@@ -12,6 +12,7 @@ import { configurationManager } from '../config/index.js';
 import { capabilityManager, CapabilityType } from './CapabilityManager.js';
 import { skillLoader } from '../skills/SkillLoader.js';
 import { serviceRegistry } from './ServiceRegistry.js';
+import { runtimeSessionManager } from './RuntimeSessionManager.js';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -30,8 +31,13 @@ export class BootstrapManager {
 
     // Graceful Shutdown Registration
     eventBus.on('runtime_shutdown_requested', async () => {
-      eventBus.emit('runtime_shutdown', { reason: 'requested' });
       console.log('\n[System] Shutdown requested. Cleaning up and exiting...');
+      try {
+        await runtimeSessionManager.shutdown();
+      } catch (err: any) {
+        console.error('[System] Error during session manager shutdown:', err.message || err);
+      }
+      eventBus.emit('runtime_shutdown', { reason: 'requested' });
       process.exit(0);
     });
 
@@ -55,6 +61,10 @@ export class BootstrapManager {
 
     // 3. Initialize session memory persistence
     await memoryManager.init();
+
+    // 3.2. Initialize runtime session continuity manager
+    await runtimeSessionManager.initialize();
+    serviceRegistry.register('runtimeSessionManager', runtimeSessionManager);
 
     // Autoload memory modules
     console.log('[System] Autoloading memory modules...');
