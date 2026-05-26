@@ -45,3 +45,5 @@
 {"timestamp":"2026-05-26T07:41:34.834Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"7eb0675e-f0e2-4e73-b462-e481c83b43ad"}
 {"timestamp":"2026-05-26T07:41:35.095Z","stage":"SAFE_MODE_ENTERED","reason":"Booted in SAFE_MODE."}
 {"timestamp":"2026-05-26T07:44:32.146Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-05-26T07:54:30.338Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-05-26T08:19:00.085Z","stage":"HEALTH_DEGRADED","reason":"Heartbeat watchdog timeout."}

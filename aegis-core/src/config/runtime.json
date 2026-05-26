@@ -12,9 +12,7 @@
     "shared/memory-write",
     "shared/memory-delete"
   ],
-  "autoloadPlugins": [
-    "shared/logging"
-  ],
+  "autoloadPlugins": [],
   "autoloadSkills": [],
   "autoloadCommands": [
     "shared/help",

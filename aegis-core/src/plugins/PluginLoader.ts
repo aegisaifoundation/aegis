@@ -17,6 +17,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export class PluginLoader {
+  private contexts: Map<string, PluginContext> = new Map();
+
   private getAegisCoreRoot(): string {
     let current = __dirname;
     while (true) {
@@ -171,10 +173,12 @@ export class PluginLoader {
 
     try {
       const context = this.createContext(name);
+      this.contexts.set(name, context);
       await plugin.initialize(context);
       pluginRegistry.setPluginState(name, PluginState.ACTIVE);
       eventBus.emit('plugin_loaded', { name, version: plugin.version });
     } catch (err: any) {
+      this.contexts.delete(name);
       pluginRegistry.setPluginState(name, PluginState.FAILED);
       eventBus.emit('plugin_failed', { name, error: err.message });
       console.error(`[PluginSystem] Failed to initialize plugin ${name}: ${err.message}`);
@@ -188,10 +192,11 @@ export class PluginLoader {
     }
 
     try {
-      const context = this.createContext(name);
+      const context = this.contexts.get(name) || this.createContext(name);
       await plugin.shutdown(context);
       pluginRegistry.setPluginState(name, PluginState.UNLOADED);
       pluginRegistry.unregister(name);
+      this.contexts.delete(name);
     } catch (err: any) {
       pluginRegistry.setPluginState(name, PluginState.FAILED);
       eventBus.emit('plugin_failed', { name, error: `Shutdown error: ${err.message}` });
