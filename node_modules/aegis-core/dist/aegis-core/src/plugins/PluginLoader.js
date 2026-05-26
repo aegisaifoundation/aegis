@@ -13,6 +13,7 @@ import { workspaceManager } from '../runtime/WorkspaceManager.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 export class PluginLoader {
+    contexts = new Map();
     getAegisCoreRoot() {
         let current = __dirname;
         while (true) {
@@ -150,11 +151,13 @@ export class PluginLoader {
         pluginRegistry.setPluginState(name, PluginState.INITIALIZING);
         try {
             const context = this.createContext(name);
+            this.contexts.set(name, context);
             await plugin.initialize(context);
             pluginRegistry.setPluginState(name, PluginState.ACTIVE);
             eventBus.emit('plugin_loaded', { name, version: plugin.version });
         }
         catch (err) {
+            this.contexts.delete(name);
             pluginRegistry.setPluginState(name, PluginState.FAILED);
             eventBus.emit('plugin_failed', { name, error: err.message });
             console.error(`[PluginSystem] Failed to initialize plugin ${name}: ${err.message}`);
@@ -166,10 +169,11 @@ export class PluginLoader {
             return;
         }
         try {
-            const context = this.createContext(name);
+            const context = this.contexts.get(name) || this.createContext(name);
             await plugin.shutdown(context);
             pluginRegistry.setPluginState(name, PluginState.UNLOADED);
             pluginRegistry.unregister(name);
+            this.contexts.delete(name);
         }
         catch (err) {
             pluginRegistry.setPluginState(name, PluginState.FAILED);

@@ -11,6 +11,30 @@
       "role": "assistant",
       "content": "I need more context to assist you. Please provide a task or tell me what you would like me to do.",
       "timestamp": "2026-05-26T07:28:15.671Z"
+    },
+    {
+      "id": "msg_1779782249410_a88x19m8d",
+      "role": "user",
+      "content": "hello",
+      "timestamp": "2026-05-26T07:57:29.410Z"
+    },
+    {
+      "id": "msg_1779782265732_1p6n33kaw",
+      "role": "assistant",
+      "content": "Hello! How can I help you today? Do you have a task or question for me?",
+      "timestamp": "2026-05-26T07:57:45.732Z"
+    },
+    {
+      "id": "msg_1779782280261_kf0u23ruf",
+      "role": "user",
+      "content": "who are you",
+      "timestamp": "2026-05-26T07:58:00.261Z"
+    },
+    {
+      "id": "msg_1779782289350_fa7nq2w8s",
+      "role": "assistant",
+      "content": "I am Aegis Core Agent, an advanced modular AI orchestrator.\n\nMy purpose is to assist you by processing information, executing complex tasks, and providing structured, accurate, and concise responses. I operate by utilizing specialized tools—such as `FileTool`, `FolderTool`, and `MemoryTool`—to perform actions like managing files, organizing directories, and handling persistent memory storage.\n\nEssentially, I am here to be your comprehensive digital assistant, ready to tackle whatever challenge or task you have for me.\n\nHow can I assist you further today?",
+      "timestamp": "2026-05-26T07:58:09.350Z"
     }
   ],
   "memoryVersion": "1.0.0"
