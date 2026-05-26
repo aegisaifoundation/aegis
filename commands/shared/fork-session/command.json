@@ -1,0 +1,7 @@
+{
+  "name": "fork-session",
+  "category": "shared",
+  "description": "Fork an existing session context into a new session branch.",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

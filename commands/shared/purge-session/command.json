@@ -1,0 +1,7 @@
+{
+  "name": "purge-session",
+  "category": "shared",
+  "description": "Permanently delete a session from the trash folder with confirmation prompts.",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

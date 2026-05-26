@@ -1,0 +1,7 @@
+{
+  "name": "delete-session",
+  "category": "shared",
+  "description": "Soft delete a session by moving it to the trash folder.",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

@@ -1,0 +1,7 @@
+{
+  "name": "current",
+  "category": "shared",
+  "description": "Display active session information, workflows, and memory size metrics.",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

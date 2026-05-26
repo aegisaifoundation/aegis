@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SessionMetadata",
+  "type": "object",
+  "required": [
+    "sessionId",
+    "createdAt",
+    "updatedAt",
+    "lastAccessedAt",
+    "memoryVersion",
+    "lifecycleState",
+    "checksums",
+    "confidence",
+    "tags",
+    "quotas"
+  ],
+  "properties": {
+    "sessionId": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
+    },
+    "lastAccessedAt": {
+      "type": "string"
+    },
+    "memoryVersion": {
+      "type": "string"
+    },
+    "lifecycleState": {
+      "type": "string",
+      "enum": ["ACTIVE", "STALE", "ARCHIVED", "EXPIRED", "CORRUPTED", "LOCKED", "REFINING", "DELETED"]
+    },
+    "checksums": {
+      "type": "object",
+      "properties": {
+        "history": { "type": "string" },
+        "sessionMemory": { "type": "string" },
+        "workingMemory": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "confidence": {
+      "type": "object",
+      "additionalProperties": { "type": "number" }
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "quotas": {
+      "type": "object",
+      "required": ["maxSessions", "maxHistorySize", "maxWorkingMemorySize", "maxSessionMemorySize", "maxSnapshots"],
+      "properties": {
+        "maxSessions": { "type": "number" },
+        "maxHistorySize": { "type": "number" },
+        "maxWorkingMemorySize": { "type": "number" },
+        "maxSessionMemorySize": { "type": "number" },
+        "maxSnapshots": { "type": "number" }
+      }
+    }
+  }
+}

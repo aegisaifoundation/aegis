@@ -1,0 +1,22 @@
+{
+  "sessions": {
+    "default": {
+      "sessionId": "default",
+      "tags": [
+        "default"
+      ],
+      "createdAt": "2026-05-26T04:53:11.665Z",
+      "updatedAt": "2026-05-26T06:01:11.932Z",
+      "lastAccessedAt": "2026-05-26T06:59:27.670Z",
+      "lifecycleState": "ACTIVE"
+    },
+    "session_1779780397667": {
+      "sessionId": "session_1779780397667",
+      "tags": [],
+      "createdAt": "2026-05-26T07:26:37.680Z",
+      "updatedAt": "2026-05-26T07:46:52.771Z",
+      "lastAccessedAt": "2026-05-26T07:46:52.760Z",
+      "lifecycleState": "INACTIVE"
+    }
+  }
+}
