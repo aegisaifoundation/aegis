@@ -2,12 +2,6 @@ export var MemoryType;
 (function (MemoryType) {
     MemoryType["SESSION"] = "SESSION";
     MemoryType["WORKING"] = "WORKING";
-    MemoryType["LONGTERM"] = "LONGTERM";
-    MemoryType["EPISODIC"] = "EPISODIC";
-    MemoryType["SEMANTIC"] = "SEMANTIC";
-    MemoryType["PROCEDURAL"] = "PROCEDURAL";
-    MemoryType["ASSOCIATIVE"] = "ASSOCIATIVE";
-    MemoryType["META"] = "META";
 })(MemoryType || (MemoryType = {}));
 export var MemoryLifecycleState;
 (function (MemoryLifecycleState) {
