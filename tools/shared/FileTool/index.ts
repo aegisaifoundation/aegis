@@ -15,6 +15,8 @@ export default {
     append,
     deleteFile,
     create: createFile,
-    delete: deleteFile
+    delete: deleteFile,
+    create_file: createFile,
+    delete_file: deleteFile
   }
 };

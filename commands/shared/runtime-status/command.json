@@ -1,0 +1,6 @@
+{
+  "name": "runtime-status",
+  "description": "Inspect AEGIS stabilized runtime status, active session, checkpoint, health, and lock state.",
+  "category": "shared",
+  "version": "1.0.0"
+}

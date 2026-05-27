@@ -1,0 +1,11 @@
+{
+  "sessionId": "test-state-manager-session",
+  "status": "ACTIVE",
+  "currentObjective": "",
+  "activeTasks": [],
+  "lastUpdatedAt": "2026-05-27T10:44:12.915Z",
+  "checkpointVersion": 0,
+  "temporaryExecutionContext": {},
+  "preferences": {},
+  "stableFacts": []
+}

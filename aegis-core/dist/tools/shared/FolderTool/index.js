@@ -12,6 +12,8 @@ export default {
         createFolder: create,
         mkdir: create,
         deleteFolder: _delete,
-        rmdir: _delete
+        rmdir: _delete,
+        create_folder: create,
+        delete_folder: _delete
     }
 };

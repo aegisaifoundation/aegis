@@ -4,7 +4,7 @@
   "updatedAt": "2026-05-27T08:02:00.551Z",
   "lastAccessedAt": "2026-05-27T08:02:00.536Z",
   "memoryVersion": "1.0.0",
-  "lifecycleState": "INACTIVE",
+  "lifecycleState": "DELETED",
   "checksums": {
     "history": "c336771912f5f8b21054d054997c5d96137bfd8e2345ff22a4ec877caf2b10a9",
     "sessionMemory": "23164e3f2eacd51455c761ea8c9d0faa2c7f90b7da6ff962c60de52cf613544e",
@@ -23,5 +23,8 @@
   },
   "lastMountedAt": "2026-05-27T08:01:18.761Z",
   "validationChecksum": "23164e3f2eacd51455c761ea8c9d0faa2c7f90b7da6ff962c60de52cf613544e",
-  "lastValidatedAt": "2026-05-27T08:01:18.761Z"
+  "lastValidatedAt": "2026-05-27T08:01:18.761Z",
+  "deletedAt": "2026-05-27T10:14:01.766Z",
+  "deletedBy": "user",
+  "deletionReason": "User deleted session"
 }

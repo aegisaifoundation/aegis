@@ -1,14 +1,47 @@
 export class ToolParser {
+    escapeJSONNewlines(jsonString) {
+        let inString = false;
+        let escaped = '';
+        for (let i = 0; i < jsonString.length; i++) {
+            const char = jsonString[i];
+            if (char === '"') {
+                let backslashes = 0;
+                for (let j = i - 1; j >= 0; j--) {
+                    if (jsonString[j] === '\\') {
+                        backslashes++;
+                    }
+                    else {
+                        break;
+                    }
+                }
+                if (backslashes % 2 === 0) {
+                    inString = !inString;
+                }
+                escaped += char;
+            }
+            else if (inString && char === '\n') {
+                escaped += '\\n';
+            }
+            else if (inString && char === '\r') {
+                escaped += '\\r';
+            }
+            else {
+                escaped += char;
+            }
+        }
+        return escaped;
+    }
     parse(text) {
         const toolCalls = [];
-        const regex = /<tool>(.*?)<\/tool>/gs;
+        const regex = /<tool>(.*?)<\/tool(?:_response)?>/gs;
         let match;
         while ((match = regex.exec(text)) !== null) {
             if (match[1]) {
                 const rawContent = match[1].trim();
                 try {
-                    // Attempt standard JSON parse
-                    const parsed = JSON.parse(rawContent);
+                    // Pre-process to escape literal newlines inside JSON string literals
+                    const escapedContent = this.escapeJSONNewlines(rawContent);
+                    const parsed = JSON.parse(escapedContent);
                     if (parsed && typeof parsed.name === 'string') {
                         toolCalls.push({
                             name: parsed.name,

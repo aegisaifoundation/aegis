@@ -2,7 +2,7 @@ import { providerManager } from '../providers/index.js';
 import { messageFormatter } from './MessageFormatter.js';
 export class Agent {
     async *streamChat(messages) {
-        const chatMessages = messageFormatter.formatMessages(messages);
+        const chatMessages = await messageFormatter.formatMessages(messages);
         yield* providerManager.streamChat(chatMessages);
     }
     async generate(prompt) {

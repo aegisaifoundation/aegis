@@ -1,6 +1,8 @@
 ## Goals
+None
 
 ## Preferences
+None
 
-- **education**: b tech
 ## Stable Facts
+None

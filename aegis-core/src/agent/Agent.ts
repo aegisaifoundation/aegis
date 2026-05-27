@@ -4,7 +4,7 @@ import { messageFormatter } from './MessageFormatter.js';
 
 export class Agent {
   async *streamChat(messages: Message[]): AsyncGenerator<string> {
-    const chatMessages = messageFormatter.formatMessages(messages);
+    const chatMessages = await messageFormatter.formatMessages(messages);
     yield* providerManager.streamChat(chatMessages);
   }
 

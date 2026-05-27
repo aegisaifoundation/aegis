@@ -16,6 +16,10 @@ import { SessionLifecycleState, BootMode, RuntimeLockState, CheckoutStage } from
 import { RuntimeSupervisorHooks } from './RuntimeSupervisorHooks.js';
 import { calculateChecksum } from '../memory/utils/MemoryFileHelpers.js';
 import crypto from 'crypto';
+import { checkpointManager } from './CheckpointManager.js';
+import { runtimeHealthValidator } from './RuntimeHealthValidator.js';
+import { sessionStateManager } from './SessionStateManager.js';
+import { projectionGenerator } from '../memory/ProjectionGenerator.js';
 export class RuntimeSessionManager {
     static instance = new RuntimeSessionManager();
     heartbeatInterval = null;
@@ -41,6 +45,12 @@ export class RuntimeSessionManager {
         }
         // Startup markings
         await runtimeStateManager.markStartup();
+        // 1. Run health validation on startup
+        const health = await runtimeHealthValidator.validateHealth();
+        if (!health.healthy) {
+            console.warn(`[RuntimeSessionManager] Health checks failed on startup: ${health.errors.join('; ')}. Attempting recovery...`);
+            await this.recoverRuntime();
+        }
         const state = await runtimeStateManager.loadState();
         if (state.bootMode === BootMode.SAFE_MODE) {
             await RuntimeSupervisorHooks.onRuntimeSafeModeEntered('Booted in SAFE_MODE.');
@@ -64,11 +74,63 @@ export class RuntimeSessionManager {
         this.startHeartbeat();
     }
     /**
+     * Deterministically recovers the runtime from checkpoint, or resets to clean state.
+     */
+    async recoverRuntime() {
+        console.log('[RuntimeSessionManager] Initiating runtime recovery...');
+        const state = await runtimeStateManager.loadState();
+        const activeId = state.activeSessionId || 'default';
+        try {
+            // Restore from checkpoint
+            await checkpointManager.rollbackToCheckpoint('pre-mutation-checkpoint', activeId);
+            console.log('[RuntimeSessionManager] Successfully recovered from checkpoint.');
+        }
+        catch (err) {
+            console.error('[RuntimeSessionManager] Checkpoint rollback failed during recovery:', err.message);
+            // Proactively clean up corrupted checkpoint files so they don't fail health check
+            const wsRoot = path.dirname(workspaceManager.getWorkspacePath());
+            const cpDir = path.join(wsRoot, 'runtime/checkpoints');
+            for (let i = 0; i < 5; i++) {
+                try {
+                    await fs.rm(path.join(cpDir, `pre-mutation-checkpoint_runtime.json`), { force: true });
+                    await fs.rm(path.join(cpDir, `pre-mutation-checkpoint_session_${activeId}.json`), { force: true });
+                    break;
+                }
+                catch (rmErr) {
+                    await new Promise(resolve => setTimeout(resolve, 20));
+                }
+            }
+            // Fallback: recover default state
+            await runtimeStateManager.recoverRuntimeState();
+            await sessionStateManager.initializeSessionState(activeId);
+        }
+        // Re-verify health after recovery
+        const recheck = await runtimeHealthValidator.validateHealth();
+        if (!recheck.healthy) {
+            console.error('[RuntimeSessionManager] Recovery failed to stabilize the runtime core:', recheck.errors);
+            throw new Error(`Critical Stabilization Failure: ${recheck.errors.join('; ')}`);
+        }
+    }
+    /**
      * Cleans active leases and updates state flags on shutdown.
      */
     async shutdown() {
         this.stopHeartbeat();
         const state = await runtimeStateManager.loadState();
+        // Checkpoint active state before shutdown
+        if (state.mountedSessionId) {
+            try {
+                await checkpointManager.createCheckpoint('shutdown-checkpoint', state.mountedSessionId);
+            }
+            catch (err) {
+                console.warn(`[RuntimeSessionManager] Shutdown checkpoint failed: ${err.message}`);
+            }
+        }
+        // Run health check before shutdown
+        const health = await runtimeHealthValidator.validateHealth();
+        if (!health.healthy) {
+            console.warn('[RuntimeSessionManager] Runtime health degraded during shutdown checks:', health.errors);
+        }
         if (state.mountedSessionId) {
             await sessionMountManager.unmount(state.mountedSessionId);
         }
@@ -132,10 +194,24 @@ export class RuntimeSessionManager {
                     maxSnapshots: 10
                 }
             };
+            const defaultState = {
+                sessionId: newSessionId,
+                status: 'ACTIVE',
+                currentObjective: '',
+                activeTasks: [],
+                lastUpdatedAt: new Date().toISOString(),
+                checkpointVersion: 0,
+                temporaryExecutionContext: {},
+                preferences: {},
+                stableFacts: []
+            };
+            const workingProj = projectionGenerator.generateWorkingMemoryProjection(defaultState);
+            const sessionProj = projectionGenerator.generateSessionMemoryProjection(defaultState);
             await memoryTransactionManager.registerWrite(txId, newMetaFile, JSON.stringify(metaContent, null, 2));
             await memoryTransactionManager.registerWrite(txId, newHistoryFile, JSON.stringify({ messages: [], memoryVersion: '1.0.0' }, null, 2));
-            await memoryTransactionManager.registerWrite(txId, newSessionMemFile, '## Goals\n\n## Preferences\n\n## Stable Facts\n');
-            await memoryTransactionManager.registerWrite(txId, newWorkingMemFile, '## Current Tasks\n\n## Intermediate Conclusions\n\n## Temporary Execution Context\n');
+            await memoryTransactionManager.registerWrite(txId, path.join(sessionDir, 'session-state.json'), JSON.stringify(defaultState, null, 2));
+            await memoryTransactionManager.registerWrite(txId, newSessionMemFile, sessionProj);
+            await memoryTransactionManager.registerWrite(txId, newWorkingMemFile, workingProj);
             state.checkoutStage = CheckoutStage.MOUNTING;
             await runtimeStateManager.saveState(state);
             state.activeSessionId = newSessionId;
@@ -170,8 +246,22 @@ export class RuntimeSessionManager {
      * Leverages transaction rolls to guarantee atomic file swaps.
      */
     async checkoutSession(sessionId, actor = 'system') {
+        // 1. Run health validation before session switch
+        const health = await runtimeHealthValidator.validateHealth();
+        if (!health.healthy) {
+            throw new Error(`Cannot checkout session: Runtime health is degraded: ${health.errors.join('; ')}`);
+        }
         const wsRoot = path.dirname(workspaceManager.getWorkspacePath());
         const state = await runtimeStateManager.loadState();
+        // 2. Checkpoint active state before switching
+        if (state.mountedSessionId) {
+            try {
+                await checkpointManager.createCheckpoint('pre-switch-checkpoint', state.mountedSessionId);
+            }
+            catch (err) {
+                console.warn(`[RuntimeSessionManager] Pre-switch checkpoint failed: ${err.message}`);
+            }
+        }
         await runtimeStateManager.lockRuntime(RuntimeLockState.SWITCHING);
         state.checkoutStage = CheckoutStage.VALIDATING;
         await runtimeStateManager.saveState(state);
@@ -259,9 +349,17 @@ export class RuntimeSessionManager {
         const sourceSessionFile = path.resolve(wsRoot, `memory/sessions/${sessionId}/session-memory.md`);
         const workingContent = await fs.readFile(sourceWorkingFile, 'utf8');
         const sessionContent = await fs.readFile(sourceSessionFile, 'utf8');
+        const sourceState = await memoryGateway.getSessionState(sessionId, actor);
+        const forkedState = {
+            ...sourceState,
+            sessionId: forkedSessionId,
+            checkpointVersion: 0,
+            lastUpdatedAt: new Date().toISOString()
+        };
         await fs.writeFile(path.join(forkedDir, 'working-memory.md'), workingContent, 'utf8');
         await fs.writeFile(path.join(forkedDir, 'session-memory.md'), sessionContent, 'utf8');
         await fs.writeFile(path.join(forkedDir, 'history.json'), JSON.stringify({ messages: [], memoryVersion: '1.0.0' }, null, 2), 'utf8');
+        await fs.writeFile(path.join(forkedDir, 'session-state.json'), JSON.stringify(forkedState, null, 2), 'utf8');
         const forkedMeta = {
             ...sourceMeta,
             sessionId: forkedSessionId,

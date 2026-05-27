@@ -8,6 +8,8 @@ export default {
     actions: {
         save,
         retrieve,
-        clear
+        clear,
+        write: save,
+        read: retrieve
     }
 };
