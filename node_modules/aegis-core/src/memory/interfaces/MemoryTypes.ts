@@ -192,3 +192,15 @@ export interface SessionMetadata {
   quarantineReason?: string;
   quarantinedAt?: string;
 }
+
+export interface SessionState {
+  sessionId: string;
+  status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED' | 'DELETED';
+  currentObjective: string;
+  activeTasks: string[];
+  lastUpdatedAt: string;
+  checkpointVersion: number;
+  temporaryExecutionContext?: Record<string, any>;
+  preferences?: Record<string, any>;
+  stableFacts?: string[];
+}

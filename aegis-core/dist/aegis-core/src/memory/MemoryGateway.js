@@ -52,6 +52,19 @@ export class MemoryGateway {
         const historyChecksum = await safeJsonWrite(path.join(sessionDir, 'history.json'), { messages: [], memoryVersion: '1.0.0' });
         const sessionChecksum = await writeMemoryFile(path.join(sessionDir, 'session-memory.md'), '## Goals\n\n## Preferences\n\n## Stable Facts\n');
         const workingChecksum = await writeMemoryFile(path.join(sessionDir, 'working-memory.md'), '## Current Tasks\n\n## Intermediate Conclusions\n\n## Temporary Execution Context\n');
+        // Initialize session-state.json
+        const defaultState = {
+            sessionId,
+            status: 'ACTIVE',
+            currentObjective: '',
+            activeTasks: [],
+            lastUpdatedAt: new Date().toISOString(),
+            checkpointVersion: 0,
+            temporaryExecutionContext: {},
+            preferences: {},
+            stableFacts: []
+        };
+        await safeJsonWrite(path.join(sessionDir, 'session-state.json'), defaultState);
         // Update metadata with file checksums
         validated.checksums = {
             history: historyChecksum,
@@ -112,7 +125,7 @@ export class MemoryGateway {
     /**
      * Atomically overwrites working memory after validation.
      */
-    async updateWorkingMemory(sessionId, content, actor = 'system') {
+    async updateWorkingMemory(sessionId, content, txId, actor = 'system') {
         if (!MemoryPermissions.check('write', actor)) {
             throw new Error(`Permission denied: Actor ${actor} cannot write.`);
         }
@@ -120,20 +133,30 @@ export class MemoryGateway {
         const sessionDir = this.getSessionDir(sessionId);
         const filePath = path.join(sessionDir, 'working-memory.md');
         const metadataPath = path.join(sessionDir, 'metadata.json');
-        const txId = `tx_${sessionId}_${Date.now()}`;
-        memoryTransactionManager.beginTransaction(txId);
-        try {
+        if (txId) {
             await memoryTransactionManager.registerWrite(txId, filePath, content);
             const meta = await this.loadSession(sessionId, actor);
             meta.checksums.workingMemory = calculateChecksum(content);
             meta.updatedAt = new Date().toISOString();
             await memoryTransactionManager.registerWrite(txId, metadataPath, JSON.stringify(meta, null, 2));
-            await memoryTransactionManager.commitTransaction(txId);
-            await MemoryObservability.logAudit(actor, 'write', 'workingMemory', sessionId);
+            await MemoryObservability.logAudit(actor, 'write', 'workingMemory', sessionId, { txId });
         }
-        catch (err) {
-            await memoryTransactionManager.rollbackTransaction(txId);
-            throw err;
+        else {
+            const localTxId = `tx_${sessionId}_${Date.now()}`;
+            memoryTransactionManager.beginTransaction(localTxId);
+            try {
+                await memoryTransactionManager.registerWrite(localTxId, filePath, content);
+                const meta = await this.loadSession(sessionId, actor);
+                meta.checksums.workingMemory = calculateChecksum(content);
+                meta.updatedAt = new Date().toISOString();
+                await memoryTransactionManager.registerWrite(localTxId, metadataPath, JSON.stringify(meta, null, 2));
+                await memoryTransactionManager.commitTransaction(localTxId);
+                await MemoryObservability.logAudit(actor, 'write', 'workingMemory', sessionId);
+            }
+            catch (err) {
+                await memoryTransactionManager.rollbackTransaction(localTxId);
+                throw err;
+            }
         }
     }
     /**
@@ -151,7 +174,7 @@ export class MemoryGateway {
     /**
      * Atomically updates session memory after validation.
      */
-    async updateSessionMemory(sessionId, content, actor = 'system') {
+    async updateSessionMemory(sessionId, content, txId, actor = 'system') {
         if (!MemoryPermissions.check('write', actor)) {
             throw new Error(`Permission denied: Actor ${actor} cannot write.`);
         }
@@ -159,20 +182,30 @@ export class MemoryGateway {
         const sessionDir = this.getSessionDir(sessionId);
         const filePath = path.join(sessionDir, 'session-memory.md');
         const metadataPath = path.join(sessionDir, 'metadata.json');
-        const txId = `tx_${sessionId}_${Date.now()}`;
-        memoryTransactionManager.beginTransaction(txId);
-        try {
+        if (txId) {
             await memoryTransactionManager.registerWrite(txId, filePath, content);
             const meta = await this.loadSession(sessionId, actor);
             meta.checksums.sessionMemory = calculateChecksum(content);
             meta.updatedAt = new Date().toISOString();
             await memoryTransactionManager.registerWrite(txId, metadataPath, JSON.stringify(meta, null, 2));
-            await memoryTransactionManager.commitTransaction(txId);
-            await MemoryObservability.logAudit(actor, 'write', 'sessionMemory', sessionId);
+            await MemoryObservability.logAudit(actor, 'write', 'sessionMemory', sessionId, { txId });
         }
-        catch (err) {
-            await memoryTransactionManager.rollbackTransaction(txId);
-            throw err;
+        else {
+            const localTxId = `tx_${sessionId}_${Date.now()}`;
+            memoryTransactionManager.beginTransaction(localTxId);
+            try {
+                await memoryTransactionManager.registerWrite(localTxId, filePath, content);
+                const meta = await this.loadSession(sessionId, actor);
+                meta.checksums.sessionMemory = calculateChecksum(content);
+                meta.updatedAt = new Date().toISOString();
+                await memoryTransactionManager.registerWrite(localTxId, metadataPath, JSON.stringify(meta, null, 2));
+                await memoryTransactionManager.commitTransaction(localTxId);
+                await MemoryObservability.logAudit(actor, 'write', 'sessionMemory', sessionId);
+            }
+            catch (err) {
+                await memoryTransactionManager.rollbackTransaction(localTxId);
+                throw err;
+            }
         }
     }
     /**
@@ -255,6 +288,53 @@ export class MemoryGateway {
         catch (err) {
             await memoryTransactionManager.rollbackTransaction(txId);
             throw err;
+        }
+    }
+    /**
+     * Reads session-state.json from disk and parses it.
+     */
+    async getSessionState(sessionId, actor = 'system') {
+        if (!MemoryPermissions.check('read', actor)) {
+            throw new Error(`Permission denied: Actor ${actor} cannot read.`);
+        }
+        const sessionDir = this.getSessionDir(sessionId);
+        const filePath = path.join(sessionDir, 'session-state.json');
+        if (!existsSync(filePath)) {
+            throw new Error(`session-state.json not found for session ${sessionId}`);
+        }
+        const state = await safeJsonRead(filePath, null);
+        if (!state) {
+            throw new Error(`session-state.json corrupted or empty for session ${sessionId}`);
+        }
+        await MemoryObservability.logAudit(actor, 'read', 'sessionState', sessionId);
+        return state;
+    }
+    /**
+     * Writes session-state.json to disk atomically. Registers write if inside a transaction.
+     */
+    async updateSessionState(sessionId, state, txId, actor = 'system') {
+        if (!MemoryPermissions.check('write', actor)) {
+            throw new Error(`Permission denied: Actor ${actor} cannot write.`);
+        }
+        const sessionDir = this.getSessionDir(sessionId);
+        const filePath = path.join(sessionDir, 'session-state.json');
+        const content = JSON.stringify(state, null, 2);
+        if (txId) {
+            await memoryTransactionManager.registerWrite(txId, filePath, content);
+            await MemoryObservability.logAudit(actor, 'write', 'sessionState', sessionId, { txId });
+        }
+        else {
+            const localTxId = `tx_state_${sessionId}_${Date.now()}`;
+            memoryTransactionManager.beginTransaction(localTxId);
+            try {
+                await memoryTransactionManager.registerWrite(localTxId, filePath, content);
+                await memoryTransactionManager.commitTransaction(localTxId);
+                await MemoryObservability.logAudit(actor, 'write', 'sessionState', sessionId, { localTxId });
+            }
+            catch (err) {
+                await memoryTransactionManager.rollbackTransaction(localTxId);
+                throw err;
+            }
         }
     }
 }

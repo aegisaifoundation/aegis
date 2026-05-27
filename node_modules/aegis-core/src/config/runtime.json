@@ -37,7 +37,8 @@
     "shared/delete-session",
     "shared/fork-session",
     "shared/rename-session",
-    "shared/purge-session"
+    "shared/purge-session",
+    "shared/runtime-status"
   ],
   "defaultProvider": "local/ollama"
 }

@@ -1,0 +1,137 @@
+{
+  "messages": [
+    {
+      "id": "msg_1779877258909_0p3gbx4pb",
+      "role": "user",
+      "content": "save my name as gokul",
+      "timestamp": "2026-05-27T10:20:58.909Z"
+    },
+    {
+      "id": "msg_1779877279294_gaik2cb95",
+      "role": "assistant",
+      "content": "<tool>{\"name\": \"MemoryTool\", \"input\": {\"action\": \"write\", \"key\": \"user_name\", \"value\": \"gokul\"}}</tool>",
+      "timestamp": "2026-05-27T10:21:19.294Z"
+    },
+    {
+      "id": "msg_1779877279339_voomhdxdh",
+      "role": "tool",
+      "content": "Error executing tool 'MemoryTool': Unable to resolve action. Tool 'MemoryTool' has multiple actions [save, retrieve, clear]. Please provide input as JSON with 'action' key.",
+      "timestamp": "2026-05-27T10:21:19.339Z",
+      "metadata": {
+        "toolName": "MemoryTool"
+      }
+    },
+    {
+      "id": "msg_1779877300252_brt2tjhln",
+      "role": "assistant",
+      "content": "<tool>{\"name\": \"memory-write\", \"input\": {\"key\": \"user_name\", \"value\": \"gokul\"}}</tool>",
+      "timestamp": "2026-05-27T10:21:40.252Z"
+    },
+    {
+      "id": "msg_1779877300331_ynjzd10ot",
+      "role": "tool",
+      "content": "{\"success\":true}",
+      "timestamp": "2026-05-27T10:21:40.331Z",
+      "metadata": {
+        "toolName": "memory-write"
+      }
+    },
+    {
+      "id": "msg_1779877309666_b5veutz2a",
+      "role": "assistant",
+      "content": "Your name has been successfully saved as gokul.",
+      "timestamp": "2026-05-27T10:21:49.666Z"
+    },
+    {
+      "id": "msg_1779877371747_i9tv2gf1a",
+      "role": "user",
+      "content": "create a file named gokul.html and write html code to add a portfolio about me",
+      "timestamp": "2026-05-27T10:22:51.747Z"
+    },
+    {
+      "id": "msg_1779877459047_t2b72mlm8",
+      "role": "assistant",
+      "content": "<tool>{\"name\": \"FileTool\", \"input\": {\"action\": \"createFile\", \"path\": \"gokul.html\", \"content\": \"<!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n<head>\\n    <meta charset=\\\"UTF-8\\\">\\n    <meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1.0\\\">\\n    <title>Gokul's Portfolio</title>\\n    <style>\\n        body { \\n            font-family: Arial, sans-serif; \\n            margin: 0; \\n            padding: 0; \\n            background-color: #f4f4f9; \\n            color: #333; \\n        }\\n        header { \\n            background-color: #333; \\n            color: white; \\n            padding: 20px 0; \\n            text-align: center; \\n        }\\n        header h1 { \\n            margin: 0; \\n            font-size: 2.5em; \\n        }\\n        .container { \\n            width: 80%; \\n            margin: 40px auto; \\n            padding: 20px; \\n            background-color: white; \\n            box-shadow: 0 4px 8px rgba(0,0,0,0.1); \\n            border-radius: 8px; \\n        }\\n        section { \\n            margin-bottom: 40px; \\n            padding: 20px 0; \\n            border-bottom: 1px solid #eee; \\n        }\\n        section:last-child { \\n            border-bottom: none; \\n        }\\n        h2 { \\n            color: #555; \\n            border-bottom: 2px solid #333; \\n            padding-bottom: 10px; \\n            margin-bottom: 20px; \\n        }\\n        .project-item { \\n            background-color: #f9f9f9; \\n            padding: 15px; \\n            margin-bottom: 15px; \\n            border-left: 5px solid #007bff; \\n            border-radius: 4px; \\n        }\\n        .project-item h3 { \\n            margin-top: 0; \\n            color: #007bff; \\n        }\\n        footer { \\n            text-align: center; \\n            padding: 20px; \\n            background-color: #333; \\n            color: white; \\n            margin-top: 30px; \\n        }\\n    </style>\\n</head>\\n<body>\\n    <header>\\n        <h1>Gokul</h1>\\n        <p>Passionate Developer | Creative Problem Solver</p>\\n    </header>\\n\\n    <div class=\\\"container\\\">\\n        \\n        <section id=\\\"about\\\"> \\n            <h2>About Me</h2>\\n            <p>Welcome to my portfolio! I am a highly motivated and results-driven developer with a strong passion for building scalable and user-friendly applications. I specialize in [Mention your primary skills, e.g., full-stack web development, data analysis, etc.] and thrive in collaborative environments. I am always eager to learn new technologies and contribute to challenging projects.</p>\\n        </section>\\n\\n        <section id=\\\"skills\\\"> \\n            <h2>Skills</h2>\\n            <p>I am proficient in a range of technologies including:</p>\\n            <ul>\\n                <li><strong>Frontend:</strong> HTML, CSS, JavaScript (React/Vue/Angular)</li>\\n                <li><strong>Backend:</strong> Python (Django/Flask), Node.js (Express)</li>\\n                <li><strong>Databases:</strong> SQL (PostgreSQL/MySQL), NoSQL (MongoDB)</li>\\n                <li><strong>Tools:</strong> Git, REST APIs, Cloud Services (AWS/Azure)</li>\\n            </ul>\\n        </section>\\n\\n        <section id=\\\"portfolio\\\"> \\n            <h2>Portfolio Projects</h2>\\n            <div class=\\\"project-item\\\">\\n                <h3>Project Title 1: E-commerce Platform</h3>\\n                <p>A full-stack e-commerce website built using MERN stack. Features include user authentication, payment gateway integration, and inventory management.</p>\\n                <p><a href=\\\"#\\\">Live Demo</a> | <a href=\\\"#\\\">GitHub Repo</a></p>\\n            </div>\\n            <div class=\\\"project-item\\\">\\n                <h3>Project Title 2: Data Visualization Dashboard</h3>\\n                <p>A web application that visualizes complex datasets using D3.js and Python backend for processing.</p>\\n                <p><a href=\\\"#\\\">Live Demo</a> | <a href=\\\"#\\\">GitHub Repo</a></p>\\n            </div>\\n            <!-- Add more projects here -->\\n        </section>\\n        \\n        <section id=\\\"contact\\\"> \\n            <h2>Get In Touch</h2>\\n            <p>I am currently open to new opportunities. Feel free to connect with me!</p>\\n            <p><strong>Email:</strong> your.email@example.com</p>\\n            <p><strong>LinkedIn:</strong> /yourprofile</p>\\n        </section>\\n        \\n    </div>\\n\\n    <footer>\\n        <p>&copy; 2024 Gokul. All rights reserved.</p>\\n    </footer>\\n</body>\\n</html>\"}</tool>",
+      "timestamp": "2026-05-27T10:24:19.047Z"
+    },
+    {
+      "id": "msg_1779877459098_wtiyhqfjr",
+      "role": "tool",
+      "content": "Error executing tool 'FileTool': Unable to resolve action. Tool 'FileTool' has multiple actions [createFile, read, write, append, deleteFile, create, delete]. Please provide input as JSON with 'action' key.",
+      "timestamp": "2026-05-27T10:24:19.098Z",
+      "metadata": {
+        "toolName": "FileTool"
+      }
+    },
+    {
+      "id": "msg_1779877541690_joj6e8xos",
+      "role": "assistant",
+      "content": "<tool>{\"name\": \"FileTool\", \"input\": {\"action\": \"createFile\", \"path\": \"gokul.html\", \"content\": \"<!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n<head>\\n    <meta charset=\\\"UTF-8\\\">\\n    <meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1.0\\\">\\n    <title>Gokul's Portfolio</title>\\n    <style>\\n        body { \\n            font-family: Arial, sans-serif; \\n            margin: 0; \\n            padding: 0; \\n            background-color: #f4f4f9; \\n            color: #333; \\n        }\\n        header { \\n            background-color: #333; \\n            color: white; \\n            padding: 20px 0; \\n            text-align: center; \\n        }\\n        header h1 { \\n            margin: 0; \\n            font-size: 2.5em; \\n        }\\n        .container { \\n            width: 80%; \\n            margin: 40px auto; \\n            padding: 20px; \\n            background-color: white; \\n            box-shadow: 0 4px 8px rgba(0,0,0,0.1); \\n            border-radius: 8px; \\n        }\\n        section { \\n            margin-bottom: 40px; \\n            padding: 20px 0; \\n            border-bottom: 1px solid #eee; \\n        }\\n        section:last-child { \\n            border-bottom: none; \\n        }\\n        h2 { \\n            color: #555; \\n            border-bottom: 2px solid #333; \\n            padding-bottom: 10px; \\n            margin-bottom: 20px; \\n        }\\n        .project-item { \\n            background-color: #f9f9f9; \\n            padding: 15px; \\n            margin-bottom: 15px; \\n            border-left: 5px solid #007bff; \\n            border-radius: 4px; \\n        }\\n        .project-item h3 { \\n            margin-top: 0; \\n            color: #007bff; \\n        }\\n        footer { \\n            text-align: center; \\n            padding: 20px; \\n            background-color: #333; \\n            color: white; \\n            margin-top: 30px; \\n        }\\n    </style>\\n</head>\\n<body>\\n    <header>\\n        <h1>Gokul</h1>\\n        <p>Passionate Developer | Creative Problem Solver</p>\\n    </header>\\n\\n    <div class=\\\"container\\\">\\n        \\n        <section id=\\\"about\\\"> \\n            <h2>About Me</h2>\\n            <p>Welcome to my portfolio! I am a highly motivated and results-driven developer with a strong passion for building scalable and user-friendly applications. I specialize in [Mention your primary skills, e.g., full-stack web development, data analysis, etc.] and thrive in collaborative environments. I am always eager to learn new technologies and contribute to challenging projects.</p>\\n        </section>\\n\\n        <section id=\\\"skills\\\"> \\n            <h2>Skills</h2>\\n            <p>I am proficient in a range of technologies including:</p>\\n            <ul>\\n                <li><strong>Frontend:</strong> HTML, CSS, JavaScript (React/Vue/Angular)</li>\\n                <li><strong>Backend:</strong> Python (Django/Flask), Node.js (Express)</li>\\n                <li><strong>Databases:</strong> SQL (PostgreSQL/MySQL), NoSQL (MongoDB)</li>\\n                <li><strong>Tools:</strong> Git, REST APIs, Cloud Services (AWS/Azure)</li>\\n            </ul>\\n        </section>\\n\\n        <section id=\\\"portfolio\\\"> \\n            <h2>Portfolio Projects</h2>\\n            <div class=\\\"project-item\\\">\\n                <h3>Project Title 1: E-commerce Platform</h3>\\n                <p>A full-stack e-commerce website built using MERN stack. Features include user authentication, payment gateway integration, and inventory management.</p>\\n                <p><a href=\\\"#\\\">Live Demo</a> | <a href=\\\"#\\\">GitHub Repo</a></p>\\n            </div>\\n            <div class=\\\"project-item\\\">\\n                <h3>Project Title 2: Data Visualization Dashboard</h3>\\n                <p>A web application that visualizes complex datasets using D3.js and Python backend for processing.</p>\\n                <p><a href=\\\"#\\\">Live Demo</a> | <a href=\\\"#\\\">GitHub Repo</a></p>\\n            </div>\\n            <!-- Add more projects here -->\\n        </section>\\n        \\n        <section id=\\\"contact\\\"> \\n            <h2>Get In Touch</h2>\\n            <p>I am currently open to new opportunities. Feel free to connect with me!</p>\\n            <p><strong>Email:</strong> your.email@example.com</p>\\n            <p><strong>LinkedIn:</strong> /yourprofile</p>\\n        </section>\\n        \\n    </div>\\n\\n    <footer>\\n        <p>&copy; 2024 Gokul. All rights reserved.</p>\\n    </footer>\\n</body>\\n</html>\"}</tool>",
+      "timestamp": "2026-05-27T10:25:41.690Z"
+    },
+    {
+      "id": "msg_1779877541710_v3z99yp0v",
+      "role": "tool",
+      "content": "Error executing tool 'FileTool': Unable to resolve action. Tool 'FileTool' has multiple actions [createFile, read, write, append, deleteFile, create, delete]. Please provide input as JSON with 'action' key.",
+      "timestamp": "2026-05-27T10:25:41.710Z",
+      "metadata": {
+        "toolName": "FileTool"
+      }
+    },
+    {
+      "id": "msg_1779877602135_svabmvow8",
+      "role": "assistant",
+      "content": "<tool>{\"name\": \"FileTool\", \"input\": {\"action\": \"createFile\", \"path\": \"gokul.html\", \"content\": \"<!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n<head>\\n    <meta charset=\\\"UTF-8\\\">\\n    <meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1.0\\\">\\n    <title>Gokul's Portfolio</title>\\n    <style>\\n        body { \\n            font-family: Arial, sans-serif; \\n            margin: 0; \\n            padding: 0; \\n            background-color: #f4f4f9;\\n        }\\n        .container { \\n            max-width: 1100px; \\n            margin: 40px auto; \\n            padding: 20px; \\n            background: white;\\n            box-shadow: 0 4px 12px rgba(0,0,0,0.1);\\n            border-radius: 10px;\\n        }\\n        header { \\n            text-align: center; \\n            padding: 20px 0; \\n            border-bottom: 1px solid #eee;\\n            margin-bottom: 30px;\\n        }\\n        header h1 { \\n            color: #333;\\n            font-size: 2.5em;\\n        }\\n        .section-title { \\n            text-align: center; \\n            color: #555;\\n            margin: 40px 0 20px; \\n            border-bottom: 2px solid #eee;\\n            padding-bottom: 10px;\\n        }\\n        .skill-list { \\n            display: flex; \\n            flex-wrap: wrap; \\n            gap: 15px; \\n            justify-content: center;\\n        }\\n        .skill-item { \\n            background: #eef; \\n            padding: 10px 20px; \\n            border-radius: 20px; \\n            border: 1px solid #ddd;\\n            cursor: pointer;\\n            transition: background 0.3s;\\n        }\\n        .skill-item:hover { \\n            background: #d9e6ff;\\n            box-shadow: 0 2px 5px rgba(0,0,0,0.1);\\n        }\\n        footer { \\n            text-align: center; \\n            padding: 20px 0; \\n            margin-top: 40px;\\n            border-top: 1px solid #eee;\\n            color: #777;\\n        }\\n    </div>\\n</body>\\n</html>\"\n",
+      "timestamp": "2026-05-27T10:26:42.135Z"
+    },
+    {
+      "id": "msg_1779877742445_4frzkpyay",
+      "role": "user",
+      "content": "create a file named gokul.html",
+      "timestamp": "2026-05-27T10:29:02.445Z"
+    },
+    {
+      "id": "msg_1779877872522_78w6w064g",
+      "role": "assistant",
+      "content": "",
+      "timestamp": "2026-05-27T10:31:12.522Z"
+    },
+    {
+      "id": "msg_1779877892043_jb12d3u1l",
+      "role": "user",
+      "content": "create a file named gokuuuuul.html",
+      "timestamp": "2026-05-27T10:31:32.043Z"
+    },
+    {
+      "id": "msg_1779877897542_vwozrp5d7",
+      "role": "assistant",
+      "content": "<tool>{\"name\": \"FileTool\", \"input\": {\"action\": \"create_file\", \"path\": \"goku.txt\", \"content\": \"Hello World!\"}}</tool_response>\n",
+      "timestamp": "2026-05-27T10:31:37.542Z"
+    },
+    {
+      "id": "msg_1779877930534_f1egdbvd3",
+      "role": "user",
+      "content": "hi",
+      "timestamp": "2026-05-27T10:32:10.534Z"
+    },
+    {
+      "id": "msg_1779877936018_fups3eokd",
+      "role": "assistant",
+      "content": "Hi there! How can I help you today?",
+      "timestamp": "2026-05-27T10:32:16.018Z"
+    },
+    {
+      "id": "msg_1779878403001_di0s71fh7",
+      "role": "user",
+      "content": "create a file gokul",
+      "timestamp": "2026-05-27T10:40:03.001Z"
+    },
+    {
+      "id": "msg_1779878425178_onqlj181w",
+      "role": "assistant",
+      "content": "",
+      "timestamp": "2026-05-27T10:40:25.178Z"
+    }
+  ],
+  "memoryVersion": "1.0.0"
+}

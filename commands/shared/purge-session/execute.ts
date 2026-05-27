@@ -3,12 +3,13 @@ import { workspaceManager } from '../../../aegis-core/src/runtime/WorkspaceManag
 import path from 'path';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
-import readline from 'readline';
+import fsSync from 'fs';
 
-async function ask(query: string): Promise<string> {
-  const eventNames = ['data', 'keypress', 'readable', 'line'];
+function askSync(query: string): string {
   const savedListeners: Record<string, any[]> = {};
+  const eventNames = ['data', 'keypress', 'readable', 'line'];
 
+  // Temporarily suspend process.stdin listeners so they don't intercept keys
   for (const event of eventNames) {
     savedListeners[event] = [...process.stdin.listeners(event)];
     process.stdin.removeAllListeners(event);
@@ -19,32 +20,22 @@ async function ask(query: string): Promise<string> {
     process.stdin.setRawMode(false);
   }
 
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
+  // Print prompt on a new line
+  process.stdout.write('\n' + query);
 
-  // Ensure process.stdin is resumed and active for reading input
-  process.stdin.resume();
-
+  const buffer = Buffer.alloc(1024);
+  let bytesRead = 0;
   try {
-    return await new Promise<string>((resolve) => {
-      rl.question(query, (answer) => {
-        resolve(answer.trim());
-      });
-    });
+    bytesRead = fsSync.readSync(0, buffer, 0, 1024, null);
+  } catch (err) {
+    // Ignore
   } finally {
-    rl.close();
-
-    // Resume process.stdin since rl.close() automatically pauses it
-    process.stdin.resume();
-    
     // Restore raw mode
     if (process.stdin.setRawMode) {
       process.stdin.setRawMode(wasRaw);
     }
 
-    // Restore listeners
+    // Restore process.stdin listeners
     for (const event of eventNames) {
       process.stdin.removeAllListeners(event);
       for (const listener of savedListeners[event]) {
@@ -52,6 +43,8 @@ async function ask(query: string): Promise<string> {
       }
     }
   }
+
+  return buffer.toString('utf8', 0, bytesRead).replace(/\r?\n$/, '').trim();
 }
 
 export default async function execute(input: string, context: CommandContext): Promise<CommandResult> {
@@ -74,7 +67,7 @@ export default async function execute(input: string, context: CommandContext): P
   }
 
   try {
-    const confirmation = await ask(`Are you sure you want to permanently delete session ${sessionId} from trash? (yes/no): `);
+    const confirmation = askSync(`Are you sure you want to permanently delete session ${sessionId} from trash? (yes/no): `);
     
     if (confirmation.toLowerCase() !== 'yes' && confirmation.toLowerCase() !== 'y') {
       return {
@@ -83,7 +76,7 @@ export default async function execute(input: string, context: CommandContext): P
       };
     }
 
-    const finalConfirm = await ask('To confirm, please type "delete": ');
+    const finalConfirm = askSync('To confirm, please type "delete": ');
     
     if (finalConfirm !== 'delete') {
       return {

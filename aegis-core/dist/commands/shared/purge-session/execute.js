@@ -2,10 +2,11 @@ import { workspaceManager } from '../../../aegis-core/src/runtime/WorkspaceManag
 import path from 'path';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
-import readline from 'readline';
-async function ask(query) {
-    const eventNames = ['data', 'keypress', 'readable', 'line'];
+import fsSync from 'fs';
+function askSync(query) {
     const savedListeners = {};
+    const eventNames = ['data', 'keypress', 'readable', 'line'];
+    // Temporarily suspend process.stdin listeners so they don't intercept keys
     for (const event of eventNames) {
         savedListeners[event] = [...process.stdin.listeners(event)];
         process.stdin.removeAllListeners(event);
@@ -14,28 +15,22 @@ async function ask(query) {
     if (process.stdin.setRawMode) {
         process.stdin.setRawMode(false);
     }
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
-    // Ensure process.stdin is resumed and active for reading input
-    process.stdin.resume();
+    // Print prompt on a new line
+    process.stdout.write('\n' + query);
+    const buffer = Buffer.alloc(1024);
+    let bytesRead = 0;
     try {
-        return await new Promise((resolve) => {
-            rl.question(query, (answer) => {
-                resolve(answer.trim());
-            });
-        });
+        bytesRead = fsSync.readSync(0, buffer, 0, 1024, null);
+    }
+    catch (err) {
+        // Ignore
     }
     finally {
-        rl.close();
-        // Resume process.stdin since rl.close() automatically pauses it
-        process.stdin.resume();
         // Restore raw mode
         if (process.stdin.setRawMode) {
             process.stdin.setRawMode(wasRaw);
         }
-        // Restore listeners
+        // Restore process.stdin listeners
         for (const event of eventNames) {
             process.stdin.removeAllListeners(event);
             for (const listener of savedListeners[event]) {
@@ -43,6 +38,7 @@ async function ask(query) {
             }
         }
     }
+    return buffer.toString('utf8', 0, bytesRead).replace(/\r?\n$/, '').trim();
 }
 export default async function execute(input, context) {
     const sessionId = input.trim();
@@ -61,14 +57,14 @@ export default async function execute(input, context) {
         };
     }
     try {
-        const confirmation = await ask(`Are you sure you want to permanently delete session ${sessionId} from trash? (yes/no): `);
+        const confirmation = askSync(`Are you sure you want to permanently delete session ${sessionId} from trash? (yes/no): `);
         if (confirmation.toLowerCase() !== 'yes' && confirmation.toLowerCase() !== 'y') {
             return {
                 success: true,
                 message: 'Purge process aborted.'
             };
         }
-        const finalConfirm = await ask('To confirm, please type "delete": ');
+        const finalConfirm = askSync('To confirm, please type "delete": ');
         if (finalConfirm !== 'delete') {
             return {
                 success: false,

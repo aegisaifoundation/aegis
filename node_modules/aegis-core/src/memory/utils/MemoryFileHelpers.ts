@@ -38,7 +38,22 @@ export async function writeMemoryFile(filePath: string, content: string): Promis
   
   const tempPath = `${filePath}.tmp`;
   await fs.writeFile(tempPath, content, 'utf8');
-  await fs.rename(tempPath, filePath);
+  
+  let retries = 5;
+  while (retries > 0) {
+    try {
+      await fs.rename(tempPath, filePath);
+      break;
+    } catch (err: any) {
+      retries--;
+      if (retries === 0) {
+        // Clean up temp file on final failure
+        await fs.rm(tempPath, { force: true }).catch(() => {});
+        throw err;
+      }
+      await new Promise(resolve => setTimeout(resolve, 20));
+    }
+  }
   
   return calculateChecksum(content);
 }

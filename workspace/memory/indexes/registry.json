@@ -6,19 +6,75 @@
         "default"
       ],
       "createdAt": "2026-05-26T04:53:11.665Z",
-      "updatedAt": "2026-05-26T06:01:11.932Z",
-      "lastAccessedAt": "2026-05-26T06:59:27.670Z",
+      "updatedAt": "2026-05-27T10:14:57.541Z",
+      "lastAccessedAt": "2026-05-27T10:43:39.627Z",
+      "lifecycleState": "INACTIVE"
+    },
+    "session_1779877247432": {
+      "sessionId": "session_1779877247432",
+      "tags": [],
+      "createdAt": "2026-05-27T10:20:47.463Z",
+      "updatedAt": "2026-05-27T10:20:47.463Z",
+      "lastAccessedAt": "2026-05-27T10:20:47.463Z",
       "lifecycleState": "ACTIVE"
     },
-    "session_1779780397667": {
-      "sessionId": "session_1779780397667",
+    "recovery-kill-session": {
+      "sessionId": "recovery-kill-session",
+      "tags": [
+        "recovery"
+      ],
+      "createdAt": "2026-05-27T10:43:37.015Z",
+      "updatedAt": "2026-05-27T10:43:37.127Z",
+      "lastAccessedAt": "2026-05-27T10:43:37.119Z",
+      "lifecycleState": "ACTIVE"
+    },
+    "stress-session-1": {
+      "sessionId": "stress-session-1",
+      "tags": [
+        "stress"
+      ],
+      "createdAt": "2026-05-27T10:43:37.689Z",
+      "updatedAt": "2026-05-27T10:43:37.809Z",
+      "lastAccessedAt": "2026-05-27T10:43:39.238Z",
+      "lifecycleState": "ACTIVE"
+    },
+    "stress-session-2": {
+      "sessionId": "stress-session-2",
+      "tags": [
+        "stress"
+      ],
+      "createdAt": "2026-05-27T10:43:37.715Z",
+      "updatedAt": "2026-05-27T10:43:37.852Z",
+      "lastAccessedAt": "2026-05-27T10:43:39.340Z",
+      "lifecycleState": "ACTIVE"
+    },
+    "session-integration-a": {
+      "sessionId": "session-integration-a",
+      "tags": [
+        "tagA"
+      ],
+      "createdAt": "2026-05-27T10:43:36.272Z",
+      "updatedAt": "2026-05-27T10:43:36.349Z",
+      "lastAccessedAt": "2026-05-27T10:43:36.467Z",
+      "lifecycleState": "ACTIVE"
+    },
+    "session-integration-b": {
+      "sessionId": "session-integration-b",
       "tags": [
         "repaired"
       ],
-      "createdAt": "2026-05-27T08:01:18.742Z",
-      "updatedAt": "2026-05-27T08:02:00.551Z",
-      "lastAccessedAt": "2026-05-27T08:02:00.536Z",
+      "createdAt": "2026-05-27T10:43:36.598Z",
+      "updatedAt": "2026-05-27T10:43:36.619Z",
+      "lastAccessedAt": "2026-05-27T10:43:36.606Z",
       "lifecycleState": "INACTIVE"
+    },
+    "session_1779878652927": {
+      "sessionId": "session_1779878652927",
+      "tags": [],
+      "createdAt": "2026-05-27T10:44:12.939Z",
+      "updatedAt": "2026-05-27T10:44:12.987Z",
+      "lastAccessedAt": "2026-05-27T10:44:12.984Z",
+      "lifecycleState": "ACTIVE"
     }
   }
 }

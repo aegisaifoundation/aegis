@@ -2,6 +2,8 @@ import path from 'path';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
 import { MemoryContext } from '../../aegis-core/src/memory/MemoryContext.js';
+import { memoryGateway } from '../../aegis-core/src/memory/MemoryGateway.js';
+import { sessionStateManager } from '../../aegis-core/src/runtime/SessionStateManager.js';
 
 let workspacePath = '';
 
@@ -19,12 +21,6 @@ async function getActiveSessionId(): Promise<string> {
   return 'default';
 }
 
-async function getFilePath(): Promise<string> {
-  const wsRoot = path.dirname(workspacePath);
-  const activeSessionId = await getActiveSessionId();
-  return path.resolve(wsRoot, 'memory/sessions', activeSessionId, 'working-memory.md');
-}
-
 export default {
   name: 'profile',
   async initialize(context: MemoryContext): Promise<void> {
@@ -32,163 +28,55 @@ export default {
   },
 
   async shutdown(): Promise<void> {
-    // No-op for markdown-based memory
+    // No-op
   },
 
   async read(key: string): Promise<any> {
-    const filePath = await getFilePath();
-    if (!existsSync(filePath)) return undefined;
-    const content = await fs.readFile(filePath, 'utf8');
-    const lines = content.split('\n');
-    
-    let inTargetHeader = false;
-    const headerLower = '## temporary execution context';
-    
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed.startsWith('##')) {
-        if (trimmed.toLowerCase() === headerLower) {
-          inTargetHeader = true;
-        } else {
-          inTargetHeader = false;
-        }
-        continue;
-      }
-      
-      if (inTargetHeader) {
-        const match = trimmed.match(/^-\s+(?:\*\*)?([^*:]+)(?:\*\*)?:\s*(.*)$/);
-        if (match) {
-          const itemKey = match[1].trim();
-          const itemVal = match[2].trim();
-          if (itemKey === key) {
-            try {
-              return JSON.parse(itemVal);
-            } catch {
-              return itemVal;
-            }
-          }
-        }
-      }
+    const activeSessionId = await getActiveSessionId();
+    try {
+      const state = await memoryGateway.getSessionState(activeSessionId);
+      const tempContext = state.temporaryExecutionContext || {};
+      return tempContext[key];
+    } catch {
+      return undefined;
     }
-    return undefined;
   },
 
   async write(key: string, value: any): Promise<void> {
-    const filePath = await getFilePath();
-    const header = '## Temporary Execution Context';
-    if (!existsSync(filePath)) {
-      await fs.writeFile(filePath, `${header}\n`, 'utf8');
-    }
-    const content = await fs.readFile(filePath, 'utf8');
-    const lines = content.split('\n');
+    const activeSessionId = await getActiveSessionId();
+    const state = await memoryGateway.getSessionState(activeSessionId);
+    const tempContext = state.temporaryExecutionContext || {};
+    tempContext[key] = value;
     
-    let inTargetHeader = false;
-    const headerLower = '## temporary execution context';
-    let keyFound = false;
-    const valueStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
-    const newLine = `- **${key}**: ${valueStr}`;
-    
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const trimmed = line.trim();
-      if (trimmed.startsWith('##')) {
-        if (trimmed.toLowerCase() === headerLower) {
-          inTargetHeader = true;
-        } else {
-          inTargetHeader = false;
-        }
-        continue;
-      }
-      
-      if (inTargetHeader) {
-        const match = trimmed.match(/^-\s+(?:\*\*)?([^*:]+)(?:\*\*)?:\s*(.*)$/);
-        if (match) {
-          const itemKey = match[1].trim();
-          if (itemKey === key) {
-            const indent = line.match(/^\s*/)?.[0] || '';
-            lines[i] = `${indent}${newLine}`;
-            keyFound = true;
-            break;
-          }
-        }
-      }
-    }
-    
-    if (!keyFound) {
-      inTargetHeader = false;
-      let insertIndex = -1;
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const trimmed = line.trim();
-        if (trimmed.startsWith('##')) {
-          if (trimmed.toLowerCase() === headerLower) {
-            inTargetHeader = true;
-            continue;
-          } else if (inTargetHeader) {
-            insertIndex = i;
-            break;
-          }
-        }
-      }
-      
-      if (insertIndex === -1) {
-        if (inTargetHeader) {
-          lines.push(newLine);
-        } else {
-          lines.push('', header, newLine);
-        }
-      } else {
-        lines.splice(insertIndex, 0, newLine);
-      }
-    }
-    
-    await fs.writeFile(filePath, lines.join('\n'), 'utf8');
+    await sessionStateManager.updateSessionState(activeSessionId, {
+      temporaryExecutionContext: tempContext
+    });
   },
 
   async delete(key: string): Promise<boolean> {
-    const filePath = await getFilePath();
-    if (!existsSync(filePath)) return false;
-    const content = await fs.readFile(filePath, 'utf8');
-    const lines = content.split('\n');
-    
-    let inTargetHeader = false;
-    const headerLower = '## temporary execution context';
-    let keyDeleted = false;
-    
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const trimmed = line.trim();
-      if (trimmed.startsWith('##')) {
-        if (trimmed.toLowerCase() === headerLower) {
-          inTargetHeader = true;
-        } else {
-          inTargetHeader = false;
-        }
-        continue;
+    const activeSessionId = await getActiveSessionId();
+    try {
+      const state = await memoryGateway.getSessionState(activeSessionId);
+      const tempContext = state.temporaryExecutionContext || {};
+      if (key in tempContext) {
+        delete tempContext[key];
+        await sessionStateManager.updateSessionState(activeSessionId, {
+          temporaryExecutionContext: tempContext
+        });
+        return true;
       }
-      
-      if (inTargetHeader) {
-        const match = trimmed.match(/^-\s+(?:\*\*)?([^*:]+)(?:\*\*)?:\s*(.*)$/);
-        if (match) {
-          const itemKey = match[1].trim();
-          if (itemKey === key) {
-            lines.splice(i, 1);
-            keyDeleted = true;
-            break;
-          }
-        }
-      }
-    }
-    
-    if (keyDeleted) {
-      await fs.writeFile(filePath, lines.join('\n'), 'utf8');
-      return true;
-    }
+    } catch {}
     return false;
   },
 
   async exists(key: string): Promise<boolean> {
-    const val = await this.read(key);
-    return val !== undefined;
+    const activeSessionId = await getActiveSessionId();
+    try {
+      const state = await memoryGateway.getSessionState(activeSessionId);
+      const tempContext = state.temporaryExecutionContext || {};
+      return key in tempContext;
+    } catch {
+      return false;
+    }
   }
 };
