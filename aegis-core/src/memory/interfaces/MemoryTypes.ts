@@ -1,12 +1,6 @@
 export enum MemoryType {
   SESSION = 'SESSION',
-  WORKING = 'WORKING',
-  LONGTERM = 'LONGTERM',
-  EPISODIC = 'EPISODIC',
-  SEMANTIC = 'SEMANTIC',
-  PROCEDURAL = 'PROCEDURAL',
-  ASSOCIATIVE = 'ASSOCIATIVE',
-  META = 'META'
+  WORKING = 'WORKING'
 }
 
 export enum MemoryLifecycleState {

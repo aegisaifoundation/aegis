@@ -47,3 +47,4 @@
 {"timestamp":"2026-05-26T07:44:32.146Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
 {"timestamp":"2026-05-26T07:54:30.338Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
 {"timestamp":"2026-05-26T08:19:00.085Z","stage":"HEALTH_DEGRADED","reason":"Heartbeat watchdog timeout."}
+{"timestamp":"2026-05-27T08:01:18.736Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}

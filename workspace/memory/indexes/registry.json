@@ -12,11 +12,13 @@
     },
     "session_1779780397667": {
       "sessionId": "session_1779780397667",
-      "tags": [],
-      "createdAt": "2026-05-26T07:26:37.680Z",
-      "updatedAt": "2026-05-26T07:57:20.750Z",
-      "lastAccessedAt": "2026-05-26T07:57:20.746Z",
-      "lifecycleState": "ACTIVE"
+      "tags": [
+        "repaired"
+      ],
+      "createdAt": "2026-05-27T08:01:18.742Z",
+      "updatedAt": "2026-05-27T08:02:00.551Z",
+      "lastAccessedAt": "2026-05-27T08:02:00.536Z",
+      "lifecycleState": "INACTIVE"
     }
   }
 }
