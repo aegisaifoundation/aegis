@@ -41,14 +41,80 @@ function askSync(query) {
     return buffer.toString('utf8', 0, bytesRead).replace(/\r?\n$/, '').trim();
 }
 export default async function execute(input, context) {
-    const sessionId = input.trim();
-    if (!sessionId) {
+    const parts = input.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) {
         return {
             success: false,
-            message: 'Usage: /purge-session <session-id>'
+            message: 'Usage: /purge-session <session-id | all> [--force | -f | -y]'
         };
     }
+    const force = parts.includes('--force') || parts.includes('-f') || parts.includes('-y');
+    const cleanParts = parts.filter(p => p !== '--force' && p !== '-f' && p !== '-y');
+    if (cleanParts.length === 0) {
+        return {
+            success: false,
+            message: 'Usage: /purge-session <session-id | all> [--force | -f | -y]'
+        };
+    }
+    const target = cleanParts[0];
     const wsRoot = path.dirname(workspaceManager.getWorkspacePath());
+    const trashParentDir = path.resolve(wsRoot, 'memory/trash');
+    if (target === 'all' || target === '*') {
+        if (!existsSync(trashParentDir)) {
+            return {
+                success: true,
+                message: 'No sessions found in trash.'
+            };
+        }
+        try {
+            const items = await fs.readdir(trashParentDir);
+            const sessionsInTrash = [];
+            for (const item of items) {
+                const itemPath = path.join(trashParentDir, item);
+                const stat = await fs.stat(itemPath);
+                if (stat.isDirectory()) {
+                    sessionsInTrash.push(item);
+                }
+            }
+            if (sessionsInTrash.length === 0) {
+                return {
+                    success: true,
+                    message: 'No sessions found in trash.'
+                };
+            }
+            if (!force) {
+                const confirmation = askSync(`Are you sure you want to permanently delete ALL ${sessionsInTrash.length} sessions from trash? (yes/no): `);
+                if (confirmation.toLowerCase() !== 'yes' && confirmation.toLowerCase() !== 'y') {
+                    return {
+                        success: true,
+                        message: 'Purge process aborted.'
+                    };
+                }
+                const finalConfirm = askSync('To confirm, please type "delete": ');
+                if (finalConfirm !== 'delete') {
+                    return {
+                        success: false,
+                        message: 'Spelling is incorrect. Purge process aborted.'
+                    };
+                }
+            }
+            for (const sessionId of sessionsInTrash) {
+                const trashDir = path.join(trashParentDir, sessionId);
+                await fs.rm(trashDir, { recursive: true, force: true });
+            }
+            return {
+                success: true,
+                message: `Successfully purged ${sessionsInTrash.length} sessions from trash.`
+            };
+        }
+        catch (err) {
+            return {
+                success: false,
+                message: `Failed to permanently delete sessions from trash: ${err.message}`
+            };
+        }
+    }
+    const sessionId = target;
     const trashDir = path.resolve(wsRoot, `memory/trash/${sessionId}`);
     if (!existsSync(trashDir)) {
         return {
@@ -57,19 +123,21 @@ export default async function execute(input, context) {
         };
     }
     try {
-        const confirmation = askSync(`Are you sure you want to permanently delete session ${sessionId} from trash? (yes/no): `);
-        if (confirmation.toLowerCase() !== 'yes' && confirmation.toLowerCase() !== 'y') {
-            return {
-                success: true,
-                message: 'Purge process aborted.'
-            };
-        }
-        const finalConfirm = askSync('To confirm, please type "delete": ');
-        if (finalConfirm !== 'delete') {
-            return {
-                success: false,
-                message: 'Spelling is incorrect. Purge process aborted.'
-            };
+        if (!force) {
+            const confirmation = askSync(`Are you sure you want to permanently delete session ${sessionId} from trash? (yes/no): `);
+            if (confirmation.toLowerCase() !== 'yes' && confirmation.toLowerCase() !== 'y') {
+                return {
+                    success: true,
+                    message: 'Purge process aborted.'
+                };
+            }
+            const finalConfirm = askSync('To confirm, please type "delete": ');
+            if (finalConfirm !== 'delete') {
+                return {
+                    success: false,
+                    message: 'Spelling is incorrect. Purge process aborted.'
+                };
+            }
         }
         // Permanently delete folder
         await fs.rm(trashDir, { recursive: true, force: true });

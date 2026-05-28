@@ -7,6 +7,7 @@ import { conversationContext } from '../context/ConversationContext.js';
 import { agent } from '../agent/index.js';
 import { toolParser } from './ToolParser.js';
 import { toolRegistry, type ToolContext } from '../tools/index.js';
+import { skillRegistry } from '../skills/index.js';
 import { RuntimeStatus } from '../types/Runtime.js';
 import { workspaceManager } from './WorkspaceManager.js';
 import { runtimeSessionManager } from './RuntimeSessionManager.js';
@@ -61,17 +62,31 @@ export class RuntimeExecutor {
 
       // 1. Goal Detection & Plan Generation
       try {
+        const skillsList = skillRegistry.list().map(s => `- ${s.name}: ${s.description}`).join('\n') || 'None';
+        const toolsList = toolRegistry.getAllTools().map(t => `- ${t.name}: ${t.description}`).join('\n') || 'None';
+
         const detectionPrompt = `You are Aegis, a cognitive AI. Analyze the user's latest message and determine if the user is assigning a new task or specifying a new goal/objective.
+
+Available Skills:
+${skillsList}
+
+Available Tools:
+${toolsList}
+
 If this is a new task/goal:
-1. Formulate a concise "currentObjective" (1 sentence description).
-2. Generate an "activeTasks" list (string array of granular steps to achieve the goal).
-3. Generate an "implementationPlan" (detailed plan of what will be done, which files will be created/modified, etc.).
+1. Formulate a concise "goal" (1 sentence description of the overall task, e.g., "generate portfolio").
+2. Formulate a concise "currentObjective" (e.g., "find if there any relevant skills attached; find the tools needed"). This objective should focus on finding relevant skills and tools for the task.
+3. Generate a "tasks" list (string array of planned steps/tasks to achieve the goal, identifying which tool or skill to use for each step).
+4. Generate an "activeTasks" list (string array of the same tasks, but with status prefix: the first task should be marked as active "[!]", and all subsequent tasks should be marked as pending "[ ]").
+5. Generate an "implementationPlan" (detailed plan of what will be done, which files will be created/modified, etc.).
 
 Return the response as a raw JSON object with the following structure:
 {
   "isNewGoal": true,
+  "goal": "...",
   "currentObjective": "...",
-  "activeTasks": ["task 1", "task 2"],
+  "tasks": ["task 1", "task 2", ...],
+  "activeTasks": ["[!] task 1", "[ ] task 2", ...],
   "implementationPlan": "..."
 }
 
@@ -87,7 +102,9 @@ User Message: "${userInput}"
         if (parsed && parsed.isNewGoal) {
           // Clear previous plan and start writing new objective, plan, and tasks
           await sessionStateManager.updateSessionState(sessionId, {
+            goal: parsed.goal || parsed.currentObjective || '',
             currentObjective: parsed.currentObjective || '',
+            tasks: parsed.tasks || parsed.activeTasks || [],
             activeTasks: parsed.activeTasks || [],
             implementationPlan: parsed.implementationPlan || '',
             implementedDetails: ''
@@ -243,10 +260,60 @@ Provide your output as a raw JSON object containing the key "implementedDetails"
             }
           }
 
+          // Tasks Progress Tracking
+          let updatedActiveTasks = freshState.activeTasks || [];
+          let updatedObjective = freshState.currentObjective || '';
+          if (freshState.activeTasks && freshState.activeTasks.length > 0) {
+            const actionsSummary = executedActions.map(a => `- Executed tool '${a.toolName}' with input ${JSON.stringify(a.input)}`).join('\n');
+            const progressPrompt = `You are Aegis, a cognitive AI tracking execution progress.
+Analyze the conversation and the actions executed during this turn.
+Goal: "${freshState.goal || freshState.currentObjective || 'None'}"
+Current Objective before this turn: "${freshState.currentObjective || 'None'}"
+Planned Tasks:
+${(freshState.tasks || []).map(t => `- ${t}`).join('\n') || 'None'}
+
+Current Active Tasks (with statuses):
+${freshState.activeTasks.map(t => `- ${t}`).join('\n') || 'None'}
+
+Actions executed during this turn:
+${actionsSummary || 'No tool actions executed.'}
+
+Assistant Response:
+"${assistantContent.slice(0, 1000)}"
+
+Please determine the updated status for each task in the active tasks list.
+Use these symbols inside the brackets:
+- "[!]" for a task that is currently running or is the very next active task to execute.
+- "[✓]" for a task that has been successfully completed.
+- "[✗]" for a task that has failed or was not completed.
+- "[ ]" for any pending tasks that have not started yet.
+
+Also, formulate the updated "currentObjective" representing what the agent should focus on in the next turn (or "None" if all tasks are completed / the goal is achieved).
+
+Return the output as a raw JSON object with the following structure:
+{
+  "currentObjective": "...",
+  "activeTasks": ["...", "..."]
+}
+`;
+            const progressResponse = await providerManager.generate(progressPrompt);
+            const parsedProgress = parseProgressResponse(progressResponse);
+            if (parsedProgress) {
+              if (parsedProgress.currentObjective !== undefined) {
+                updatedObjective = parsedProgress.currentObjective;
+              }
+              if (parsedProgress.activeTasks !== undefined) {
+                updatedActiveTasks = parsedProgress.activeTasks;
+              }
+            }
+          }
+
           // Save the changes to the session state
           await sessionStateManager.updateSessionState(sessionId, {
             stableFacts: combinedFacts,
-            implementedDetails
+            implementedDetails,
+            currentObjective: updatedObjective,
+            activeTasks: updatedActiveTasks
           });
         } catch (err) {
           console.warn('Failed to perform memory extraction / implementation tracking:', err);
@@ -288,22 +355,38 @@ function parseDetectionResponse(response: string): any {
 
   const isNewGoal = /"isNewGoal"\s*:\s*true/.test(text);
   if (isNewGoal) {
+    const goalMatch = text.match(/"goal"\s*:\s*"([^"]+)"/);
     const objMatch = text.match(/"currentObjective"\s*:\s*"([^"]+)"/);
     const planMatch = text.match(/"implementationPlan"\s*:\s*"([^"]+)"/);
-    const tasksMatch = text.match(/"activeTasks"\s*:\s*\[([\s\S]*?)\]/);
-    const activeTasks: string[] = [];
+    const tasksMatch = text.match(/"tasks"\s*:\s*\[([\s\S]*?)\]/);
+    const activeTasksMatch = text.match(/"activeTasks"\s*:\s*\[([\s\S]*?)\]/);
+
+    const tasks: string[] = [];
     if (tasksMatch) {
       const items = tasksMatch[1].match(/"([^"]+)"/g);
+      if (items) {
+        for (const item of items) {
+          tasks.push(item.replace(/"/g, ''));
+        }
+      }
+    }
+
+    const activeTasks: string[] = [];
+    if (activeTasksMatch) {
+      const items = activeTasksMatch[1].match(/"([^"]+)"/g);
       if (items) {
         for (const item of items) {
           activeTasks.push(item.replace(/"/g, ''));
         }
       }
     }
+
     return {
       isNewGoal: true,
+      goal: goalMatch ? goalMatch[1] : (objMatch ? objMatch[1] : 'New Goal'),
       currentObjective: objMatch ? objMatch[1] : 'New Objective',
       implementationPlan: planMatch ? planMatch[1] : 'New Plan',
+      tasks: tasks.length > 0 ? tasks : activeTasks,
       activeTasks
     };
   }
@@ -357,6 +440,39 @@ function parseDetailsResponse(response: string): any {
   }
 
   return { implementedDetails: text };
+}
+
+function parseProgressResponse(response: string): any {
+  const text = response.trim();
+  try {
+    return JSON.parse(text);
+  } catch (e) {}
+
+  const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  if (jsonMatch) {
+    try {
+      return JSON.parse(jsonMatch[1]);
+    } catch (e) {}
+  }
+
+  const objMatch = text.match(/"currentObjective"\s*:\s*"([^"]+)"/);
+  const tasksMatch = text.match(/"activeTasks"\s*:\s*\[([\s\S]*?)\]/);
+  const activeTasks: string[] = [];
+  if (tasksMatch) {
+    const items = tasksMatch[1].match(/"([^"]+)"/g);
+    if (items) {
+      for (const item of items) {
+        activeTasks.push(item.replace(/"/g, ''));
+      }
+    }
+  }
+  if (objMatch || activeTasks.length > 0) {
+    return {
+      currentObjective: objMatch ? objMatch[1] : undefined,
+      activeTasks: activeTasks.length > 0 ? activeTasks : undefined
+    };
+  }
+  return null;
 }
 
 export const runtimeExecutor = new RuntimeExecutor();

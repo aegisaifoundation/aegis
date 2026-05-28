@@ -70,6 +70,12 @@ export class SessionStateManager {
         if (state.implementedDetails !== undefined && typeof state.implementedDetails !== 'string') {
             throw new Error('Invalid SessionState: implementedDetails must be a string');
         }
+        if (state.goal !== undefined && typeof state.goal !== 'string') {
+            throw new Error('Invalid SessionState: goal must be a string');
+        }
+        if (state.tasks !== undefined && !Array.isArray(state.tasks)) {
+            throw new Error('Invalid SessionState: tasks must be an array of strings');
+        }
     }
     /**
      * Performs an atomic state update using the full transaction pipeline:

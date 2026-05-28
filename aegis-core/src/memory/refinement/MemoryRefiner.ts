@@ -67,12 +67,51 @@ export class MemoryRefiner implements IMemoryRefiner {
     sessionId: string,
     currentWorkingMemory: string
   ): Promise<string> {
+    if (!currentWorkingMemory) return '';
+
+    // Check if it's using the new format (contains "- goal:" or "active task")
+    const isNewFormat = currentWorkingMemory.includes('- goal:') || currentWorkingMemory.includes('active task');
+
+    if (isNewFormat) {
+      const lines = currentWorkingMemory.split('\n');
+      const refinedLines: string[] = [];
+      let inActiveTasks = false;
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('active task')) {
+          inActiveTasks = true;
+          refinedLines.push(line);
+          continue;
+        }
+
+        if (inActiveTasks) {
+          // If we hit a new section header
+          if (trimmed.startsWith('##') || trimmed.startsWith('#')) {
+            inActiveTasks = false;
+          } else {
+            const isCompleted = trimmed.includes('[✓]') || trimmed.includes('[✔]') || trimmed.includes('[x]') || trimmed.includes('[X]');
+            if (isCompleted) {
+              // Prune completed task
+              continue;
+            }
+          }
+        }
+
+        refinedLines.push(line);
+      }
+
+      let refined = refinedLines.join('\n');
+      refined = this.enforceWordLimit(refined, 1500);
+      return refined;
+    }
+
     const sections = this.parseMarkdownSections(currentWorkingMemory);
 
     // Prune completed tasks [x] or expired workflows
     if (sections['Current Tasks']) {
       sections['Current Tasks'] = sections['Current Tasks'].filter(task => {
-        const isCompleted = task.includes('[x]') || task.includes('[X]');
+        const isCompleted = task.includes('[x]') || task.includes('[X]') || task.includes('[✓]') || task.includes('[✔]');
         return !isCompleted;
       });
     }

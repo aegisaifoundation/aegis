@@ -71,3 +71,29 @@
 {"timestamp":"2026-05-28T03:57:25.172Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
 {"timestamp":"2026-05-28T04:03:18.840Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
 {"timestamp":"2026-05-28T04:06:14.410Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-05-28T04:14:04.096Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-05-28T04:15:28.003Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-05-28T04:25:06.722Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-05-28T04:26:09.599Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"dea465e0-6f84-4020-9cbd-54f4f8210649"}
+{"timestamp":"2026-05-28T04:26:09.840Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"ea55821e-fb96-44b1-aa75-b32743240dc5"}
+{"timestamp":"2026-05-28T05:58:02.846Z","stage":"HEALTH_DEGRADED","reason":"Heartbeat watchdog timeout."}
+{"timestamp":"2026-05-28T06:08:05.105Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-05-28T06:08:05.114Z","stage":"CHECKPOINT_RESTORED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-05-28T06:08:05.126Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"f6dbc370-1f25-48a0-b606-61bbd6bed48d"}
+{"timestamp":"2026-05-28T06:08:05.415Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"8ad0d877-eeed-475c-8c62-444a16c4a082"}
+{"timestamp":"2026-05-28T06:08:41.374Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-05-28T06:08:41.382Z","stage":"CHECKPOINT_RESTORED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-05-28T06:08:41.394Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"d8f8b528-2fc4-4bf8-ab5f-b7d3da1d8d63"}
+{"timestamp":"2026-05-28T06:08:41.713Z","stage":"SAFE_MODE_ENTERED","reason":"Booted in SAFE_MODE."}
+{"timestamp":"2026-05-28T06:09:58.364Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-05-28T06:09:58.372Z","stage":"CHECKPOINT_RESTORED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-05-28T06:09:58.381Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"ef7e185d-c05e-4c41-8b67-6fe47113f03e"}
+{"timestamp":"2026-05-28T06:09:58.699Z","stage":"SAFE_MODE_ENTERED","reason":"Booted in SAFE_MODE."}
+{"timestamp":"2026-05-28T06:13:12.570Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-05-28T06:13:12.575Z","stage":"CHECKPOINT_RESTORED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-05-28T06:13:12.584Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"d4a3e959-124d-4010-aad1-b1ec82db6f25"}
+{"timestamp":"2026-05-28T06:13:13.002Z","stage":"SAFE_MODE_ENTERED","reason":"Booted in SAFE_MODE."}
+{"timestamp":"2026-05-28T06:22:51.161Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-05-28T06:22:51.166Z","stage":"CHECKPOINT_RESTORED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-05-28T06:22:51.174Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"01c47416-4d18-44c9-8009-59fcf06fed54"}
+{"timestamp":"2026-05-28T06:22:51.424Z","stage":"SAFE_MODE_ENTERED","reason":"Booted in SAFE_MODE."}

@@ -1,0 +1,7 @@
+{
+  "name": "create-snapshot",
+  "category": "shared",
+  "description": "Create a snapshot of session memory files.",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

@@ -15,9 +15,15 @@ test('RuntimeHealthValidator - full validation suite', async () => {
 
   const state = await runtimeStateManager.loadState();
   const originalActiveId = state.activeSessionId;
+  const originalMountLease = state.mountLease;
   
   // Set active session for health validator to check
   state.activeSessionId = testSessionId;
+  state.mountLease = {
+    sessionId: testSessionId,
+    acquiredAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + 3600000).toISOString() // 1 hour in future
+  };
   await runtimeStateManager.saveState(state);
 
   // 1. Validate healthy state
@@ -38,6 +44,7 @@ test('RuntimeHealthValidator - full validation suite', async () => {
 
   // Cleanup and restore original active session
   state.activeSessionId = originalActiveId;
+  state.mountLease = originalMountLease;
   await runtimeStateManager.saveState(state);
   await memoryGateway.deleteSession(testSessionId).catch(() => {});
 });

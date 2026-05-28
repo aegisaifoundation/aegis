@@ -19,11 +19,15 @@ test('ProjectionGenerator - generateWorkingMemoryProjection', () => {
 
   const workingProj = projectionGenerator.generateWorkingMemoryProjection(state);
   
-  assert.ok(workingProj.includes('## Current Objective'));
+  assert.ok(workingProj.includes('- goal:'));
+  assert.ok(workingProj.includes('- current objective:'));
   assert.ok(workingProj.includes('Stabilize the core runtime'));
-  assert.ok(workingProj.includes('## Active Tasks'));
+  assert.ok(workingProj.includes('tasks:'));
   assert.ok(workingProj.includes('- Task A'));
   assert.ok(workingProj.includes('- Task B'));
+  assert.ok(workingProj.includes('active task'));
+  assert.ok(workingProj.includes('[ ] Task A'));
+  assert.ok(workingProj.includes('[ ] Task B'));
   assert.ok(workingProj.includes('## Temporary Execution Context'));
   assert.ok(workingProj.includes('- **user.name**: Gokul'));
   assert.ok(workingProj.includes('- **preference.theme**: dark'));

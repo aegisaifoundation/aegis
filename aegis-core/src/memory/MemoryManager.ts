@@ -219,7 +219,7 @@ export class MemoryManager {
   public async updateSessionMemory(sessionId: string, content: string, actor: string = 'system'): Promise<void> {
     const release = await memoryLockManager.acquire(sessionId);
     try {
-      await memoryGateway.updateSessionMemory(sessionId, content, actor);
+      await memoryGateway.updateSessionMemory(sessionId, content, undefined, actor);
       eventBus.emit(EventTypes.MEMORY_UPDATED, { sessionId, memoryType: 'session', actor }, 'memory-system');
     } finally {
       release();
@@ -233,7 +233,7 @@ export class MemoryManager {
   public async updateWorkingMemory(sessionId: string, content: string, actor: string = 'system'): Promise<void> {
     const release = await memoryLockManager.acquire(sessionId);
     try {
-      await memoryGateway.updateWorkingMemory(sessionId, content, actor);
+      await memoryGateway.updateWorkingMemory(sessionId, content, undefined, actor);
       eventBus.emit(EventTypes.MEMORY_UPDATED, { sessionId, memoryType: 'working', actor }, 'memory-system');
     } finally {
       release();
@@ -302,13 +302,13 @@ export class MemoryManager {
 
       const working = await memoryGateway.getWorkingMemory(sessionId, actor);
       const refinedWorking = await this.refiner.refineWorkingMemory(sessionId, working);
-      await memoryGateway.updateWorkingMemory(sessionId, refinedWorking, actor);
+      await memoryGateway.updateWorkingMemory(sessionId, refinedWorking, undefined, actor);
       eventBus.emit(EventTypes.MEMORY_PRUNED, { sessionId, actor }, 'memory-system');
 
       const history = await memoryGateway.getHistory(sessionId, actor);
       const sessionMem = await memoryGateway.getSessionMemory(sessionId, actor);
       const refinedSession = await this.refiner.refineSessionMemory(sessionId, history, sessionMem);
-      await memoryGateway.updateSessionMemory(sessionId, refinedSession, actor);
+      await memoryGateway.updateSessionMemory(sessionId, refinedSession, undefined, actor);
       
       eventBus.emit(EventTypes.MEMORY_REFINED, { sessionId, actor }, 'memory-system');
       eventBus.emit(EventTypes.MEMORY_COMPRESSED, { sessionId, actor }, 'memory-system');
