@@ -1,4 +1,6 @@
 import { memoryGateway } from './MemoryGateway.js';
+import { toolRegistry } from '../tools/index.js';
+import { skillRegistry } from '../skills/index.js';
 export class ProjectionGenerator {
     static MAX_WORKING_WORDS = 1000;
     static MAX_SESSION_WORDS = 1000;
@@ -7,41 +9,79 @@ export class ProjectionGenerator {
      */
     generateWorkingMemoryProjection(state) {
         const lines = [];
-        lines.push('## Current Objective');
-        lines.push(state.currentObjective || 'None');
+        // Header section
+        lines.push(`- goal: ${state.goal || state.currentObjective || 'None'}`);
+        lines.push(`- current objective: ${state.currentObjective || 'None'}`);
         lines.push('');
-        lines.push('## Active Tasks');
+        // Available tools
+        lines.push('available tools:');
+        const tools = toolRegistry.getAllTools();
+        if (tools.length > 0) {
+            for (const tool of tools) {
+                lines.push(`- ${tool.name}`);
+            }
+        }
+        else {
+            lines.push('- None');
+        }
+        lines.push('');
+        // Available skills
+        lines.push('available skills:');
+        const skills = skillRegistry.list();
+        if (skills.length > 0) {
+            for (const skill of skills) {
+                const suffix = skill.name.toLowerCase().endsWith('skill') ? '' : ' skill';
+                lines.push(`- ${skill.name}${suffix}`);
+            }
+        }
+        else {
+            lines.push('- None');
+        }
+        lines.push('');
+        // Tasks list
+        lines.push('tasks:');
+        const tasksList = state.tasks || state.activeTasks || [];
+        if (tasksList.length > 0) {
+            for (const task of tasksList) {
+                // Strip any existing checkbox prefix from the static tasks list
+                const cleanTask = task.replace(/^-\s+/, '').replace(/^\[[\s\S]*?\]\s*/, '');
+                lines.push(`- ${cleanTask}`);
+            }
+        }
+        else {
+            lines.push('- None');
+        }
+        lines.push('');
+        // Active tasks with statuses
+        lines.push('active task');
+        lines.push('');
         if (state.activeTasks && state.activeTasks.length > 0) {
             for (const task of state.activeTasks) {
-                lines.push(`- ${task}`);
+                const hasPrefix = /^\[[!✓✗\s]\]/.test(task);
+                if (hasPrefix) {
+                    lines.push(task);
+                }
+                else {
+                    lines.push(`[ ] ${task}`);
+                }
             }
         }
         else {
             lines.push('None');
         }
         lines.push('');
-        lines.push('## Implementation Plan');
-        lines.push(state.implementationPlan || 'None');
-        lines.push('');
-        lines.push('## Implemented Details');
-        lines.push(state.implementedDetails || 'None');
-        lines.push('');
-        lines.push('## Immediate Execution Context');
-        lines.push(state.currentObjective ? `Focused on objective: ${state.currentObjective}` : 'None');
-        lines.push('');
-        lines.push('## Temporary Execution Context');
+        // If there is temporary execution context, we append it at the bottom to ensure
+        // ProjectionConsistencyValidator continues to pass without errors if it contains keys.
         const tempContext = state.temporaryExecutionContext || {};
         const keys = Object.keys(tempContext);
         if (keys.length > 0) {
+            lines.push('## Temporary Execution Context');
             for (const key of keys) {
                 const val = typeof tempContext[key] === 'object' ? JSON.stringify(tempContext[key]) : String(tempContext[key]);
                 lines.push(`- **${key}**: ${val}`);
             }
+            lines.push('');
         }
-        else {
-            lines.push('None');
-        }
-        lines.push('');
         const content = lines.join('\n');
         return this.trimProjection(content, ProjectionGenerator.MAX_WORKING_WORDS);
     }

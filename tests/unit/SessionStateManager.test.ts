@@ -33,7 +33,7 @@ test('SessionStateManager - transactional updates and rollbacks', async () => {
 
   // Verify projections are updated
   const workingMemory = await memoryGateway.getWorkingMemory(testSessionId);
-  assert.ok(workingMemory.includes('## Current Objective'));
+  assert.ok(workingMemory.includes('- current objective:'));
   assert.ok(workingMemory.includes('Stabilize Aegis Core'));
   assert.ok(workingMemory.includes('- Task A'));
   assert.ok(workingMemory.includes('**user.name**: Gokul'));

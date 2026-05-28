@@ -1,0 +1,7 @@
+{
+  "name": "delete-snapshot",
+  "category": "shared",
+  "description": "Delete a snapshot file or all snapshots for a session.",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}

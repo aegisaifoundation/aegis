@@ -1,0 +1,36 @@
+{
+  "runtimeId": "01c47416-4d18-44c9-8009-59fcf06fed54",
+  "runtimeClusterId": "cluster-default",
+  "runtimeEpoch": 1,
+  "activeSessionId": "session_1779949371179",
+  "mountedSessionId": "session_1779949371179",
+  "runtimeState": "ACTIVE",
+  "bootMode": "RECOVERY_MODE",
+  "lastBootAt": "2026-05-28T06:22:51.172Z",
+  "lastShutdownAt": "",
+  "runtimeVersion": "1.0.0",
+  "lastSessionSwitchAt": "2026-05-28T06:22:51.189Z",
+  "recoveryRequired": true,
+  "recoveryReason": "CORRUPTED_STATE",
+  "recoveryAttempts": 0,
+  "runtimeLockState": "IDLE",
+  "mountGeneration": 1,
+  "mountToken": "d67b1d45-b792-448f-9ac5-76b778ddd1a9",
+  "lastShutdownClean": true,
+  "lastHeartbeatAt": "2026-05-28T06:22:51.172Z",
+  "activeCapabilities": {
+    "tools": [],
+    "plugins": [],
+    "providers": [],
+    "workflows": []
+  },
+  "runtimeHealthStatus": "HEALTHY",
+  "runtimeContextVersion": "1.0.0",
+  "runtimeMode": "NORMAL",
+  "checkoutStage": "FINALIZING",
+  "mountLease": {
+    "ownerRuntimeId": "01c47416-4d18-44c9-8009-59fcf06fed54",
+    "acquiredAt": "2026-05-28T06:22:51.189Z",
+    "expiresAt": "2026-05-28T06:32:51.189Z"
+  }
+}

@@ -38,6 +38,8 @@
     "shared/fork-session",
     "shared/rename-session",
     "shared/purge-session",
+    "shared/create-snapshot",
+    "shared/delete-snapshot",
     "shared/runtime-status"
   ],
   "defaultProvider": "local/ollama"

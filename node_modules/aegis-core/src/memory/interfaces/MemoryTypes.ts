@@ -205,4 +205,6 @@ export interface SessionState {
   stableFacts?: string[];
   implementationPlan?: string;
   implementedDetails?: string;
+  goal?: string;
+  tasks?: string[];
 }

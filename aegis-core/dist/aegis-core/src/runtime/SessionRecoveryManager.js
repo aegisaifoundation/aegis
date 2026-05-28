@@ -57,6 +57,15 @@ export class SessionRecoveryManager {
             }
             // Rename/move the directory
             await fs.rename(sourceDir, quarantineDir);
+            // Clear active/mounted session in runtime state if it matches the quarantined session
+            const { runtimeStateManager } = await import('./RuntimeStateManager.js');
+            const state = await runtimeStateManager.loadState();
+            if (state.mountedSessionId === sessionId || state.activeSessionId === sessionId) {
+                state.mountedSessionId = '';
+                state.activeSessionId = '';
+                state.mountLease = undefined;
+                await runtimeStateManager.saveState(state);
+            }
             eventBus.emit(EventTypes.SESSION_QUARANTINED, { sessionId, reason }, 'recovery-manager');
             eventBus.emit(EventTypes.SESSION_QUARANTINE_REASON_UPDATED, { sessionId, reason }, 'recovery-manager');
         }

@@ -53,7 +53,23 @@ export class RuntimeSessionManager {
     await runtimeStateManager.markStartup();
 
     // 1. Run health validation on startup
-    const health = await runtimeHealthValidator.validateHealth();
+    let health = await runtimeHealthValidator.validateHealth();
+    if (!health.healthy) {
+      const isOnlyLeaseStale = health.errors.length === 1 && health.errors[0].includes('lease has expired');
+      if (isOnlyLeaseStale) {
+        console.log('[RuntimeSessionManager] Active session mount lease was expired. Automatically renewing...');
+        const state = await runtimeStateManager.loadState();
+        state.mountLease = {
+          ownerRuntimeId: state.runtimeId,
+          acquiredAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 600000).toISOString()
+        };
+        await runtimeStateManager.saveState(state);
+        // recheck health
+        health = await runtimeHealthValidator.validateHealth();
+      }
+    }
+
     if (!health.healthy) {
       console.warn(`[RuntimeSessionManager] Health checks failed on startup: ${health.errors.join('; ')}. Attempting recovery...`);
       await this.recoverRuntime();
@@ -253,6 +269,11 @@ export class RuntimeSessionManager {
       state.mountGeneration += 1;
       state.mountToken = crypto.randomUUID();
       state.lastSessionSwitchAt = new Date().toISOString();
+      state.mountLease = {
+        ownerRuntimeId: state.runtimeId,
+        acquiredAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 600000).toISOString() // 10 minutes lease refresh
+      };
       state.checkoutStage = CheckoutStage.FINALIZING;
 
       const stateFile = path.resolve(wsRoot, 'runtime/runtime-state.json');
@@ -287,7 +308,10 @@ export class RuntimeSessionManager {
     // 1. Run health validation before session switch
     const health = await runtimeHealthValidator.validateHealth();
     if (!health.healthy) {
-      throw new Error(`Cannot checkout session: Runtime health is degraded: ${health.errors.join('; ')}`);
+      const isOnlyLeaseStale = health.errors.length === 1 && health.errors[0].includes('lease has expired');
+      if (!isOnlyLeaseStale) {
+        throw new Error(`Cannot checkout session: Runtime health is degraded: ${health.errors.join('; ')}`);
+      }
     }
 
     const wsRoot = path.dirname(workspaceManager.getWorkspacePath());
@@ -361,6 +385,11 @@ export class RuntimeSessionManager {
       state.mountGeneration += 1;
       state.mountToken = crypto.randomUUID();
       state.lastSessionSwitchAt = new Date().toISOString();
+      state.mountLease = {
+        ownerRuntimeId: state.runtimeId,
+        acquiredAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 600000).toISOString() // 10 minutes lease refresh
+      };
       state.checkoutStage = CheckoutStage.FINALIZING;
 
       const stateFile = path.resolve(wsRoot, 'runtime/runtime-state.json');

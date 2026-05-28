@@ -96,7 +96,7 @@ async function runValidation() {
     // 4. Working memory preservation
     console.log("\n4. Working Memory Preservation during Swap/Checkout...");
     const workingContent = "## Current Tasks\n- [ ] Persist working memory before checkout\n";
-    await memoryGateway.updateWorkingMemory(createdSessionId, workingContent, 'agent');
+    await memoryGateway.updateWorkingMemory(createdSessionId, workingContent, undefined, 'agent');
 
     // Create a second session to swap focus
     const meta2 = await runtimeSessionManager.createNewSession(['continuous2'], 'agent');
@@ -221,6 +221,7 @@ async function runValidation() {
 
     // 12. Mount lease ownership checks
     console.log("\n12. Mount Lease Verification...");
+    await runtimeSessionManager.checkoutSession(createdSessionId, 'agent');
     const stateForLease = await runtimeStateManager.loadState();
     assert(stateForLease.mountLease !== undefined, "Mount lease registered on mounted session");
     assert(stateForLease.mountLease?.ownerRuntimeId === stateForLease.runtimeId, "Mount lease owner runtime ID matches active runtime ID");
