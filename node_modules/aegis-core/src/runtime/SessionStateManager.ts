@@ -6,6 +6,7 @@ import { checkpointManager } from './CheckpointManager.js';
 import { memoryTransactionManager } from '../memory/transactions/MemoryTransactionManager.js';
 import { eventBus } from './EventBus.js';
 import { logger } from '../utils/StructuredLogger.js';
+import { providerManager } from '../providers/index.js';
 
 export class SessionStateManager {
   private static instance = new SessionStateManager();
@@ -27,7 +28,9 @@ export class SessionStateManager {
       checkpointVersion: 0,
       temporaryExecutionContext: {},
       preferences: {},
-      stableFacts: []
+      stableFacts: [],
+      implementationPlan: '',
+      implementedDetails: ''
     };
     this.validateSessionState(defaultState);
     await memoryGateway.updateSessionState(sessionId, defaultState, undefined, actor);
@@ -68,6 +71,12 @@ export class SessionStateManager {
     if (!Array.isArray(state.activeTasks)) {
       throw new Error('Invalid SessionState: activeTasks must be an array of strings');
     }
+    if (state.implementationPlan !== undefined && typeof state.implementationPlan !== 'string') {
+      throw new Error('Invalid SessionState: implementationPlan must be a string');
+    }
+    if (state.implementedDetails !== undefined && typeof state.implementedDetails !== 'string') {
+      throw new Error('Invalid SessionState: implementedDetails must be a string');
+    }
   }
 
   /**
@@ -96,6 +105,22 @@ export class SessionStateManager {
       await checkpointManager.createCheckpoint('pre-mutation-checkpoint', sessionId);
       await logger.info('MUTATION_CHECKPOINT_CREATED', sessionId, { checkpoint: 'pre-mutation-checkpoint' });
 
+      // 3.5. Refine memory if word limit is exceeded
+      let sessionProj = projectionGenerator.generateSessionMemoryProjection(mutated);
+      if (!projectionGenerator.validateProjectionSize(sessionProj, 1000)) {
+        await logger.info('SESSION_MEMORY_LIMIT_EXCEEDED', sessionId, {
+          wordCount: sessionProj.trim().split(/\s+/).filter(Boolean).length
+        });
+        
+        try {
+          const refinedFacts = await this.refineStableFacts(mutated.stableFacts || [], actor);
+          mutated.stableFacts = refinedFacts;
+        } catch (err: any) {
+          await logger.error('SESSION_MEMORY_REFINEMENT_FAILED', sessionId, { error: err.message });
+          throw new Error(`Failed to refine session memory: ${err.message}`);
+        }
+      }
+
       // 4. Mutation (register state write)
       await this.saveSessionState(mutated, txId, actor);
 
@@ -104,11 +129,11 @@ export class SessionStateManager {
 
       // 6. Consistency Validation (pre-validate in memory before committing)
       const workingProj = projectionGenerator.generateWorkingMemoryProjection(mutated);
-      const sessionProj = projectionGenerator.generateSessionMemoryProjection(mutated);
+      const updatedSessionProj = projectionGenerator.generateSessionMemoryProjection(mutated);
 
       const consistency = projectionConsistencyValidator.validateProjectionSynchronization(
         workingProj,
-        sessionProj,
+        updatedSessionProj,
         mutated
       );
       if (!consistency.valid) {
@@ -151,6 +176,55 @@ export class SessionStateManager {
   public async recoverSessionState(sessionId: string, name: string): Promise<void> {
     await checkpointManager.rollbackToCheckpoint(name, sessionId);
     await logger.warn('RECOVERY_RESTORE_COMPLETED', sessionId, { checkpointName: name });
+  }
+
+  /**
+   * Refines the list of stable facts using the LLM.
+   */
+  private async refineStableFacts(facts: string[], actor: string = 'system'): Promise<string[]> {
+    if (facts.length === 0) return [];
+
+    const prompt = `You are Aegis, a cognitive AI. The session memory word limit has been reached. Consolidate and refine the following list of stable facts into a crystal-clear, concise summary that fits within the budget while preserving all critical information.
+Provide your output as a raw JSON string array, matching the format: ["fact 1", "fact 2", ...].
+Current facts to refine:
+${facts.map((f, i) => `${i + 1}. ${f}`).join('\n')}
+`;
+
+    const response = await providerManager.generate(prompt);
+    
+    // Parse response resiliently
+    const trimmed = response.trim();
+    
+    // Helper to parse JSON array safely
+    const parseRefinedFacts = (text: string): string[] => {
+      try {
+        const parsed = JSON.parse(text);
+        if (Array.isArray(parsed)) return parsed.map(String);
+      } catch (e) {}
+
+      const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[1]);
+          if (Array.isArray(parsed)) return parsed.map(String);
+        } catch (e) {}
+      }
+
+      const arrayMatch = text.match(/\[\s*("[\s\S]*?"\s*,\s*)*"[\s\S]*?"\s*\]/);
+      if (arrayMatch) {
+        try {
+          const parsed = JSON.parse(arrayMatch[0]);
+          if (Array.isArray(parsed)) return parsed.map(String);
+        } catch (e) {}
+      }
+
+      // Fallback: Split by lines and remove bullet list symbols
+      return text.split('\n')
+        .map(l => l.trim().replace(/^[-*+•]\s+/, '').replace(/^\d+\.\s+/, ''))
+        .filter(l => l.length > 0);
+    };
+
+    return parseRefinedFacts(trimmed);
   }
 }
 

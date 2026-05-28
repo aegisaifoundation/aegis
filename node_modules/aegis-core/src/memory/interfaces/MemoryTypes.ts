@@ -203,4 +203,6 @@ export interface SessionState {
   temporaryExecutionContext?: Record<string, any>;
   preferences?: Record<string, any>;
   stableFacts?: string[];
+  implementationPlan?: string;
+  implementedDetails?: string;
 }

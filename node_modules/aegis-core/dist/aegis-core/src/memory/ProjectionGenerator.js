@@ -1,7 +1,7 @@
 import { memoryGateway } from './MemoryGateway.js';
 export class ProjectionGenerator {
     static MAX_WORKING_WORDS = 1000;
-    static MAX_SESSION_WORDS = 1500;
+    static MAX_SESSION_WORDS = 1000;
     /**
      * Generates working-memory.md projection from SessionState.
      */
@@ -19,6 +19,12 @@ export class ProjectionGenerator {
         else {
             lines.push('None');
         }
+        lines.push('');
+        lines.push('## Implementation Plan');
+        lines.push(state.implementationPlan || 'None');
+        lines.push('');
+        lines.push('## Implemented Details');
+        lines.push(state.implementedDetails || 'None');
         lines.push('');
         lines.push('## Immediate Execution Context');
         lines.push(state.currentObjective ? `Focused on objective: ${state.currentObjective}` : 'None');

@@ -6,9 +6,9 @@
         "default"
       ],
       "createdAt": "2026-05-26T04:53:11.665Z",
-      "updatedAt": "2026-05-27T10:14:57.541Z",
-      "lastAccessedAt": "2026-05-27T10:43:39.627Z",
-      "lifecycleState": "INACTIVE"
+      "updatedAt": "2026-05-27T14:27:48.925Z",
+      "lastAccessedAt": "2026-05-27T14:27:48.921Z",
+      "lifecycleState": "ACTIVE"
     },
     "session_1779877247432": {
       "sessionId": "session_1779877247432",
@@ -23,9 +23,9 @@
       "tags": [
         "recovery"
       ],
-      "createdAt": "2026-05-27T10:43:37.015Z",
-      "updatedAt": "2026-05-27T10:43:37.127Z",
-      "lastAccessedAt": "2026-05-27T10:43:37.119Z",
+      "createdAt": "2026-05-27T11:41:06.446Z",
+      "updatedAt": "2026-05-27T11:41:06.523Z",
+      "lastAccessedAt": "2026-05-27T11:41:06.519Z",
       "lifecycleState": "ACTIVE"
     },
     "stress-session-1": {
@@ -33,9 +33,9 @@
       "tags": [
         "stress"
       ],
-      "createdAt": "2026-05-27T10:43:37.689Z",
-      "updatedAt": "2026-05-27T10:43:37.809Z",
-      "lastAccessedAt": "2026-05-27T10:43:39.238Z",
+      "createdAt": "2026-05-27T11:40:59.880Z",
+      "updatedAt": "2026-05-27T11:40:59.961Z",
+      "lastAccessedAt": "2026-05-27T11:41:01.150Z",
       "lifecycleState": "ACTIVE"
     },
     "stress-session-2": {
@@ -43,9 +43,9 @@
       "tags": [
         "stress"
       ],
-      "createdAt": "2026-05-27T10:43:37.715Z",
-      "updatedAt": "2026-05-27T10:43:37.852Z",
-      "lastAccessedAt": "2026-05-27T10:43:39.340Z",
+      "createdAt": "2026-05-27T11:40:59.907Z",
+      "updatedAt": "2026-05-27T11:40:59.992Z",
+      "lastAccessedAt": "2026-05-27T11:41:01.255Z",
       "lifecycleState": "ACTIVE"
     },
     "session-integration-a": {
@@ -53,9 +53,9 @@
       "tags": [
         "tagA"
       ],
-      "createdAt": "2026-05-27T10:43:36.272Z",
-      "updatedAt": "2026-05-27T10:43:36.349Z",
-      "lastAccessedAt": "2026-05-27T10:43:36.467Z",
+      "createdAt": "2026-05-27T11:40:44.992Z",
+      "updatedAt": "2026-05-27T11:40:45.067Z",
+      "lastAccessedAt": "2026-05-27T11:40:45.143Z",
       "lifecycleState": "ACTIVE"
     },
     "session-integration-b": {
@@ -63,9 +63,9 @@
       "tags": [
         "repaired"
       ],
-      "createdAt": "2026-05-27T10:43:36.598Z",
-      "updatedAt": "2026-05-27T10:43:36.619Z",
-      "lastAccessedAt": "2026-05-27T10:43:36.606Z",
+      "createdAt": "2026-05-27T11:40:45.283Z",
+      "updatedAt": "2026-05-27T11:40:45.301Z",
+      "lastAccessedAt": "2026-05-27T11:40:45.291Z",
       "lifecycleState": "INACTIVE"
     },
     "session_1779878652927": {
@@ -74,6 +74,14 @@
       "createdAt": "2026-05-27T10:44:12.939Z",
       "updatedAt": "2026-05-27T10:44:12.987Z",
       "lastAccessedAt": "2026-05-27T10:44:12.984Z",
+      "lifecycleState": "ACTIVE"
+    },
+    "session_1779893041764": {
+      "sessionId": "session_1779893041764",
+      "tags": [],
+      "createdAt": "2026-05-27T14:44:01.783Z",
+      "updatedAt": "2026-05-28T04:06:14.456Z",
+      "lastAccessedAt": "2026-05-28T04:06:14.449Z",
       "lifecycleState": "ACTIVE"
     }
   }
