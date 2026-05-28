@@ -5,7 +5,7 @@ import { memoryGateway } from './MemoryGateway.js';
 
 export class ProjectionGenerator {
   public static readonly MAX_WORKING_WORDS = 1000;
-  public static readonly MAX_SESSION_WORDS = 1500;
+  public static readonly MAX_SESSION_WORDS = 1000;
 
   /**
    * Generates working-memory.md projection from SessionState.
@@ -24,6 +24,14 @@ export class ProjectionGenerator {
     } else {
       lines.push('None');
     }
+    lines.push('');
+
+    lines.push('## Implementation Plan');
+    lines.push(state.implementationPlan || 'None');
+    lines.push('');
+
+    lines.push('## Implemented Details');
+    lines.push(state.implementedDetails || 'None');
     lines.push('');
     
     lines.push('## Immediate Execution Context');

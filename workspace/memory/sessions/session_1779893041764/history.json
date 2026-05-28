@@ -1,0 +1,83 @@
+{
+  "messages": [
+    {
+      "id": "msg_1779893073119_590xfaw4h",
+      "role": "user",
+      "content": "what is my name",
+      "timestamp": "2026-05-27T14:44:33.119Z"
+    },
+    {
+      "id": "msg_1779893092490_i857aaa5x",
+      "role": "assistant",
+      "content": "I do not know your name. I am an AI agent and do not have access to your personal identification details unless you choose to tell me or if your name was previously saved in our current session memory.",
+      "timestamp": "2026-05-27T14:44:52.490Z"
+    },
+    {
+      "id": "msg_1779893118145_0ba6mcqp1",
+      "role": "user",
+      "content": "who are you",
+      "timestamp": "2026-05-27T14:45:18.145Z"
+    },
+    {
+      "id": "msg_1779893134236_fwrq9v6xm",
+      "role": "assistant",
+      "content": "I am Aegis Core Agent, an advanced modular AI orchestrator.\n\nMy function is to assist you by accessing information, processing complex requests, and executing various tasks using a defined set of tools, such as file management, memory interaction, and data processing. I operate based on the information and instructions you provide.\n\nHow can I help you today?",
+      "timestamp": "2026-05-27T14:45:34.236Z"
+    },
+    {
+      "id": "msg_1779940974518_d05djexzg",
+      "role": "user",
+      "content": "create a file named gokul.html and another file named gokul.css and generate a portfolio website with the details available in the session memory inside the gokul.html file and style the portfolio using gokul.css file",
+      "timestamp": "2026-05-28T04:02:54.518Z"
+    },
+    {
+      "id": "msg_1779941008126_58yldmtjn",
+      "role": "user",
+      "content": "hi",
+      "timestamp": "2026-05-28T04:03:28.126Z"
+    },
+    {
+      "id": "msg_1779941009131_sgf0y4irs",
+      "role": "assistant",
+      "content": "[Mock Response to: \"hi\"] This is a mock response from the Mock Provider. ",
+      "timestamp": "2026-05-28T04:03:29.131Z"
+    },
+    {
+      "id": "msg_1779941013067_s8vuqrizi",
+      "role": "user",
+      "content": "hello",
+      "timestamp": "2026-05-28T04:03:33.067Z"
+    },
+    {
+      "id": "msg_1779941014107_wasy5r6ty",
+      "role": "assistant",
+      "content": "[Mock Response to: \"hello\"] This is a mock response from the Mock Provider. ",
+      "timestamp": "2026-05-28T04:03:34.107Z"
+    },
+    {
+      "id": "msg_1779941102341_8j7bwy7r8",
+      "role": "user",
+      "content": "hi",
+      "timestamp": "2026-05-28T04:05:02.341Z"
+    },
+    {
+      "id": "msg_1779941107808_luwhtafhs",
+      "role": "assistant",
+      "content": "[Mock Response to: \"hi\"] This is a mock response from the Mock Provider.",
+      "timestamp": "2026-05-28T04:05:07.808Z"
+    },
+    {
+      "id": "msg_1779941190409_33d5ornfn",
+      "role": "user",
+      "content": "hi",
+      "timestamp": "2026-05-28T04:06:30.409Z"
+    },
+    {
+      "id": "msg_1779941192898_f0vhdsppy",
+      "role": "assistant",
+      "content": "[Mock Response to: \"hi\"] This is a mock response from the Mock Provider.",
+      "timestamp": "2026-05-28T04:06:32.898Z"
+    }
+  ],
+  "memoryVersion": "1.0.0"
+}

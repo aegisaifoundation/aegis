@@ -65,3 +65,9 @@
 {"timestamp":"2026-05-27T10:43:37.049Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
 {"timestamp":"2026-05-27T10:43:37.256Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"1dfb9f50-8745-4e6a-a8b6-a12f570ea108"}
 {"timestamp":"2026-05-27T10:44:12.913Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"e1230ef1-90e8-4110-93bf-dded36c5f1e8"}
+{"timestamp":"2026-05-27T11:40:54.573Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-05-27T11:41:06.488Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-05-27T11:41:06.632Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"0476bb84-599a-4a0d-9646-c77a0b5ae1da"}
+{"timestamp":"2026-05-28T03:57:25.172Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-05-28T04:03:18.840Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-05-28T04:06:14.410Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}

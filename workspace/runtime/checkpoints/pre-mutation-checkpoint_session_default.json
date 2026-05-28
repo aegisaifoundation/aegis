@@ -1,0 +1,15 @@
+{
+  "sessionId": "default",
+  "status": "ACTIVE",
+  "currentObjective": "",
+  "activeTasks": [],
+  "lastUpdatedAt": "2026-05-27T14:38:12.540Z",
+  "checkpointVersion": 3,
+  "temporaryExecutionContext": {},
+  "preferences": {},
+  "stableFacts": [
+    "User's name is Gokul"
+  ],
+  "implementationPlan": "",
+  "implementedDetails": ""
+}
