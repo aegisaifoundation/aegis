@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aegis - Decentralized AI Agent Portal</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Vanilla CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Root App Layout -->
+  <div id="app-container">
+    
+    <!-- LEFT SIDEBAR: Sessions List (Only relevant for Home / Chat Page) -->
+    <aside id="left-sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <h2>Sessions</h2>
+        <button id="btn-new-session" class="btn btn-primary" title="Create New Session">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          New Session
+        </button>
+      </div>
+      <div id="session-list-container" class="sidebar-scrollable">
+        <ul id="session-list">
+          <!-- Populated dynamically via app.js -->
+        </ul>
+      </div>
+    </aside>
+
+    <!-- CENTER AREA: Multi-page Container -->
+    <main id="main-content">
+      
+      <!-- PAGE 1: HOME (CHATBOT & AGENT FLOW) -->
+      <section id="page-home" class="page-section active">
+        <header class="page-header">
+          <div>
+            <h1 id="active-session-title">Aegis Agent Node</h1>
+            <p id="active-session-subtitle">Decentralized Federated Medical Intelligence</p>
+          </div>
+          <div class="header-status">
+            <span class="status-dot online"></span>
+            <span id="agent-status-text">Core Node Idle</span>
+          </div>
+        </header>
+
+        <!-- Chat Area -->
+        <div id="chat-container">
+          <div id="chat-messages" class="chat-messages-scroll">
+            <!-- Dynamically populated messages -->
+            <div class="message-bubble bot system-message">
+              <div class="message-content">
+                <strong>System Booted.</strong> Welcome to Aegis. Start a conversation or select a session on the left.
+              </div>
+            </div>
+          </div>
+
+          <!-- Real-Time Activity Log (Collapsible or Mini-logs) -->
+          <div id="agent-activity-tracker" class="collapsed">
+            <div id="activity-header">
+              <span>Agent Live Actions</span>
+              <span id="activity-chevron" class="chevron">▲</span>
+            </div>
+            <div id="activity-body">
+              <div id="activity-log"></div>
+            </div>
+          </div>
+
+          <!-- Thinking Spinner Overlay / Message -->
+          <div id="thinking-indicator" class="hidden">
+            <div class="thinking-spinner">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <span id="thinking-text">Agent is thinking...</span>
+          </div>
+
+          <!-- Chat Input -->
+          <div class="chat-input-wrapper">
+            <textarea id="chat-input" placeholder="Enter instructions, medical queries, or commands..." rows="1"></textarea>
+            <button id="btn-send" class="btn btn-send" title="Send message">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 2: SKILLS PAGE -->
+      <section id="page-skills" class="page-section">
+        <header class="page-header">
+          <div>
+            <h1>Skills Management</h1>
+            <p>Agent's modular behavioral execution flows</p>
+          </div>
+          <div class="dropdown-container">
+            <button id="dropdown-skills-btn" class="btn btn-add dropdown-trigger">
+              Add Skill
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </button>
+            <div id="dropdown-skills-list" class="dropdown-content">
+              <!-- Dynamically populated available skills -->
+            </div>
+          </div>
+        </header>
+        <div class="grid-container" id="skills-grid">
+          <!-- Active skills list -->
+        </div>
+      </section>
+
+      <!-- PAGE 3: TOOLS PAGE -->
+      <section id="page-tools" class="page-section">
+        <header class="page-header">
+          <div>
+            <h1>Tools Sandbox</h1>
+            <p>Functional system and memory interaction APIs</p>
+          </div>
+          <div class="dropdown-container">
+            <button id="dropdown-tools-btn" class="btn btn-add dropdown-trigger">
+              Add Tool
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </button>
+            <div id="dropdown-tools-list" class="dropdown-content">
+              <!-- Dynamically populated available tools -->
+            </div>
+          </div>
+        </header>
+        <div class="grid-container" id="tools-grid">
+          <!-- Active tools list -->
+        </div>
+      </section>
+
+      <!-- PAGE 4: PLUGINS PAGE -->
+      <section id="page-plugins" class="page-section">
+        <header class="page-header">
+          <div>
+            <h1>Security & Core Plugins</h1>
+            <p>Middleware layers for blockchain audit, encryption, and sync</p>
+          </div>
+          <div class="dropdown-container">
+            <button id="dropdown-plugins-btn" class="btn btn-add dropdown-trigger">
+              Add Plugin
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </button>
+            <div id="dropdown-plugins-list" class="dropdown-content">
+              <!-- Dynamically populated available plugins -->
+            </div>
+          </div>
+        </header>
+        <div class="grid-container" id="plugins-grid">
+          <!-- Active plugins list -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- RIGHT NAVIGATION SIDEBAR: Global Nav Icons -->
+    <nav id="right-navbar">
+      <div class="nav-brand">
+        <img src="https://img.icons8.com/nolan/64/security-shield.png" alt="Aegis Logo" class="brand-logo"/>
+      </div>
+      
+      <div class="nav-links">
+        <button class="nav-btn active" data-target="page-home" title="Home (Chat & Sessions)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>Home</span>
+        </button>
+
+        <button class="nav-btn" data-target="page-skills" title="Skills Manager">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path>
+          </svg>
+          <span>Skills</span>
+        </button>
+
+        <button class="nav-btn" data-target="page-tools" title="Tools Sandbox">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+          </svg>
+          <span>Tools</span>
+        </button>
+
+        <button class="nav-btn" data-target="page-plugins" title="Plugins Sandbox">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+            <line x1="6" y1="6" x2="6.01" y2="6"></line>
+            <line x1="6" y1="18" x2="6.01" y2="18"></line>
+          </svg>
+          <span>Plugins</span>
+        </button>
+      </div>
+
+      <div class="nav-footer">
+        <span class="version-badge">v1.0</span>
+      </div>
+    </nav>
+
+  </div>
+
+  <!-- Main JavaScript File -->
+  <script src="app.js"></script>
+</body>
+</html>
