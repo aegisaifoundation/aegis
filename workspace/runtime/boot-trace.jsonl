@@ -97,3 +97,6 @@
 {"timestamp":"2026-05-28T06:22:51.166Z","stage":"CHECKPOINT_RESTORED","name":"pre-mutation-checkpoint"}
 {"timestamp":"2026-05-28T06:22:51.174Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"01c47416-4d18-44c9-8009-59fcf06fed54"}
 {"timestamp":"2026-05-28T06:22:51.424Z","stage":"SAFE_MODE_ENTERED","reason":"Booted in SAFE_MODE."}
+{"timestamp":"2026-06-19T09:35:54.768Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-06-19T09:59:08.388Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-06-19T10:00:26.679Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}

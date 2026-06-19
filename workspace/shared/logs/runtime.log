@@ -13,3 +13,6 @@
 [2026-05-26T07:55:06.270Z] [COMMAND_EXECUTED] [system] {"name":"help","success":true}
 [2026-05-26T07:55:17.901Z] [COMMAND_EXECUTED] [system] {"name":"plugins","success":true}
 [2026-05-26T07:55:28.025Z] [INFO] [LoggingPlugin] Logging plugin shutting down.
+[2026-06-19T10:07:10.075Z] [INFO] [LoggingPlugin] Logging plugin initialized.
+[2026-06-19T10:07:21.336Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781863251771","memoryType":"history","actor":"system"}
+[2026-06-19T10:07:55.868Z] [EXECUTION_COMPLETED] [system] {"input":"tell me what are there in your memory","status":"COMPLETED"}
