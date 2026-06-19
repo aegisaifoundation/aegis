@@ -46,6 +46,29 @@ export class RuntimeExecutor {
         const executedActions = [];
         let assistantContent = '';
         try {
+            // If using the local GGUF provider, run a direct chat generation and bypass cognitive agent steps
+            if (providerManager.getActiveProviderName() === 'local/gguf') {
+                this.status = 'THINKING';
+                eventBus.emit('execution_started', { input: userInput });
+                eventBus.emit('message_received', { role: 'user', content: userInput });
+                eventBus.emit('thinking_started');
+                await conversationContext.addMessage('user', userInput);
+                const messages = await conversationContext.getMessages();
+                eventBus.emit('response_started');
+                assistantContent = '';
+                const stream = agent.streamChat(messages);
+                for await (const chunk of stream) {
+                    assistantContent += chunk;
+                    eventBus.emit('response_chunk', chunk);
+                }
+                eventBus.emit('response_finished', assistantContent);
+                eventBus.emit('message_received', { role: 'assistant', content: assistantContent });
+                eventBus.emit('thinking_finished');
+                await conversationContext.addMessage('assistant', assistantContent);
+                this.status = 'COMPLETED';
+                eventBus.emit('execution_completed', { input: userInput, status: 'COMPLETED' });
+                return;
+            }
             this.status = 'THINKING';
             eventBus.emit('execution_started', { input: userInput });
             eventBus.emit('message_received', { role: 'user', content: userInput });
