@@ -132,6 +132,7 @@ class UIRequestHandler(http.server.SimpleHTTPRequestHandler):
             post_data = self.rfile.read(content_length).decode('utf-8')
             data = json.loads(post_data)
             messages = data.get('messages', [])
+            print(f"[Python Server] Received messages: {json.dumps(messages, indent=2)}")
 
             try:
                 llm = gguf_manager.get_llm()

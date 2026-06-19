@@ -26,8 +26,67 @@ export class GGUFProvider implements Provider {
     }
   }
 
+  private cleanMemoryText(text: string): string {
+    let cleaned = text
+      .replace(/available tools:[\s\S]*?(?=\n\n|\n[a-z]|$)/gi, '')
+      .replace(/available skills:[\s\S]*?(?=\n\n|\n[a-z]|$)/gi, '')
+      .replace(/tasks:[\s\S]*?(?=\n\n|\n[a-z]|$)/gi, '')
+      .replace(/active task[\s\S]*?(?=\n\n|\n[a-z]|$)/gi, '')
+      .trim();
+
+    cleaned = cleaned
+      .replace(/- goal:\s*none/gi, '')
+      .replace(/- current objective:\s*none/gi, '')
+      .trim();
+
+    return cleaned;
+  }
+
+  private cleanMessages(messages: ChatMessage[]): ChatMessage[] {
+    return messages.map(m => {
+      if (m.role === 'system') {
+        const content = m.content || '';
+        
+        // Extract Working Memory and Session Memory if present
+        let workingMem = '';
+        let sessionMem = '';
+        
+        const workingMatch = content.match(/# WORKING MEMORY PROJECTION\n([\s\S]*?)(?=\n#|$)/);
+        if (workingMatch && workingMatch[1]) {
+          workingMem = this.cleanMemoryText(workingMatch[1]);
+        }
+        
+        const sessionMatch = content.match(/# SESSION MEMORY PROJECTION\n([\s\S]*?)$/);
+        if (sessionMatch && sessionMatch[1]) {
+          sessionMem = sessionMatch[1].trim();
+          sessionMem = sessionMem
+            .replace(/## Goals\n- None|## Goals\nNone/gi, '')
+            .replace(/## Preferences\n- None|## Preferences\nNone/gi, '')
+            .replace(/## Stable Facts\n- None|## Stable Facts\nNone/gi, '')
+            .trim();
+        }
+        
+        let cleanedContent = "You are Aegis Core Agent, a helpful clinical medical assistant. Use patient lab data and medical reasoning. If a lab value is normal, explain appropriately. Do not hallucinate values.\n\n";
+        
+        if (workingMem && workingMem !== 'None') {
+          cleanedContent += `### Patient Lab Data:\n${workingMem}\n\n`;
+        }
+        if (sessionMem && sessionMem !== 'None') {
+          cleanedContent += `### Medical Context:\n${sessionMem}\n\n`;
+        }
+        
+        return {
+          role: 'system',
+          content: cleanedContent.trim()
+        };
+      }
+      return m;
+    });
+  }
+
   async *streamChat(messages: ChatMessage[]): AsyncGenerator<string> {
-    const response = await axios.post(this.endpoint, { messages }, { responseType: 'stream' });
+    const cleaned = this.cleanMessages(messages);
+    const response = await axios.post(this.endpoint, { messages: cleaned }, { responseType: 'stream' });
     const stream = response.data;
     
     for await (const chunk of stream) {
@@ -36,14 +95,16 @@ export class GGUFProvider implements Provider {
   }
 
   async generate(prompt: string): Promise<string> {
-    const response = await axios.post(this.endpoint, {
-      messages: [{ role: 'user', content: prompt }]
-    });
-    // For non-streaming requests, the stream yields all data, but here we can just wait for completion.
-    // However, since /api/gguf/chat streams raw text, let's write a simple helper or just read the full text.
-    // Actually, calling the stream and joining it is extremely reliable.
+    const messages: ChatMessage[] = [
+      {
+        role: 'system',
+        content: "You are Aegis Core Agent, a helpful clinical medical assistant. Use patient lab data and medical reasoning to answer the user's queries."
+      },
+      { role: 'user', content: prompt }
+    ];
+    
     const stream = await axios.post(this.endpoint, {
-      messages: [{ role: 'user', content: prompt }]
+      messages
     }, { responseType: 'stream' });
     
     let text = '';
