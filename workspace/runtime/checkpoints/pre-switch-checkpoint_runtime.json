@@ -2,22 +2,22 @@
   "runtimeId": "0476bb84-599a-4a0d-9646-c77a0b5ae1da",
   "runtimeClusterId": "cluster-default",
   "runtimeEpoch": 1,
-  "activeSessionId": "session_1781863251771",
-  "mountedSessionId": "session_1781863251771",
+  "activeSessionId": "session_1781867390889",
+  "mountedSessionId": "session_1781867390889",
   "runtimeState": "ACTIVE",
   "bootMode": "RECOVERY_MODE",
-  "lastBootAt": "2026-06-19T10:00:26.680Z",
+  "lastBootAt": "2026-06-19T11:07:18.637Z",
   "lastShutdownAt": "2026-06-19T09:36:27.330Z",
   "runtimeVersion": "1.0.0",
-  "lastSessionSwitchAt": "2026-06-19T10:00:51.811Z",
+  "lastSessionSwitchAt": "2026-06-19T11:09:50.923Z",
   "recoveryRequired": true,
   "recoveryReason": "UNCLEAN_SHUTDOWN",
-  "recoveryAttempts": 9,
+  "recoveryAttempts": 19,
   "runtimeLockState": "IDLE",
-  "mountGeneration": 20,
-  "mountToken": "7c42eeca-4789-49ce-ac42-a6137a06fefa",
+  "mountGeneration": 49,
+  "mountToken": "67a9bf09-b32b-4627-b3e5-60ef4a190f76",
   "lastShutdownClean": false,
-  "lastHeartbeatAt": "2026-06-19T10:00:46.733Z",
+  "lastHeartbeatAt": "2026-06-19T11:09:48.786Z",
   "activeCapabilities": {
     "tools": [],
     "plugins": [],
@@ -30,7 +30,7 @@
   "checkoutStage": "FINALIZING",
   "mountLease": {
     "ownerRuntimeId": "0476bb84-599a-4a0d-9646-c77a0b5ae1da",
-    "acquiredAt": "2026-06-19T10:00:51.811Z",
-    "expiresAt": "2026-06-19T10:10:51.811Z"
+    "acquiredAt": "2026-06-19T11:09:50.923Z",
+    "expiresAt": "2026-06-19T11:19:50.923Z"
   }
 }

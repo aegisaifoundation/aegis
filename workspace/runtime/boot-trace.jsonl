@@ -100,3 +100,14 @@
 {"timestamp":"2026-06-19T09:35:54.768Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
 {"timestamp":"2026-06-19T09:59:08.388Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
 {"timestamp":"2026-06-19T10:00:26.679Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-06-19T10:20:00.583Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-06-19T10:23:44.784Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-06-19T10:24:12.860Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-06-19T10:26:40.517Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-06-19T10:30:00.530Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-06-19T10:45:38.692Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-06-19T10:47:38.904Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-06-19T11:02:55.162Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-06-19T11:04:33.089Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-06-19T11:05:53.483Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-06-19T11:07:18.636Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}

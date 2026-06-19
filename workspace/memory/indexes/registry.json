@@ -7,23 +7,55 @@
       ],
       "createdAt": "2026-05-28T04:26:09.392Z",
       "updatedAt": "2026-05-28T04:26:09.418Z",
-      "lastAccessedAt": "2026-05-28T04:26:09.869Z",
-      "lifecycleState": "INACTIVE"
+      "lastAccessedAt": "2026-06-19T10:20:27.836Z",
+      "lifecycleState": "ACTIVE"
     },
     "session_1779948258084": {
       "sessionId": "session_1779948258084",
       "tags": [],
       "createdAt": "2026-05-28T06:04:18.119Z",
-      "updatedAt": "2026-06-19T10:00:26.709Z",
-      "lastAccessedAt": "2026-06-19T10:00:26.704Z",
+      "updatedAt": "2026-06-19T10:50:34.810Z",
+      "lastAccessedAt": "2026-06-19T11:03:01.752Z",
       "lifecycleState": "ACTIVE"
     },
-    "session_1781863251771": {
-      "sessionId": "session_1781863251771",
+    "session_1781866987847": {
+      "sessionId": "session_1781866987847",
       "tags": [],
-      "createdAt": "2026-06-19T10:00:51.800Z",
-      "updatedAt": "2026-06-19T10:00:51.800Z",
-      "lastAccessedAt": "2026-06-19T10:00:51.980Z",
+      "createdAt": "2026-06-19T11:03:08.229Z",
+      "updatedAt": "2026-06-19T11:04:33.128Z",
+      "lastAccessedAt": "2026-06-19T11:04:33.122Z",
+      "lifecycleState": "ACTIVE"
+    },
+    "session_1781867115647": {
+      "sessionId": "session_1781867115647",
+      "tags": [],
+      "createdAt": "2026-06-19T11:05:15.655Z",
+      "updatedAt": "2026-06-19T11:05:53.526Z",
+      "lastAccessedAt": "2026-06-19T11:05:53.521Z",
+      "lifecycleState": "ACTIVE"
+    },
+    "session_1781867166801": {
+      "sessionId": "session_1781867166801",
+      "tags": [],
+      "createdAt": "2026-06-19T11:06:06.814Z",
+      "updatedAt": "2026-06-19T11:07:18.658Z",
+      "lastAccessedAt": "2026-06-19T11:07:18.655Z",
+      "lifecycleState": "ACTIVE"
+    },
+    "session_1781867251391": {
+      "sessionId": "session_1781867251391",
+      "tags": [],
+      "createdAt": "2026-06-19T11:07:31.402Z",
+      "updatedAt": "2026-06-19T11:07:31.402Z",
+      "lastAccessedAt": "2026-06-19T11:07:31.468Z",
+      "lifecycleState": "ACTIVE"
+    },
+    "session_1781867390889": {
+      "sessionId": "session_1781867390889",
+      "tags": [],
+      "createdAt": "2026-06-19T11:09:50.915Z",
+      "updatedAt": "2026-06-19T11:09:50.915Z",
+      "lastAccessedAt": "2026-06-19T11:09:51.092Z",
       "lifecycleState": "ACTIVE"
     }
   }
