@@ -1,0 +1,6 @@
+{
+  "name": "local/gguf",
+  "category": "local",
+  "version": "1.0.0",
+  "entry": "index.ts"
+}
