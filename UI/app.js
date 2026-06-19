@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initSessions();
   initChatInput();
   initLiveActivityTracker();
+  initProviderSelector();
   
   // Initial load
   loadSessions();
@@ -708,3 +709,202 @@ async function addCapability(type, name) {
     alert(`Error loading ${type} "${name}": ${err.message}`);
   }
 }
+
+/* ==========================================================================
+   7. MODEL PROVIDER & GGUF LORA MANAGEMENT
+   ========================================================================== */
+const GGUF_API_BASE = "http://127.0.0.1:5001/api/gguf";
+
+function initProviderSelector() {
+  const providerSelect = document.getElementById("provider-select");
+  if (!providerSelect) return;
+
+  providerSelect.addEventListener("change", async () => {
+    const selectedProvider = providerSelect.value;
+    try {
+      const response = await fetch(`${API_BASE}/providers/switch`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider: selectedProvider })
+      });
+      if (!response.ok) {
+        throw new Error("Failed to switch provider");
+      }
+      const data = await response.json();
+      console.log("[Provider] Switched to:", data.active);
+      updateProviderView(data.active);
+    } catch (err) {
+      alert("Error switching provider: " + err.message);
+      // Revert select value
+      loadProviders();
+    }
+  });
+
+  // Hook LoRA buttons
+  const btnAttach = document.getElementById("btn-lora-attach");
+  const btnDetach = document.getElementById("btn-lora-detach");
+
+  if (btnAttach) {
+    btnAttach.addEventListener("click", async () => {
+      const loraSelect = document.getElementById("lora-select");
+      const selectedLora = loraSelect.value;
+      if (!selectedLora) {
+        alert("Please select a LoRA adapter first.");
+        return;
+      }
+      try {
+        btnAttach.disabled = true;
+        addLiveActivity(`🔌 Requesting LoRA attach: ${selectedLora}`, "blue");
+        const response = await fetch(`${GGUF_API_BASE}/lora/config`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "attach", path: selectedLora })
+        });
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || "Failed to attach LoRA");
+        }
+        addLiveActivity(`✅ LoRA attached: ${selectedLora}`, "green");
+        await loadGGUFStatus();
+      } catch (err) {
+        alert("Error attaching LoRA: " + err.message);
+        addLiveActivity(`❌ LoRA attach failed: ${err.message}`, "red");
+      } finally {
+        btnAttach.disabled = false;
+      }
+    });
+  }
+
+  if (btnDetach) {
+    btnDetach.addEventListener("click", async () => {
+      try {
+        btnDetach.disabled = true;
+        addLiveActivity("🔌 Requesting LoRA detach", "blue");
+        const response = await fetch(`${GGUF_API_BASE}/lora/config`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "detach" })
+        });
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || "Failed to detach LoRA");
+        }
+        addLiveActivity("✅ LoRA detached successfully", "green");
+        await loadGGUFStatus();
+      } catch (err) {
+        alert("Error detaching LoRA: " + err.message);
+        addLiveActivity(`❌ LoRA detach failed: ${err.message}`, "red");
+      } finally {
+        btnDetach.disabled = false;
+      }
+    });
+  }
+
+  // Load initial providers
+  loadProviders();
+}
+
+async function loadProviders() {
+  try {
+    const response = await fetch(`${API_BASE}/providers`);
+    if (!response.ok) throw new Error("Failed to fetch providers");
+    const data = await response.json();
+    
+    const providerSelect = document.getElementById("provider-select");
+    if (!providerSelect) return;
+    
+    providerSelect.innerHTML = "";
+    data.list.forEach(p => {
+      const opt = document.createElement("option");
+      opt.value = p;
+      opt.textContent = p;
+      if (p === data.active) {
+        opt.selected = true;
+      }
+      providerSelect.appendChild(opt);
+    });
+
+    updateProviderView(data.active);
+  } catch (err) {
+    console.error("Error loading providers:", err);
+  }
+}
+
+function updateProviderView(activeProvider) {
+  const ggufControls = document.getElementById("gguf-controls");
+  if (!ggufControls) return;
+
+  if (activeProvider === "local/gguf") {
+    ggufControls.classList.remove("hidden");
+    loadGGUFStatus();
+  } else {
+    ggufControls.classList.add("hidden");
+  }
+}
+
+async function loadGGUFStatus() {
+  try {
+    const response = await fetch(`${GGUF_API_BASE}/lora/status`);
+    if (!response.ok) throw new Error("Failed to fetch GGUF status");
+    const status = await response.json();
+
+    // Update UI elements
+    const statusDot = document.getElementById("gguf-status-dot");
+    const statusText = document.getElementById("gguf-status-text");
+    const loraCurrentStatus = document.getElementById("lora-current-status");
+    const loraSelect = document.getElementById("lora-select");
+
+    // Since we are checking status and it succeeded, the server is online
+    if (statusDot) {
+      statusDot.className = "status-dot online";
+    }
+    if (statusText) {
+      statusText.textContent = "GGUF Model Server Online";
+    }
+
+    if (loraCurrentStatus) {
+      if (status.attached && status.active_lora) {
+        loraCurrentStatus.textContent = status.active_lora;
+        loraCurrentStatus.className = "lora-badge"; // cyan active badge
+      } else {
+        loraCurrentStatus.textContent = "No Adapter Attached (Base Model)";
+        loraCurrentStatus.className = "lora-badge text-secondary";
+      }
+    }
+
+    if (loraSelect) {
+      const prevVal = loraSelect.value;
+      loraSelect.innerHTML = '<option value="" disabled selected>Select LoRA...</option>';
+      status.available_loras.forEach(lora => {
+        const opt = document.createElement("option");
+        opt.value = lora;
+        opt.textContent = lora;
+        if (lora === status.active_lora) {
+          opt.selected = true;
+        }
+        loraSelect.appendChild(opt);
+      });
+      // If none was active but there was a previous selection, restore it if it's still available
+      if (!status.active_lora && prevVal && status.available_loras.includes(prevVal)) {
+        loraSelect.value = prevVal;
+      }
+    }
+
+  } catch (err) {
+    console.error("GGUF status load failed:", err);
+    const statusDot = document.getElementById("gguf-status-dot");
+    const statusText = document.getElementById("gguf-status-text");
+    const loraCurrentStatus = document.getElementById("lora-current-status");
+
+    if (statusDot) {
+      statusDot.className = "status-dot offline";
+    }
+    if (statusText) {
+      statusText.textContent = "GGUF Model Server Offline";
+    }
+    if (loraCurrentStatus) {
+      loraCurrentStatus.textContent = "Connection Refused";
+    }
+  }
+}
+

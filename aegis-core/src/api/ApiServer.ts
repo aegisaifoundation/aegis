@@ -12,6 +12,7 @@ import { pluginRegistry } from '../plugins/PluginRegistry.js';
 import { memoryGateway } from '../memory/MemoryGateway.js';
 import { workspaceManager } from '../runtime/WorkspaceManager.js';
 import { eventBus } from '../runtime/EventBus.js';
+import { providerManager, providerRegistry } from '../providers/index.js';
 
 const PORT = 3005;
 
@@ -229,6 +230,39 @@ export function startApiServer() {
         res.setHeader('Content-Type', 'application/json');
         res.writeHead(200);
         res.end(JSON.stringify({ success: true, type, name }));
+        return;
+      }
+
+      // Endpoint: GET /api/providers
+      if (pathname === '/api/providers' && req.method === 'GET') {
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(JSON.stringify({
+          active: providerManager.getActiveProviderName(),
+          list: providerRegistry.listNames()
+        }));
+        return;
+      }
+
+      // Endpoint: POST /api/providers/switch
+      if (pathname === '/api/providers/switch' && req.method === 'POST') {
+        const { provider } = parsedBody;
+        if (!provider) {
+          res.setHeader('Content-Type', 'application/json');
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: 'provider is required' }));
+          return;
+        }
+        try {
+          await providerManager.switchProvider(provider);
+          res.setHeader('Content-Type', 'application/json');
+          res.writeHead(200);
+          res.end(JSON.stringify({ success: true, active: providerManager.getActiveProviderName() }));
+        } catch (err: any) {
+          res.setHeader('Content-Type', 'application/json');
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: err.message }));
+        }
         return;
       }
 
