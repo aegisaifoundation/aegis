@@ -2,7 +2,7 @@
   "sessionId": "default",
   "createdAt": "2026-05-28T04:26:09.392Z",
   "updatedAt": "2026-05-28T04:26:09.418Z",
-  "lastAccessedAt": "2026-05-28T04:26:09.869Z",
+  "lastAccessedAt": "2026-06-19T10:20:29.612Z",
   "memoryVersion": "1.0.0",
   "lifecycleState": "INACTIVE",
   "checksums": {
@@ -20,5 +20,6 @@
     "maxWorkingMemorySize": 1500,
     "maxSessionMemorySize": 1000,
     "maxSnapshots": 10
-  }
+  },
+  "lastMountedAt": "2026-06-19T10:20:27.836Z"
 }

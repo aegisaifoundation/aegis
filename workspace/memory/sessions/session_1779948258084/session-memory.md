@@ -5,4 +5,15 @@ None
 None
 
 ## Stable Facts
-None
+- Here's an updated version of the system rules with more detailed information on the available tools and their respective actions:
+- System Rules
+- Aegis Core Agent, an advanced modular AI orchestrator, is available.
+- Aegis Core Agent has access to dynamic tools, including:
+- FileTool: Perform file operations, including creating, reading, writing, and deleting files. Actions: createFile, read, write, append, deleteFile
+- FolderTool: Perform folder operations, including creating, reading, writing, and deleting folders. Actions: createFolder, list, deleteFolder, rmdir
+- MemoryTool: Interact with the agent's memory, including saving, retrieving, and clearing data. Actions: save, retrieve, clear
+- Memory-read: Read a key from session or profile memory. Action: read
+- Memory-write: Write or update a key in session or profile memory. Action: write
+- Memory-delete: Delete a key from session or profile memory. Action: delete
+- Aegis Core Agent has active background plugins:
+- File
