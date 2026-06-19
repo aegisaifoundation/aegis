@@ -14,60 +14,16 @@
       "sessionId": "session_1779948258084",
       "tags": [],
       "createdAt": "2026-05-28T06:04:18.119Z",
-      "updatedAt": "2026-05-28T06:24:53.283Z",
-      "lastAccessedAt": "2026-05-28T06:24:53.280Z",
+      "updatedAt": "2026-06-19T10:00:26.709Z",
+      "lastAccessedAt": "2026-06-19T10:00:26.704Z",
       "lifecycleState": "ACTIVE"
     },
-    "session_1779949370977": {
-      "sessionId": "session_1779949370977",
-      "tags": [
-        "continuous",
-        "testing"
-      ],
-      "createdAt": "2026-05-28T06:22:50.994Z",
-      "updatedAt": "2026-05-28T06:22:51.410Z",
-      "lastAccessedAt": "2026-05-28T06:22:51.394Z",
-      "lifecycleState": "INACTIVE"
-    },
-    "session_1779949371038": {
-      "sessionId": "session_1779949371038",
-      "tags": [
-        "continuous2"
-      ],
-      "createdAt": "2026-05-28T06:22:51.052Z",
-      "updatedAt": "2026-05-28T06:22:51.052Z",
-      "lastAccessedAt": "2026-05-28T06:22:51.052Z",
-      "lifecycleState": "ACTIVE"
-    },
-    "session_fork_1779949371136": {
-      "sessionId": "session_fork_1779949371136",
-      "tags": [
-        "continuous",
-        "testing"
-      ],
-      "createdAt": "2026-05-28T06:22:51.145Z",
-      "updatedAt": "2026-05-28T06:22:51.145Z",
-      "lastAccessedAt": "2026-05-28T06:22:51.145Z",
-      "lifecycleState": "INACTIVE"
-    },
-    "session_1779949371179": {
-      "sessionId": "session_1779949371179",
-      "tags": [
-        "to-delete"
-      ],
-      "createdAt": "2026-05-28T06:22:51.185Z",
-      "updatedAt": "2026-05-28T06:22:51.282Z",
-      "lastAccessedAt": "2026-05-28T06:22:51.280Z",
-      "lifecycleState": "ACTIVE"
-    },
-    "session_1779949371294": {
-      "sessionId": "session_1779949371294",
-      "tags": [
-        "to-quarantine"
-      ],
-      "createdAt": "2026-05-28T06:22:51.308Z",
-      "updatedAt": "2026-05-28T06:22:51.308Z",
-      "lastAccessedAt": "2026-05-28T06:22:51.332Z",
+    "session_1781863251771": {
+      "sessionId": "session_1781863251771",
+      "tags": [],
+      "createdAt": "2026-06-19T10:00:51.800Z",
+      "updatedAt": "2026-06-19T10:00:51.800Z",
+      "lastAccessedAt": "2026-06-19T10:00:51.980Z",
       "lifecycleState": "ACTIVE"
     }
   }

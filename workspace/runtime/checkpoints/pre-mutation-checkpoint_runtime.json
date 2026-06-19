@@ -9,15 +9,15 @@
   "lastBootAt": "2026-06-19T10:00:26.680Z",
   "lastShutdownAt": "2026-06-19T09:36:27.330Z",
   "runtimeVersion": "1.0.0",
-  "lastSessionSwitchAt": "2026-06-19T10:00:51.811Z",
+  "lastSessionSwitchAt": "2026-06-19T10:00:51.980Z",
   "recoveryRequired": true,
   "recoveryReason": "UNCLEAN_SHUTDOWN",
   "recoveryAttempts": 9,
   "runtimeLockState": "IDLE",
-  "mountGeneration": 20,
-  "mountToken": "7c42eeca-4789-49ce-ac42-a6137a06fefa",
+  "mountGeneration": 21,
+  "mountToken": "abb1bf17-ed2c-46af-a24a-76f45205649f",
   "lastShutdownClean": false,
-  "lastHeartbeatAt": "2026-06-19T10:00:46.733Z",
+  "lastHeartbeatAt": "2026-06-19T10:07:47.045Z",
   "activeCapabilities": {
     "tools": [],
     "plugins": [],
@@ -30,7 +30,7 @@
   "checkoutStage": "FINALIZING",
   "mountLease": {
     "ownerRuntimeId": "0476bb84-599a-4a0d-9646-c77a0b5ae1da",
-    "acquiredAt": "2026-06-19T10:00:51.811Z",
-    "expiresAt": "2026-06-19T10:10:51.811Z"
+    "acquiredAt": "2026-06-19T10:00:51.980Z",
+    "expiresAt": "2026-06-19T10:10:51.980Z"
   }
 }
