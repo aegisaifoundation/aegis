@@ -12,6 +12,7 @@ import { WorkingMemoryContract } from './contracts/WorkingMemoryContract.js';
 import { readMemoryFile, writeMemoryFile, safeJsonRead, safeJsonWrite, calculateChecksum } from './utils/MemoryFileHelpers.js';
 import { memoryTransactionManager } from './transactions/MemoryTransactionManager.js';
 import { MemoryObservability } from './utils/MemoryObservability.js';
+import { memoryEventBus } from './eventbus/MemoryEventBus.js';
 
 export class MemoryGateway implements IMemoryGateway {
   private static instance = new MemoryGateway();
@@ -62,6 +63,7 @@ export class MemoryGateway implements IMemoryGateway {
     const historyChecksum = await safeJsonWrite(path.join(sessionDir, 'history.json'), { messages: [], memoryVersion: '1.0.0' });
     const sessionChecksum = await writeMemoryFile(path.join(sessionDir, 'session-memory.md'), '## Goals\n\n## Preferences\n\n## Stable Facts\n');
     const workingChecksum = await writeMemoryFile(path.join(sessionDir, 'working-memory.md'), '## Current Tasks\n\n## Intermediate Conclusions\n\n## Temporary Execution Context\n');
+    const taskChecksum = await writeMemoryFile(path.join(sessionDir, 'task.md'), '# Tasks\n\n# Active Tasks\n');
     
     // Initialize session-state.json
     const defaultState: SessionState = {
@@ -81,7 +83,8 @@ export class MemoryGateway implements IMemoryGateway {
     validated.checksums = {
       history: historyChecksum,
       sessionMemory: sessionChecksum,
-      workingMemory: workingChecksum
+      workingMemory: workingChecksum,
+      task: taskChecksum
     };
     await safeJsonWrite(metadataPath, validated);
 
@@ -183,6 +186,15 @@ export class MemoryGateway implements IMemoryGateway {
 
         await memoryTransactionManager.commitTransaction(localTxId);
         await MemoryObservability.logAudit(actor, 'write', 'workingMemory', sessionId);
+        
+        memoryEventBus.publish({
+          eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+          topic: 'workingMemory.updated',
+          timestamp: new Date().toISOString(),
+          sessionId,
+          actor,
+          payload: { content }
+        });
       } catch (err) {
         await memoryTransactionManager.rollbackTransaction(localTxId);
         throw err;
@@ -238,6 +250,15 @@ export class MemoryGateway implements IMemoryGateway {
 
         await memoryTransactionManager.commitTransaction(localTxId);
         await MemoryObservability.logAudit(actor, 'write', 'sessionMemory', sessionId);
+        
+        memoryEventBus.publish({
+          eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+          topic: 'sessionMemory.updated',
+          timestamp: new Date().toISOString(),
+          sessionId,
+          actor,
+          payload: { content }
+        });
       } catch (err) {
         await memoryTransactionManager.rollbackTransaction(localTxId);
         throw err;
@@ -273,6 +294,15 @@ export class MemoryGateway implements IMemoryGateway {
 
       await memoryTransactionManager.commitTransaction(txId);
       await MemoryObservability.logAudit(actor, 'write', 'history', sessionId, { messageId: message.id });
+      
+      memoryEventBus.publish({
+        eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+        topic: 'history.appended',
+        timestamp: new Date().toISOString(),
+        sessionId,
+        actor,
+        payload: { message }
+      });
     } catch (err) {
       await memoryTransactionManager.rollbackTransaction(txId);
       throw err;
@@ -329,6 +359,15 @@ export class MemoryGateway implements IMemoryGateway {
       await memoryTransactionManager.registerWrite(txId, filePath, JSON.stringify(entities, null, 2));
       await memoryTransactionManager.commitTransaction(txId);
       await MemoryObservability.logAudit(actor, 'write', 'entities', sessionId, { entityId: entity.id });
+      
+      memoryEventBus.publish({
+        eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+        topic: 'entity.updated',
+        timestamp: new Date().toISOString(),
+        sessionId,
+        actor,
+        payload: { entity }
+      });
     } catch (err) {
       await memoryTransactionManager.rollbackTransaction(txId);
       throw err;
@@ -376,6 +415,78 @@ export class MemoryGateway implements IMemoryGateway {
         await memoryTransactionManager.registerWrite(localTxId, filePath, content);
         await memoryTransactionManager.commitTransaction(localTxId);
         await MemoryObservability.logAudit(actor, 'write', 'sessionState', sessionId, { localTxId });
+        
+        memoryEventBus.publish({
+          eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+          topic: 'sessionState.updated',
+          timestamp: new Date().toISOString(),
+          sessionId,
+          actor,
+          payload: { state }
+        });
+      } catch (err) {
+        await memoryTransactionManager.rollbackTransaction(localTxId);
+        throw err;
+      }
+    }
+  }
+
+  /**
+   * Reads the task Markdown file for a session.
+   */
+  public async getTask(sessionId: string, actor: string = 'system'): Promise<string> {
+    if (!MemoryPermissions.check('read', actor)) {
+      throw new Error(`Permission denied: Actor ${actor} cannot read.`);
+    }
+    const filePath = path.join(this.getSessionDir(sessionId), 'task.md');
+    const content = await readMemoryFile(filePath);
+    await MemoryObservability.logAudit(actor, 'read', 'taskMemory', sessionId);
+    return content;
+  }
+
+  /**
+   * Atomically overwrites task memory.
+   */
+  public async updateTask(sessionId: string, content: string, txId?: string, actor: string = 'system'): Promise<void> {
+    if (!MemoryPermissions.check('write', actor)) {
+      throw new Error(`Permission denied: Actor ${actor} cannot write.`);
+    }
+
+    const sessionDir = this.getSessionDir(sessionId);
+    const filePath = path.join(sessionDir, 'task.md');
+    const metadataPath = path.join(sessionDir, 'metadata.json');
+    
+    if (txId) {
+      await memoryTransactionManager.registerWrite(txId, filePath, content);
+      
+      const meta = await this.loadSession(sessionId, actor);
+      meta.checksums.task = calculateChecksum(content);
+      meta.updatedAt = new Date().toISOString();
+      await memoryTransactionManager.registerWrite(txId, metadataPath, JSON.stringify(meta, null, 2));
+
+      await MemoryObservability.logAudit(actor, 'write', 'taskMemory', sessionId, { txId });
+    } else {
+      const localTxId = `tx_${sessionId}_${Date.now()}`;
+      memoryTransactionManager.beginTransaction(localTxId);
+      try {
+        await memoryTransactionManager.registerWrite(localTxId, filePath, content);
+        
+        const meta = await this.loadSession(sessionId, actor);
+        meta.checksums.task = calculateChecksum(content);
+        meta.updatedAt = new Date().toISOString();
+        await memoryTransactionManager.registerWrite(localTxId, metadataPath, JSON.stringify(meta, null, 2));
+
+        await memoryTransactionManager.commitTransaction(localTxId);
+        await MemoryObservability.logAudit(actor, 'write', 'taskMemory', sessionId);
+        
+        memoryEventBus.publish({
+          eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+          topic: 'taskMemory.updated',
+          timestamp: new Date().toISOString(),
+          sessionId,
+          actor,
+          payload: { content }
+        });
       } catch (err) {
         await memoryTransactionManager.rollbackTransaction(localTxId);
         throw err;
@@ -383,5 +494,6 @@ export class MemoryGateway implements IMemoryGateway {
     }
   }
 }
+
 
 export const memoryGateway = MemoryGateway.getInstance();

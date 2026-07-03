@@ -56,6 +56,7 @@ export class RuntimeHealthValidator {
           try {
             const workingMemory = await memoryGateway.getWorkingMemory(activeSessionId);
             const sessionMemory = await memoryGateway.getSessionMemory(activeSessionId);
+            const taskMemory = await memoryGateway.getTask(activeSessionId);
 
             const workingVal = projectionConsistencyValidator.validateWorkingProjection(workingMemory, sessionState);
             if (!workingVal.valid) {
@@ -65,6 +66,11 @@ export class RuntimeHealthValidator {
             const sessionVal = projectionConsistencyValidator.validateSessionProjection(sessionMemory, sessionState);
             if (!sessionVal.valid) {
               errors.push(`session-memory.md projection inconsistency: ${sessionVal.reason}`);
+            }
+
+            const taskVal = projectionConsistencyValidator.validateTaskProjection(taskMemory, sessionState);
+            if (!taskVal.valid) {
+              errors.push(`task.md projection inconsistency: ${taskVal.reason}`);
             }
           } catch (err: any) {
             errors.push(`Markdown projection read error: ${err.message}`);

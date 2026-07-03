@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initChatInput();
   initLiveActivityTracker();
   initProviderSelector();
+  initUnifiedActions();
   
   // Initial load
   loadSessions();
@@ -58,6 +59,10 @@ function initNavigation() {
       // Reload data if page changes
       if (targetId === "page-home") {
         loadActiveSession();
+      } else if (targetId === "page-sessions-stub") {
+        loadSessionsIndex();
+      } else if (targetId === "page-trash-stub") {
+        loadTrash();
       } else {
         loadCapabilities();
       }
@@ -154,7 +159,8 @@ function renderSessionsList(sessions) {
     });
 
     const isCurrent = session.sessionId === activeSessionId;
-    const name = session.displayName || `Session ${session.sessionId.split('_').pop()}`;
+    const localName = localStorage.getItem(`display_name_${session.sessionId}`);
+    const name = localName || session.displayName || `Session ${session.sessionId.split('_').pop()}`;
 
     const li = document.createElement("li");
     li.className = `session-item ${isCurrent ? 'active' : ''}`;
@@ -167,8 +173,8 @@ function renderSessionsList(sessions) {
       </div>
       <button class="btn-delete-session" title="Delete Session">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
         </svg>
       </button>
     `;
@@ -194,6 +200,9 @@ function renderSessionsList(sessions) {
           });
           if (!response.ok) throw new Error("Delete failed");
           
+          if (activeSessionId === session.sessionId) {
+            activeSessionId = null;
+          }
           loadSessions();
         } catch (err) {
           alert("Error deleting session: " + err.message);
@@ -236,6 +245,14 @@ async function loadActiveSession() {
     document.getElementById("active-session-title").innerText = "No Active Session";
     document.getElementById("active-session-subtitle").innerText = "Select or create a session to begin.";
     document.getElementById("chat-messages").innerHTML = "";
+
+    // Clear details panel
+    if (document.getElementById("session-details-id")) document.getElementById("session-details-id").textContent = "—";
+    if (document.getElementById("session-details-created")) document.getElementById("session-details-created").textContent = "—";
+    if (document.getElementById("session-details-status")) document.getElementById("session-details-status").textContent = "—";
+    if (document.getElementById("session-details-provider")) document.getElementById("session-details-provider").textContent = "—";
+    if (document.getElementById("session-details-node")) document.getElementById("session-details-node").textContent = "—";
+    if (document.getElementById("session-details-model")) document.getElementById("session-details-model").textContent = "—";
     return;
   }
 
@@ -247,7 +264,8 @@ async function loadActiveSession() {
     const { activeSessionId: id, metadata, state, history } = sessionDetails;
     
     // Update headers
-    const name = metadata?.displayName || `Session ${id.split('_').pop()}`;
+    const localName = localStorage.getItem(`display_name_${id}`);
+    const name = localName || metadata?.displayName || `Session ${id.split('_').pop()}`;
     document.getElementById("active-session-title").innerText = name;
     
     let subtitleText = "Federated Health Agent";
@@ -255,6 +273,30 @@ async function loadActiveSession() {
       subtitleText = `Goal: ${state.goal}`;
     }
     document.getElementById("active-session-subtitle").innerText = subtitleText;
+
+    // Update right details panel
+    const detailId = document.getElementById("session-details-id");
+    const detailCreated = document.getElementById("session-details-created");
+    const detailStatus = document.getElementById("session-details-status");
+    const detailProvider = document.getElementById("session-details-provider");
+    const detailNode = document.getElementById("session-details-node");
+    const detailModel = document.getElementById("session-details-model");
+
+    if (detailId) detailId.textContent = id;
+    if (detailCreated) {
+      const createdDate = new Date(metadata?.createdAt || Date.now());
+      detailCreated.textContent = createdDate.toLocaleString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+    if (detailStatus) detailStatus.textContent = metadata?.lifecycleState || "Active";
+    if (detailProvider) detailProvider.textContent = state?.provider || "local/ollama";
+    if (detailNode) detailNode.textContent = document.getElementById("agent-status-text")?.textContent || "Idle";
+    if (detailModel) detailModel.textContent = state?.model || "Not Selected";
 
     // Display history
     renderChatHistory(history);
@@ -832,13 +874,18 @@ async function loadProviders() {
 
 function updateProviderView(activeProvider) {
   const ggufControls = document.getElementById("gguf-controls");
-  if (!ggufControls) return;
+  if (ggufControls) {
+    if (activeProvider === "local/gguf") {
+      ggufControls.classList.remove("hidden");
+      loadGGUFStatus();
+    } else {
+      ggufControls.classList.add("hidden");
+    }
+  }
 
-  if (activeProvider === "local/gguf") {
-    ggufControls.classList.remove("hidden");
-    loadGGUFStatus();
-  } else {
-    ggufControls.classList.add("hidden");
+  const footerProvider = document.getElementById("footer-active-provider");
+  if (footerProvider) {
+    footerProvider.textContent = activeProvider;
   }
 }
 
@@ -904,6 +951,328 @@ async function loadGGUFStatus() {
     }
     if (loraCurrentStatus) {
       loraCurrentStatus.textContent = "Connection Refused";
+    }
+  }
+}
+
+/* ==========================================================================
+   8. UNIFIED SIDEBAR ACTIONS & SEARCH FILTER
+   ========================================================================== */
+function initUnifiedActions() {
+  // Session Search Filter
+  const searchInput = document.getElementById("session-search");
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+      const query = e.target.value.toLowerCase();
+      document.querySelectorAll(".session-item").forEach(item => {
+        const name = item.querySelector(".session-name").textContent.toLowerCase();
+        if (name.includes(query)) {
+          item.style.display = "flex";
+        } else {
+          item.style.display = "none";
+        }
+      });
+    });
+  }
+
+  // Copy Session ID
+  const btnCopySessionId = document.getElementById("btn-copy-session-id");
+  if (btnCopySessionId) {
+    btnCopySessionId.addEventListener("click", () => {
+      if (!activeSessionId) return;
+      navigator.clipboard.writeText(activeSessionId);
+      
+      const originalSvg = btnCopySessionId.innerHTML;
+      btnCopySessionId.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      `;
+      setTimeout(() => {
+        btnCopySessionId.innerHTML = originalSvg;
+      }, 1500);
+    });
+  }
+
+  // Rename Session
+  const btnRenameSession = document.getElementById("btn-rename-session");
+  if (btnRenameSession) {
+    btnRenameSession.addEventListener("click", () => {
+      if (!activeSessionId) return;
+      const currentName = localStorage.getItem(`display_name_${activeSessionId}`) || `Session ${activeSessionId.split('_').pop()}`;
+      const newName = prompt("Enter new name for the session:", currentName);
+      if (newName !== null) {
+        const trimmed = newName.trim();
+        if (trimmed) {
+          localStorage.setItem(`display_name_${activeSessionId}`, trimmed);
+        } else {
+          localStorage.removeItem(`display_name_${activeSessionId}`);
+        }
+        loadSessions();
+      }
+    });
+  }
+
+  // Export Session History
+  const btnExportSession = document.getElementById("btn-export-session");
+  if (btnExportSession) {
+    btnExportSession.addEventListener("click", async () => {
+      if (!activeSessionId) return;
+      try {
+        const response = await fetch(`${API_BASE}/sessions/active`);
+        if (!response.ok) throw new Error("Failed to load active session");
+        const sessionDetails = await response.json();
+        
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(sessionDetails, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `session_${activeSessionId}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+      } catch (err) {
+        alert("Failed to export session: " + err.message);
+      }
+    });
+  }
+
+  // Clear Message Bubbles
+  const btnClearMessages = document.getElementById("btn-clear-messages");
+  if (btnClearMessages) {
+    btnClearMessages.addEventListener("click", () => {
+      if (confirm("Clear messages from the current view?")) {
+        document.getElementById("chat-messages").innerHTML = "";
+      }
+    });
+  }
+
+  // Delete Session (Right Panel Button)
+  const btnDeleteSessionRight = document.getElementById("btn-delete-session-right");
+  if (btnDeleteSessionRight) {
+    btnDeleteSessionRight.addEventListener("click", async () => {
+      if (!activeSessionId) return;
+      if (confirm(`Are you sure you want to delete the active session?`)) {
+        try {
+          const response = await fetch(`${API_BASE}/sessions/delete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId: activeSessionId })
+          });
+          if (!response.ok) throw new Error("Delete failed");
+          activeSessionId = null;
+          loadSessions();
+        } catch (err) {
+          alert("Error deleting session: " + err.message);
+        }
+      }
+    });
+  }
+
+  // Delete All Sessions (Danger Zone)
+  const btnDeleteAllSessions = document.getElementById("btn-delete-all-sessions");
+  if (btnDeleteAllSessions) {
+    btnDeleteAllSessions.addEventListener("click", async () => {
+      if (confirm("Are you sure you want to delete ALL sessions? This cannot be undone.")) {
+        try {
+          const res = await fetch(`${API_BASE}/sessions`);
+          if (!res.ok) throw new Error("Could not list sessions");
+          const { sessions } = await res.json();
+          for (const s of sessions) {
+            await fetch(`${API_BASE}/sessions/delete`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sessionId: s.sessionId })
+            });
+          }
+          activeSessionId = null;
+          loadSessions();
+        } catch (err) {
+          alert("Error deleting sessions: " + err.message);
+        }
+      }
+    });
+  }
+
+  // Accordion Toggles
+  const accordions = document.querySelectorAll(".details-accordion");
+  accordions.forEach(acc => {
+    const header = acc.querySelector(".accordion-header");
+    header.addEventListener("click", () => {
+      acc.classList.toggle("active");
+    });
+  });
+
+  // Hotkey listener for new session (Cmd+N / Ctrl+N)
+  document.addEventListener("keydown", (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'n') {
+      e.preventDefault();
+      const newSessionBtn = document.getElementById("btn-new-session");
+      if (newSessionBtn && !newSessionBtn.disabled) {
+        newSessionBtn.click();
+      }
+    }
+  });
+
+  // Theme Switcher stub
+  const btnThemeToggle = document.getElementById("btn-theme-toggle");
+  if (btnThemeToggle) {
+    btnThemeToggle.addEventListener("click", () => {
+      alert("Theme is optimized for AEGIS Clinical and Medical Dark UI aesthetics.");
+    });
+  }
+
+  // Empty Trash
+  const btnEmptyTrash = document.getElementById("btn-empty-trash");
+  if (btnEmptyTrash) {
+    btnEmptyTrash.addEventListener("click", async () => {
+      if (confirm("Are you sure you want to permanently empty the trash? This cannot be undone.")) {
+        try {
+          const response = await fetch(`${API_BASE}/trash/empty`, { method: 'POST' });
+          if (!response.ok) throw new Error("Empty trash failed");
+          loadTrash();
+        } catch (err) {
+          alert("Error emptying trash: " + err.message);
+        }
+      }
+    });
+  }
+}
+
+/* ==========================================================================
+   9. INTERACTIVE SESSIONS & TRASH MANAGEMENT RENDERING
+   ========================================================================== */
+async function loadSessionsIndex() {
+  try {
+    const response = await fetch(`${API_BASE}/sessions`);
+    if (!response.ok) throw new Error("Failed to load sessions");
+    const { sessions } = await response.json();
+    
+    const tbody = document.getElementById("sessions-index-tbody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    
+    if (sessions.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-gray-3);">No active sessions found.</td></tr>`;
+      return;
+    }
+    
+    sessions.forEach(session => {
+      const localName = localStorage.getItem(`display_name_${session.sessionId}`);
+      const name = localName || session.displayName || `Session ${session.sessionId.split('_').pop()}`;
+      
+      const formattedDate = new Date(session.updatedAt || session.createdAt).toLocaleString();
+      const isCurrent = session.sessionId === activeSessionId;
+      
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="font-weight: 600;">${name}</td>
+        <td style="font-family: monospace; font-size: 11px; color: var(--text-gray-3);">${session.sessionId}</td>
+        <td style="color: var(--text-gray-2); font-size: 12px;">${formattedDate}</td>
+        <td>
+          <span class="status-chip" style="display: inline-flex; border: none; padding: 2px 8px; font-size: 10px;">
+            <span class="status-indicator-dot" style="background: ${isCurrent ? 'var(--accent-green)' : 'var(--text-gray-3)'};"></span>
+            ${isCurrent ? 'Active' : 'Inactive'}
+          </span>
+        </td>
+        <td>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-secondary-action btn-sm" onclick="checkoutSession('${session.sessionId}')" style="height: 24px; font-size: 11px; padding: 0 8px;">Checkout</button>
+            <button class="btn-danger btn-sm" onclick="deleteSessionFromIndex('${session.sessionId}')" style="height: 24px; font-size: 11px; padding: 0 8px;">Delete</button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+window.deleteSessionFromIndex = async function(sessionId) {
+  if (confirm("Are you sure you want to delete this session?")) {
+    try {
+      const response = await fetch(`${API_BASE}/sessions/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId })
+      });
+      if (!response.ok) throw new Error("Delete failed");
+      if (activeSessionId === sessionId) activeSessionId = null;
+      await loadSessions();
+      await loadSessionsIndex();
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  }
+}
+
+async function loadTrash() {
+  try {
+    const response = await fetch(`${API_BASE}/trash`);
+    if (!response.ok) throw new Error("Failed to load trash");
+    const { sessions } = await response.json();
+    
+    const tbody = document.getElementById("trash-tbody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    
+    if (sessions.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-gray-3);">Trash is empty.</td></tr>`;
+      return;
+    }
+    
+    sessions.forEach(session => {
+      const localName = localStorage.getItem(`display_name_${session.sessionId}`);
+      const name = localName || session.displayName || `Session ${session.sessionId.split('_').pop()}`;
+      
+      const formattedDate = session.deletedAt ? new Date(session.deletedAt).toLocaleString() : (session.updatedAt ? new Date(session.updatedAt).toLocaleString() : '—');
+      
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="font-weight: 600;">${name}</td>
+        <td style="font-family: monospace; font-size: 11px; color: var(--text-gray-3);">${session.sessionId}</td>
+        <td style="color: var(--text-gray-2); font-size: 12px;">${formattedDate}</td>
+        <td>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-secondary-action btn-sm" onclick="restoreTrashSession('${session.sessionId}')" style="height: 24px; font-size: 11px; padding: 0 8px;">Restore</button>
+            <button class="btn-danger btn-sm" onclick="deleteTrashSessionPermanently('${session.sessionId}')" style="height: 24px; font-size: 11px; padding: 0 8px;">Delete Permanently</button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+window.restoreTrashSession = async function(sessionId) {
+  try {
+    const response = await fetch(`${API_BASE}/trash/restore`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId })
+    });
+    if (!response.ok) throw new Error("Restore failed");
+    await loadSessions();
+    await loadTrash();
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+}
+
+window.deleteTrashSessionPermanently = async function(sessionId) {
+  if (confirm("Are you sure you want to permanently delete this session? This action cannot be undone.")) {
+    try {
+      const response = await fetch(`${API_BASE}/trash/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId })
+      });
+      if (!response.ok) throw new Error("Delete failed");
+      await loadTrash();
+    } catch (err) {
+      alert("Error: " + err.message);
     }
   }
 }

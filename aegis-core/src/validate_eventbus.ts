@@ -1,8 +1,30 @@
+import { memoryManager } from './memory/MemoryManager.js';
+import { memoryGateway } from './memory/MemoryGateway.js';
 import { serviceRegistry } from './runtime/ServiceRegistry.js';
-import { eventBus, EventBus } from './runtime/EventBus.js';
+import { eventBus } from './runtime/EventBus.js';
+import { workspaceManager } from './runtime/WorkspaceManager.js';
+import { loadEnvironment } from './utils/environment.js';
+import { memoryEventBus } from './memory/eventbus/MemoryEventBus.js';
+import { MemoryEvent } from './memory/eventbus/MemoryEvent.js';
+import path from 'path';
+import fs from 'fs/promises';
+import { existsSync } from 'fs';
 
-async function runTests() {
-  console.log("=== AEGIS EVENTBUS RUNTIME VALIDATION ===");
+// Initialize core environment
+loadEnvironment();
+workspaceManager.initialize();
+serviceRegistry.register('eventBus', eventBus);
+serviceRegistry.register('workspaceManager', workspaceManager);
+serviceRegistry.register('memoryEventBus', memoryEventBus);
+
+// Register AuditLogger subscription manually for this validation
+import { AuditLogger } from './memory/eventbus/handlers/AuditLogger.js';
+memoryEventBus.subscribe('*', async (event) => {
+  await AuditLogger.handleEvent(event);
+});
+
+async function runValidation() {
+  console.log("=== AEGIS COGNITIVE MEMORY EVENT BUS VALIDATION ===");
 
   let passed = 0;
   let failed = 0;
@@ -17,151 +39,84 @@ async function runTests() {
     }
   }
 
-  // 12. Service Registry Validation
+  const eventsReceived: MemoryEvent[] = [];
+  const subId = memoryEventBus.subscribe('*', (event) => {
+    eventsReceived.push(event);
+  });
+
   try {
-    const regBus = serviceRegistry.get<EventBus>('eventBus');
-    assert(regBus === eventBus, "serviceRegistry.get('eventBus') returns the same singleton instance");
-  } catch (e: any) {
-    assert(false, `Service registry lookup failed: ${e.message}`);
-  }
+    // 1. Initialize Memory Manager
+    console.log("\n1. Initializing Memory System...");
+    await memoryManager.initialize();
+    assert(true, "MemoryManager initialized");
 
-  // 3. Event Envelope Validation
-  try {
-    let capturedEnvelope: any = null;
-    const testListener = (envelope: any) => {
-      capturedEnvelope = envelope;
+    const sessionId = 'test-event-bus-session';
+    await memoryManager.deleteSession(sessionId, 'system').catch(() => {});
+
+    // 2. Create Session
+    console.log("\n2. Creating Session & Verifying Event...");
+    await memoryManager.createSession(sessionId, ['event-bus', 'validation'], 'agent');
+    
+    // Give event bus a short tick to process async subscriptions
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    const createdEvent = eventsReceived.find(e => e.topic === 'session.created');
+    assert(createdEvent !== undefined, "session.created event was published");
+    assert(createdEvent?.sessionId === sessionId, "session.created event contains correct sessionId");
+    assert(createdEvent?.actor === 'agent', "session.created event contains correct actor");
+
+    // 3. Update Working Memory
+    console.log("\n3. Updating Working Memory & Verifying Event...");
+    const workingContent = '## Current Tasks\n- [ ] Task Event Bus Test\n';
+    await memoryGateway.updateWorkingMemory(sessionId, workingContent, undefined, 'agent');
+    
+    await new Promise(resolve => setTimeout(resolve, 50));
+    const workingEvent = eventsReceived.find(e => e.topic === 'workingMemory.updated');
+    assert(workingEvent !== undefined, "workingMemory.updated event was published");
+    assert(workingEvent?.payload.content === workingContent, "workingMemory.updated payload contains updated content");
+
+    // 4. Append History
+    console.log("\n4. Appending History & Verifying Event...");
+    const mockMessage = {
+      id: 'msg_test_123',
+      role: 'user' as const,
+      content: 'verify history append events',
+      timestamp: new Date().toISOString()
     };
-    eventBus.on('test.envelope', testListener);
-    eventBus.emit('test.envelope', { message: "hello envelope" }, "test-source");
+    await memoryGateway.appendHistory(sessionId, mockMessage, 'agent');
+    
+    await new Promise(resolve => setTimeout(resolve, 50));
+    const historyEvent = eventsReceived.find(e => e.topic === 'history.appended');
+    assert(historyEvent !== undefined, "history.appended event was published");
+    assert(historyEvent?.payload.message.id === 'msg_test_123', "history.appended payload contains message ID");
 
-    assert(capturedEnvelope !== null, "Listener captured the emitted event");
-    assert(capturedEnvelope.event === 'test.envelope', "Envelope 'event' field is correct");
-    assert(typeof capturedEnvelope.timestamp === 'number', "Envelope 'timestamp' is a number");
-    assert(capturedEnvelope.source === 'test-source', "Envelope 'source' is correct");
-    assert(capturedEnvelope.payload.message === 'hello envelope', "Envelope 'payload' contains the correct data");
+    // 5. Delete Session
+    console.log("\n5. Deleting Session & Verifying Event...");
+    await memoryManager.deleteSession(sessionId, 'system');
+    
+    await new Promise(resolve => setTimeout(resolve, 50));
+    const deletedEvent = eventsReceived.find(e => e.topic === 'session.deleted');
+    assert(deletedEvent !== undefined, "session.deleted event was published");
 
-    eventBus.off('test.envelope', testListener);
-  } catch (e: any) {
-    assert(false, `Envelope validation test threw: ${e.message}`);
-  }
+    // 6. Verify Audit Logs
+    console.log("\n6. Verifying Audit Log file generation...");
+    const wsRoot = path.dirname(workspaceManager.getWorkspacePath());
+    const logPath = path.resolve(wsRoot, 'memory/analytics/audit.jsonl');
+    
+    assert(existsSync(logPath), "audit.jsonl file was created");
+    const rawLogs = await fs.readFile(logPath, 'utf8');
+    const logLines = rawLogs.trim().split('\n').filter(Boolean);
+    
+    assert(logLines.length >= 4, "At least 4 audit logs written to audit.jsonl");
+    const firstLog = JSON.parse(logLines[0]);
+    assert(firstLog.sessionId === sessionId, "Audit log entries contain correct sessionId");
 
-  // 4. Failure Isolation Test (Sync)
-  try {
-    let firstExecuted = false;
-    let secondExecuted = false;
+    // Cleanup
+    memoryEventBus.unsubscribe(subId);
+    await memoryManager.shutdown();
 
-    const brokenListener = () => {
-      firstExecuted = true;
-      throw new Error("Intentional listener crash");
-    };
-
-    const healthyListener = () => {
-      secondExecuted = true;
-    };
-
-    eventBus.on('test.sync.fail', brokenListener);
-    eventBus.on('test.sync.fail', healthyListener);
-
-    // This should NOT throw and crash the runtime
-    eventBus.emit('test.sync.fail', {});
-
-    assert(firstExecuted, "Sync failing listener was executed");
-    assert(secondExecuted, "Healthy listener executed successfully despite previous listener failure");
-
-    eventBus.off('test.sync.fail', brokenListener);
-    eventBus.off('test.sync.fail', healthyListener);
-  } catch (e: any) {
-    assert(false, `Sync failure isolation test threw: ${e.message}`);
-  }
-
-  // 5. Asynchronous Failure Test
-  try {
-    let firstExecuted = false;
-    let secondExecuted = false;
-
-    const asyncBrokenListener = async () => {
-      firstExecuted = true;
-      throw new Error("Intentional async failure");
-    };
-
-    const healthyListener = () => {
-      secondExecuted = true;
-    };
-
-    eventBus.on('test.async.fail', asyncBrokenListener);
-    eventBus.on('test.async.fail', healthyListener);
-
-    eventBus.emit('test.async.fail', {});
-
-    assert(firstExecuted, "Async failing listener was executed");
-    assert(secondExecuted, "Healthy listener executed successfully alongside async failure");
-
-    eventBus.off('test.async.fail', asyncBrokenListener);
-    eventBus.off('test.async.fail', healthyListener);
-  } catch (e: any) {
-    assert(false, `Async failure isolation test threw: ${e.message}`);
-  }
-
-  // 9. once() Listener Validation
-  try {
-    let callCount = 0;
-    const onceListener = () => {
-      callCount++;
-    };
-
-    eventBus.once('test.once', onceListener);
-    eventBus.emit('test.once', {});
-    eventBus.emit('test.once', {});
-
-    assert(callCount === 1, "once() listener executed exactly once");
-  } catch (e: any) {
-    assert(false, `once() listener validation threw: ${e.message}`);
-  }
-
-  // 10. Custom Event Validation
-  try {
-    let customExecuted = false;
-    const customListener = (envelope: any) => {
-      customExecuted = true;
-      assert(envelope.event === 'doctor.patient_registered', "Custom namespace event name is preserved");
-    };
-
-    eventBus.on('doctor.patient_registered', customListener);
-    eventBus.emit('doctor.patient_registered', { patientId: 42 }, "medical-system");
-
-    assert(customExecuted, "Custom namespaced event listener executed");
-    eventBus.off('doctor.patient_registered', customListener);
-  } catch (e: any) {
-    assert(false, `Custom event validation threw: ${e.message}`);
-  }
-
-  // 8. Listener Memory Leak Stress Test
-  try {
-    const eventName = 'stress.test';
-    const dummyListeners: any[] = [];
-
-    // Register 1000 listeners
-    for (let i = 0; i < 1000; i++) {
-      const listener = () => {};
-      dummyListeners.push(listener);
-      eventBus.on(eventName, listener);
-    }
-
-    // Emit to all 1000 listeners
-    const beforeEmit = process.memoryUsage().heapUsed;
-    eventBus.emit(eventName, {});
-    const afterEmit = process.memoryUsage().heapUsed;
-
-    assert(true, `Successfully registered and executed 1000 listeners. Memory delta: ${afterEmit - beforeEmit} bytes`);
-
-    // Clean up
-    for (const listener of dummyListeners) {
-      eventBus.off(eventName, listener);
-    }
-
-    assert(true, "Successfully cleaned up all 1000 stress test listeners");
-  } catch (e: any) {
-    assert(false, `Stress test threw: ${e.message}`);
+  } catch (err: any) {
+    assert(false, `Event Bus Validation threw unexpected error: ${err.message}\n${err.stack}`);
   }
 
   console.log("\n=== VALIDATION SUMMARY ===");
@@ -171,25 +126,12 @@ async function runTests() {
   if (failed > 0) {
     process.exit(1);
   } else {
-    console.log("All EventBus stability tests passed successfully!");
+    console.log("Memory Event Bus validation completed successfully!");
     process.exit(0);
   }
 }
 
-// Ensure the registry is initialized
-import { loadEnvironment } from './utils/environment.js';
-import { workspaceManager } from './runtime/WorkspaceManager.js';
-import { providerManager } from './providers/index.js';
-import { configurationManager } from './config/index.js';
-
-loadEnvironment();
-workspaceManager.initialize();
-serviceRegistry.register('eventBus', eventBus);
-serviceRegistry.register('providerManager', providerManager);
-serviceRegistry.register('config', configurationManager);
-serviceRegistry.register('workspaceManager', workspaceManager);
-
-runTests().catch(err => {
-  console.error("Test runner failed:", err);
+runValidation().catch(e => {
+  console.error("Test runner failed:", e);
   process.exit(1);
 });

@@ -1,0 +1,5 @@
+## Goals
+
+## Preferences
+
+## Stable Facts

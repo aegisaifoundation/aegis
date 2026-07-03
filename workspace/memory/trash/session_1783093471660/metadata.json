@@ -1,0 +1,29 @@
+{
+  "sessionId": "session_1783093471660",
+  "createdAt": "2026-07-03T15:44:31.686Z",
+  "updatedAt": "2026-07-03T15:46:15.301Z",
+  "lastAccessedAt": "2026-07-03T15:46:31.466Z",
+  "memoryVersion": "1.0.0",
+  "lifecycleState": "DELETED",
+  "checksums": {
+    "history": "4f3726f4473391df8796b26cd6cfe876e934f276da8dbb16733d1f4f9f281987",
+    "sessionMemory": "38a085637de382161ba0e8c51cd96a62a9ae46908566d97fbec6985450f8a65e",
+    "workingMemory": "717d3ab4566fe5820c8f4a98e8b8cb82369808a13d41e61416decd1452ea7b5e",
+    "task": "0e15818f90316b1bc268fcf33090bc64b108b8735f819f4f1a611dfc8f509f2f"
+  },
+  "confidence": {},
+  "tags": [],
+  "quotas": {
+    "maxSessions": 100,
+    "maxHistorySize": 10485760,
+    "maxWorkingMemorySize": 1500,
+    "maxSessionMemorySize": 1000,
+    "maxSnapshots": 10
+  },
+  "lastMountedAt": "2026-07-03T15:46:15.173Z",
+  "validationChecksum": "38a085637de382161ba0e8c51cd96a62a9ae46908566d97fbec6985450f8a65e",
+  "lastValidatedAt": "2026-07-03T15:46:15.173Z",
+  "deletedAt": "2026-07-03T15:56:57.435Z",
+  "deletedBy": "user",
+  "deletionReason": "User deleted session"
+}

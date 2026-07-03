@@ -55,8 +55,8 @@ export class RuntimeSessionManager {
     // 1. Run health validation on startup
     let health = await runtimeHealthValidator.validateHealth();
     if (!health.healthy) {
-      const isOnlyLeaseStale = health.errors.length === 1 && health.errors[0].includes('lease has expired');
-      if (isOnlyLeaseStale) {
+      const hasLeaseExpired = health.errors.some(e => e.includes('lease has expired'));
+      if (hasLeaseExpired) {
         console.log('[RuntimeSessionManager] Active session mount lease was expired. Automatically renewing...');
         const state = await runtimeStateManager.loadState();
         state.mountLease = {
@@ -73,6 +73,8 @@ export class RuntimeSessionManager {
     if (!health.healthy) {
       console.warn(`[RuntimeSessionManager] Health checks failed on startup: ${health.errors.join('; ')}. Attempting recovery...`);
       await this.recoverRuntime();
+      // Reload health after recovery
+      health = await runtimeHealthValidator.validateHealth();
     }
 
     const state = await runtimeStateManager.loadState();
@@ -134,8 +136,31 @@ export class RuntimeSessionManager {
       await sessionStateManager.initializeSessionState(activeId);
     }
 
+    // Auto-project state to heal any markdown inconsistencies (e.g. missing task.md on old sessions)
+    try {
+      console.log('[RuntimeSessionManager] Re-projecting session state to stabilize Markdown files...');
+      await projectionGenerator.projectSessionState(activeId);
+    } catch (err: any) {
+      console.warn('[RuntimeSessionManager] Failed to re-project session state:', err.message);
+    }
+
     // Re-verify health after recovery
-    const recheck = await runtimeHealthValidator.validateHealth();
+    let recheck = await runtimeHealthValidator.validateHealth();
+    if (!recheck.healthy) {
+      const hasLeaseExpired = recheck.errors.some(e => e.includes('lease has expired'));
+      if (hasLeaseExpired) {
+        console.log('[RuntimeSessionManager] Active session mount lease was expired during recovery. Renewing...');
+        const state = await runtimeStateManager.loadState();
+        state.mountLease = {
+          ownerRuntimeId: state.runtimeId,
+          acquiredAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 600000).toISOString()
+        };
+        await runtimeStateManager.saveState(state);
+        recheck = await runtimeHealthValidator.validateHealth();
+      }
+    }
+
     if (!recheck.healthy) {
       console.error('[RuntimeSessionManager] Recovery failed to stabilize the runtime core:', recheck.errors);
       throw new Error(`Critical Stabilization Failure: ${recheck.errors.join('; ')}`);

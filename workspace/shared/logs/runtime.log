@@ -1,71 +1,81 @@
-[2026-05-26T07:46:23.375Z] [COMMAND_EXECUTED] [system] {"name":"sessions","success":true}
-[2026-05-26T07:46:52.752Z] [COMMAND_EXECUTED] [system] {"name":"exit","success":true}
-[2026-05-26T07:46:52.775Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1779780397667","memoryType":"metadata","actor":"system"}
-[2026-05-26T07:48:27.317Z] [INFO] [LoggingPlugin] Logging plugin initialized.
-[2026-05-26T07:48:27.631Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
-[2026-05-26T07:48:40.154Z] [COMMAND_EXECUTED] [system] {"name":"plugins","success":true}
-[2026-05-26T07:48:50.807Z] [INFO] [LoggingPlugin] Logging plugin shutting down.
-[2026-05-26T07:48:50.814Z] [COMMAND_EXECUTED] [system] {"name":"remove","success":true}
-[2026-05-26T07:49:05.004Z] [COMMAND_EXECUTED] [system] {"name":"help","success":true}
-[2026-05-26T07:49:11.505Z] [COMMAND_EXECUTED] [system] {"name":"help","success":true}
-[2026-05-26T07:55:01.239Z] [INFO] [LoggingPlugin] Logging plugin initialized.
-[2026-05-26T07:55:01.244Z] [COMMAND_EXECUTED] [system] {"name":"add","success":true}
-[2026-05-26T07:55:06.270Z] [COMMAND_EXECUTED] [system] {"name":"help","success":true}
-[2026-05-26T07:55:17.901Z] [COMMAND_EXECUTED] [system] {"name":"plugins","success":true}
-[2026-05-26T07:55:28.025Z] [INFO] [LoggingPlugin] Logging plugin shutting down.
-[2026-06-19T10:07:10.075Z] [INFO] [LoggingPlugin] Logging plugin initialized.
-[2026-06-19T10:07:21.336Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781863251771","memoryType":"history","actor":"system"}
-[2026-06-19T10:07:55.868Z] [EXECUTION_COMPLETED] [system] {"input":"tell me what are there in your memory","status":"COMPLETED"}
-[2026-06-19T10:20:01.131Z] [INFO] [LoggingPlugin] Logging plugin initialized.
-[2026-06-19T10:20:01.430Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
-[2026-06-19T10:23:45.153Z] [INFO] [LoggingPlugin] Logging plugin initialized.
-[2026-06-19T10:23:45.357Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
-[2026-06-19T10:24:13.146Z] [INFO] [LoggingPlugin] Logging plugin initialized.
-[2026-06-19T10:24:13.342Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
-[2026-06-19T10:26:40.885Z] [INFO] [LoggingPlugin] Logging plugin initialized.
-[2026-06-19T10:26:41.126Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
-[2026-06-19T10:30:00.823Z] [INFO] [LoggingPlugin] Logging plugin initialized.
-[2026-06-19T10:30:01.053Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
-[2026-06-19T10:45:39.018Z] [INFO] [LoggingPlugin] Logging plugin initialized.
-[2026-06-19T10:45:39.453Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
-[2026-06-19T10:47:39.183Z] [INFO] [LoggingPlugin] Logging plugin initialized.
-[2026-06-19T10:47:39.512Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
-[2026-06-19T10:48:59.236Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1779948258084","memoryType":"history","actor":"system"}
-[2026-06-19T10:49:43.830Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1779948258084","memoryType":"history","actor":"system"}
-[2026-06-19T10:50:34.825Z] [EXECUTION_COMPLETED] [system] {"input":"hi","status":"COMPLETED"}
-[2026-06-19T10:51:41.234Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781866239252","memoryType":"history","actor":"system"}
-[2026-06-19T10:52:24.731Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781866239252","memoryType":"history","actor":"system"}
-[2026-06-19T10:52:56.032Z] [EXECUTION_COMPLETED] [system] {"input":"hi","status":"COMPLETED"}
-[2026-06-19T11:02:55.751Z] [INFO] [LoggingPlugin] Logging plugin initialized.
-[2026-06-19T11:02:56.296Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
-[2026-06-19T11:03:44.246Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781866987847","memoryType":"history","actor":"system"}
-[2026-06-19T11:04:03.129Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781866987847","memoryType":"history","actor":"system"}
-[2026-06-19T11:04:33.469Z] [INFO] [LoggingPlugin] Logging plugin initialized.
-[2026-06-19T11:04:33.862Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
-[2026-06-19T11:04:47.403Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781866987847","memoryType":"history","actor":"system"}
-[2026-06-19T11:05:00.898Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781866987847","memoryType":"history","actor":"system"}
-[2026-06-19T11:05:00.898Z] [EXECUTION_COMPLETED] [system] {"input":"hi","status":"COMPLETED"}
-[2026-06-19T11:05:15.759Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781867115647","memoryType":"history","actor":"system"}
-[2026-06-19T11:05:23.451Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781867115647","memoryType":"history","actor":"system"}
-[2026-06-19T11:05:23.452Z] [EXECUTION_COMPLETED] [system] {"input":"hi","status":"COMPLETED"}
-[2026-06-19T11:05:53.804Z] [INFO] [LoggingPlugin] Logging plugin initialized.
-[2026-06-19T11:05:54.185Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
-[2026-06-19T11:06:06.927Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781867166801","memoryType":"history","actor":"system"}
-[2026-06-19T11:06:13.138Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781867166801","memoryType":"history","actor":"system"}
-[2026-06-19T11:06:13.138Z] [EXECUTION_COMPLETED] [system] {"input":"hi","status":"COMPLETED"}
-[2026-06-19T11:07:18.932Z] [INFO] [LoggingPlugin] Logging plugin initialized.
-[2026-06-19T11:07:19.306Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
-[2026-06-19T11:07:31.497Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781867251391","memoryType":"history","actor":"system"}
-[2026-06-19T11:07:39.977Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781867251391","memoryType":"history","actor":"system"}
-[2026-06-19T11:07:39.977Z] [EXECUTION_COMPLETED] [system] {"input":"hi","status":"COMPLETED"}
-[2026-06-19T11:09:53.886Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781867390889","memoryType":"history","actor":"system"}
-[2026-06-19T11:10:11.551Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781867390889","memoryType":"history","actor":"system"}
-[2026-06-19T11:10:11.552Z] [EXECUTION_COMPLETED] [system] {"input":"hi","status":"COMPLETED"}
-[2026-06-19T11:10:20.475Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781867390889","memoryType":"history","actor":"system"}
-[2026-06-19T11:10:40.843Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781867390889","memoryType":"history","actor":"system"}
-[2026-06-19T11:10:40.843Z] [EXECUTION_COMPLETED] [system] {"input":"create a file named gokul","status":"COMPLETED"}
-[2026-06-19T11:11:48.623Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781867390889","memoryType":"history","actor":"system"}
-[2026-06-19T11:11:56.500Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781867390889","memoryType":"history","actor":"system"}
-[2026-06-19T11:11:56.527Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781867390889","memoryType":"history","actor":"system"}
-[2026-06-19T11:12:00.975Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1781867390889","memoryType":"history","actor":"system"}
-[2026-06-19T11:12:31.742Z] [EXECUTION_COMPLETED] [system] {"input":"create a file named gokul123","status":"COMPLETED"}
+[2026-07-03T14:18:36.177Z] [INFO] [LoggingPlugin] Logging plugin initialized.
+[2026-07-03T14:18:36.682Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
+[2026-07-03T14:18:49.450Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:19:31.922Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:19:32.002Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:19:40.750Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:19:40.886Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:19:44.260Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:19:44.333Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:19:47.810Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:19:47.900Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:20:17.315Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:20:17.451Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:20:17.590Z] [EXECUTION_COMPLETED] [system] {"input":"continue","status":"COMPLETED"}
+[2026-07-03T14:38:02.224Z] [INFO] [LoggingPlugin] Logging plugin initialized.
+[2026-07-03T14:38:02.704Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
+[2026-07-03T14:38:16.859Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:39:03.427Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:39:03.475Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:39:14.071Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:39:14.143Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:39:24.425Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:39:24.527Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:39:28.067Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:39:28.142Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:39:55.241Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:39:55.320Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:39:55.437Z] [EXECUTION_COMPLETED] [system] {"input":"continue","status":"COMPLETED"}
+[2026-07-03T14:54:15.998Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:55:51.248Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:55:51.434Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:56:12.649Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783086738391","memoryType":"history","actor":"system"}
+[2026-07-03T14:56:12.750Z] [EXECUTION_COMPLETED] [system] {"input":"what to do next","status":"COMPLETED"}
+[2026-07-03T15:41:15.388Z] [INFO] [LoggingPlugin] Logging plugin initialized.
+[2026-07-03T15:41:18.171Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
+[2026-07-03T15:44:35.480Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093471660","memoryType":"history","actor":"system"}
+[2026-07-03T15:45:20.622Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093471660","memoryType":"history","actor":"system"}
+[2026-07-03T15:45:21.094Z] [EXECUTION_COMPLETED] [system] {"input":"hi","status":"COMPLETED"}
+[2026-07-03T15:46:16.327Z] [INFO] [LoggingPlugin] Logging plugin initialized.
+[2026-07-03T15:46:19.095Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
+[2026-07-03T15:46:49.196Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T15:46:53.432Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T15:46:53.576Z] [EXECUTION_COMPLETED] [system] {"input":"hi","status":"COMPLETED"}
+[2026-07-03T15:47:00.454Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T15:47:07.180Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T15:47:07.395Z] [EXECUTION_COMPLETED] [system] {"input":"what is the time now","status":"COMPLETED"}
+[2026-07-03T15:51:11.078Z] [INFO] [LoggingPlugin] Logging plugin initialized.
+[2026-07-03T15:51:11.687Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
+[2026-07-03T15:54:30.274Z] [INFO] [LoggingPlugin] Logging plugin initialized.
+[2026-07-03T15:54:31.247Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
+[2026-07-03T15:55:36.575Z] [INFO] [LoggingPlugin] Logging plugin initialized.
+[2026-07-03T15:55:37.089Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
+[2026-07-03T15:57:06.384Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T15:57:12.855Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T15:57:12.884Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T15:57:18.749Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T15:57:33.780Z] [EXECUTION_COMPLETED] [system] {"input":"what are the files and folders in the workspace.","status":"COMPLETED"}
+[2026-07-03T15:58:25.582Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T15:58:34.335Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T15:58:34.392Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T15:58:37.704Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T15:59:47.197Z] [EXECUTION_COMPLETED] [system] {"input":"delete the folder named gokul and all files inside it","status":"COMPLETED"}
+[2026-07-03T16:01:50.549Z] [INFO] [LoggingPlugin] Logging plugin initialized.
+[2026-07-03T16:01:51.122Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
+[2026-07-03T16:20:48.531Z] [INFO] [LoggingPlugin] Logging plugin initialized.
+[2026-07-03T16:20:49.523Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
+[2026-07-03T16:25:49.960Z] [INFO] [LoggingPlugin] Logging plugin initialized.
+[2026-07-03T16:25:50.675Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
+[2026-07-03T16:27:53.731Z] [INFO] [LoggingPlugin] Logging plugin initialized.
+[2026-07-03T16:27:54.752Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
+[2026-07-03T16:33:55.623Z] [INFO] [LoggingPlugin] Logging plugin initialized.
+[2026-07-03T16:33:56.811Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}
+[2026-07-03T16:37:23.713Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T16:37:40.265Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T16:37:40.318Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T16:37:49.297Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T16:37:49.334Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T16:37:49.474Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T16:37:49.515Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T16:37:56.010Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
+[2026-07-03T16:39:22.647Z] [EXECUTION_COMPLETED] [system] {"input":"create a folder named gokulllll and create 3 files inside it named file1.txt file2.txt file3.txt","status":"COMPLETED"}

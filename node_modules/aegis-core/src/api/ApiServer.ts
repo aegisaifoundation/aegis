@@ -112,6 +112,92 @@ export function startApiServer() {
         return;
       }
 
+      // Endpoint: GET /api/trash
+      if (pathname === '/api/trash' && req.method === 'GET') {
+        const wsRoot = path.dirname(workspaceManager.getWorkspacePath());
+        const trashPath = path.resolve(wsRoot, 'memory/trash');
+        const trashSessions: any[] = [];
+        
+        if (existsSync(trashPath)) {
+          const entries = await fs.readdir(trashPath, { withFileTypes: true });
+          for (const entry of entries) {
+            if (entry.isDirectory()) {
+              const metaPath = path.join(trashPath, entry.name, 'metadata.json');
+              if (existsSync(metaPath)) {
+                try {
+                  const content = await fs.readFile(metaPath, 'utf8');
+                  const meta = JSON.parse(content);
+                  trashSessions.push(meta);
+                } catch {
+                  trashSessions.push({ sessionId: entry.name, displayName: entry.name });
+                }
+              } else {
+                trashSessions.push({ sessionId: entry.name, displayName: entry.name });
+              }
+            }
+          }
+        }
+        
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(JSON.stringify({ sessions: trashSessions }));
+        return;
+      }
+
+      // Endpoint: POST /api/trash/restore
+      if (pathname === '/api/trash/restore' && req.method === 'POST') {
+        const { sessionId } = parsedBody;
+        if (!sessionId) {
+          res.setHeader('Content-Type', 'application/json');
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: 'sessionId is required' }));
+          return;
+        }
+        await runtimeSessionManager.resumeSession(sessionId, 'user');
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(JSON.stringify({ success: true }));
+        return;
+      }
+
+      // Endpoint: POST /api/trash/delete
+      if (pathname === '/api/trash/delete' && req.method === 'POST') {
+        const { sessionId } = parsedBody;
+        if (!sessionId) {
+          res.setHeader('Content-Type', 'application/json');
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: 'sessionId is required' }));
+          return;
+        }
+        const wsRoot = path.dirname(workspaceManager.getWorkspacePath());
+        const sessionTrashDir = path.resolve(wsRoot, `memory/trash/${sessionId}`);
+        if (existsSync(sessionTrashDir)) {
+          await fs.rm(sessionTrashDir, { recursive: true, force: true });
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(JSON.stringify({ success: true }));
+        return;
+      }
+
+      // Endpoint: POST /api/trash/empty
+      if (pathname === '/api/trash/empty' && req.method === 'POST') {
+        const wsRoot = path.dirname(workspaceManager.getWorkspacePath());
+        const trashPath = path.resolve(wsRoot, 'memory/trash');
+        if (existsSync(trashPath)) {
+          const entries = await fs.readdir(trashPath, { withFileTypes: true });
+          for (const entry of entries) {
+            if (entry.isDirectory()) {
+              await fs.rm(path.join(trashPath, entry.name), { recursive: true, force: true });
+            }
+          }
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(JSON.stringify({ success: true }));
+        return;
+      }
+
       // Endpoint: GET /api/sessions/active
       if (pathname === '/api/sessions/active' && req.method === 'GET') {
         const activeSessionId = await runtimeSessionManager.getActiveSession();
