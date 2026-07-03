@@ -10,6 +10,26 @@ let currentBotBubble = null;
 let currentBotText = "";
 let currentStepBlock = null;
 
+function getStoredSessionName(session) {
+  const localName = localStorage.getItem(`display_name_${session.sessionId}`);
+  return localName || session.displayName || `Session ${session.sessionId.split('_').pop()}`;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+async function refreshSessionViews() {
+  await loadSessions();
+  await loadSessionsIndex();
+  await loadTrash();
+}
+
 // Initialize on DOM Load
 document.addEventListener("DOMContentLoaded", () => {
   initNavigation();
@@ -159,8 +179,7 @@ function renderSessionsList(sessions) {
     });
 
     const isCurrent = session.sessionId === activeSessionId;
-    const localName = localStorage.getItem(`display_name_${session.sessionId}`);
-    const name = localName || session.displayName || `Session ${session.sessionId.split('_').pop()}`;
+    const name = getStoredSessionName(session);
 
     const li = document.createElement("li");
     li.className = `session-item ${isCurrent ? 'active' : ''}`;
@@ -168,50 +187,68 @@ function renderSessionsList(sessions) {
     
     li.innerHTML = `
       <div class="session-info">
-        <span class="session-name">${name}</span>
-        <span class="session-meta">${formattedDate}</span>
+        <span class="session-name">${escapeHtml(name)}</span>
+        <span class="session-meta">${escapeHtml(formattedDate)}</span>
       </div>
-      <button class="btn-delete-session" title="Delete Session">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="3 6 5 6 21 6"></polyline>
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-        </svg>
-      </button>
     `;
 
-    // Click to select session
-    li.addEventListener("click", (e) => {
-      // Don't switch if clicking the delete button
-      if (e.target.closest(".btn-delete-session")) return;
+    li.addEventListener("click", () => {
       checkoutSession(session.sessionId);
-    });
-
-    // Delete session event
-    const deleteBtn = li.querySelector(".btn-delete-session");
-    deleteBtn.addEventListener("click", async (e) => {
-      e.stopPropagation();
-      if (confirm(`Are you sure you want to delete session "${name}"?`)) {
-        try {
-          // If deleting the active session, clear it first
-          const response = await fetch(`${API_BASE}/sessions/delete`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId: session.sessionId })
-          });
-          if (!response.ok) throw new Error("Delete failed");
-          
-          if (activeSessionId === session.sessionId) {
-            activeSessionId = null;
-          }
-          loadSessions();
-        } catch (err) {
-          alert("Error deleting session: " + err.message);
-        }
-      }
     });
 
     list.appendChild(li);
   });
+}
+
+async function renameSession(sessionId, currentName) {
+  if (!sessionId) return;
+
+  const newName = prompt("Enter new name for the session:", currentName);
+  if (newName === null) return;
+
+  const trimmed = newName.trim();
+  if (!trimmed) {
+    alert("Session name cannot be empty.");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/sessions/rename`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId, displayName: trimmed })
+    });
+    if (!response.ok) throw new Error("Rename failed");
+
+    localStorage.setItem(`display_name_${sessionId}`, trimmed);
+    await refreshSessionViews();
+    if (activeSessionId === sessionId) {
+      await loadActiveSession();
+    }
+  } catch (err) {
+    alert("Error renaming session: " + err.message);
+  }
+}
+
+async function deleteSession(sessionId, name = "this session") {
+  if (!sessionId) return;
+
+  if (confirm(`Are you sure you want to delete "${name}"? It will move to Trash.`)) {
+    try {
+      const response = await fetch(`${API_BASE}/sessions/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId })
+      });
+      if (!response.ok) throw new Error("Delete failed");
+
+      localStorage.removeItem(`display_name_${sessionId}`);
+      await refreshSessionViews();
+      await loadActiveSession();
+    } catch (err) {
+      alert("Error deleting session: " + err.message);
+    }
+  }
 }
 
 async function checkoutSession(sessionId) {
@@ -264,8 +301,7 @@ async function loadActiveSession() {
     const { activeSessionId: id, metadata, state, history } = sessionDetails;
     
     // Update headers
-    const localName = localStorage.getItem(`display_name_${id}`);
-    const name = localName || metadata?.displayName || `Session ${id.split('_').pop()}`;
+    const name = getStoredSessionName({ sessionId: id, displayName: metadata?.displayName });
     document.getElementById("active-session-title").innerText = name;
     
     let subtitleText = "Federated Health Agent";
@@ -951,6 +987,7 @@ async function loadGGUFStatus() {
     }
     if (loraCurrentStatus) {
       loraCurrentStatus.textContent = "Connection Refused";
+      loraCurrentStatus.className = "lora-badge error";
     }
   }
 }
@@ -999,17 +1036,8 @@ function initUnifiedActions() {
   if (btnRenameSession) {
     btnRenameSession.addEventListener("click", () => {
       if (!activeSessionId) return;
-      const currentName = localStorage.getItem(`display_name_${activeSessionId}`) || `Session ${activeSessionId.split('_').pop()}`;
-      const newName = prompt("Enter new name for the session:", currentName);
-      if (newName !== null) {
-        const trimmed = newName.trim();
-        if (trimmed) {
-          localStorage.setItem(`display_name_${activeSessionId}`, trimmed);
-        } else {
-          localStorage.removeItem(`display_name_${activeSessionId}`);
-        }
-        loadSessions();
-      }
+      const currentName = document.getElementById("active-session-title")?.textContent || `Session ${activeSessionId.split('_').pop()}`;
+      renameSession(activeSessionId, currentName);
     });
   }
 
@@ -1051,20 +1079,8 @@ function initUnifiedActions() {
   if (btnDeleteSessionRight) {
     btnDeleteSessionRight.addEventListener("click", async () => {
       if (!activeSessionId) return;
-      if (confirm(`Are you sure you want to delete the active session?`)) {
-        try {
-          const response = await fetch(`${API_BASE}/sessions/delete`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId: activeSessionId })
-          });
-          if (!response.ok) throw new Error("Delete failed");
-          activeSessionId = null;
-          loadSessions();
-        } catch (err) {
-          alert("Error deleting session: " + err.message);
-        }
-      }
+      const currentName = document.getElementById("active-session-title")?.textContent || "the active session";
+      await deleteSession(activeSessionId, currentName);
     });
   }
 
@@ -1083,9 +1099,10 @@ function initUnifiedActions() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ sessionId: s.sessionId })
             });
+            localStorage.removeItem(`display_name_${s.sessionId}`);
           }
-          activeSessionId = null;
-          loadSessions();
+          await refreshSessionViews();
+          await loadActiveSession();
         } catch (err) {
           alert("Error deleting sessions: " + err.message);
         }
@@ -1129,7 +1146,7 @@ function initUnifiedActions() {
         try {
           const response = await fetch(`${API_BASE}/trash/empty`, { method: 'POST' });
           if (!response.ok) throw new Error("Empty trash failed");
-          loadTrash();
+          await refreshSessionViews();
         } catch (err) {
           alert("Error emptying trash: " + err.message);
         }
@@ -1157,17 +1174,16 @@ async function loadSessionsIndex() {
     }
     
     sessions.forEach(session => {
-      const localName = localStorage.getItem(`display_name_${session.sessionId}`);
-      const name = localName || session.displayName || `Session ${session.sessionId.split('_').pop()}`;
+      const name = getStoredSessionName(session);
       
       const formattedDate = new Date(session.updatedAt || session.createdAt).toLocaleString();
       const isCurrent = session.sessionId === activeSessionId;
       
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td style="font-weight: 600;">${name}</td>
-        <td style="font-family: monospace; font-size: 11px; color: var(--text-gray-3);">${session.sessionId}</td>
-        <td style="color: var(--text-gray-2); font-size: 12px;">${formattedDate}</td>
+        <td style="font-weight: 600;">${escapeHtml(name)}</td>
+        <td style="font-family: monospace; font-size: 11px; color: var(--text-gray-3);">${escapeHtml(session.sessionId)}</td>
+        <td style="color: var(--text-gray-2); font-size: 12px;">${escapeHtml(formattedDate)}</td>
         <td>
           <span class="status-chip" style="display: inline-flex; border: none; padding: 2px 8px; font-size: 10px;">
             <span class="status-indicator-dot" style="background: ${isCurrent ? 'var(--accent-green)' : 'var(--text-gray-3)'};"></span>
@@ -1177,6 +1193,7 @@ async function loadSessionsIndex() {
         <td>
           <div style="display: flex; gap: 8px;">
             <button class="btn-secondary-action btn-sm" onclick="checkoutSession('${session.sessionId}')" style="height: 24px; font-size: 11px; padding: 0 8px;">Checkout</button>
+            <button class="btn-secondary-action btn-sm" onclick="renameSessionFromIndex('${session.sessionId}')" style="height: 24px; font-size: 11px; padding: 0 8px;">Rename</button>
             <button class="btn-danger btn-sm" onclick="deleteSessionFromIndex('${session.sessionId}')" style="height: 24px; font-size: 11px; padding: 0 8px;">Delete</button>
           </div>
         </td>
@@ -1188,22 +1205,16 @@ async function loadSessionsIndex() {
   }
 }
 
+window.renameSessionFromIndex = async function(sessionId) {
+  const row = document.querySelector(`#sessions-index-tbody button[onclick="renameSessionFromIndex('${sessionId}')"]`)?.closest("tr");
+  const currentName = row?.querySelector("td")?.textContent || `Session ${sessionId.split('_').pop()}`;
+  await renameSession(sessionId, currentName);
+}
+
 window.deleteSessionFromIndex = async function(sessionId) {
-  if (confirm("Are you sure you want to delete this session?")) {
-    try {
-      const response = await fetch(`${API_BASE}/sessions/delete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId })
-      });
-      if (!response.ok) throw new Error("Delete failed");
-      if (activeSessionId === sessionId) activeSessionId = null;
-      await loadSessions();
-      await loadSessionsIndex();
-    } catch (err) {
-      alert("Error: " + err.message);
-    }
-  }
+  const row = document.querySelector(`#sessions-index-tbody button[onclick="deleteSessionFromIndex('${sessionId}')"]`)?.closest("tr");
+  const name = row?.querySelector("td")?.textContent || "this session";
+  await deleteSession(sessionId, name);
 }
 
 async function loadTrash() {
@@ -1222,16 +1233,15 @@ async function loadTrash() {
     }
     
     sessions.forEach(session => {
-      const localName = localStorage.getItem(`display_name_${session.sessionId}`);
-      const name = localName || session.displayName || `Session ${session.sessionId.split('_').pop()}`;
+      const name = getStoredSessionName(session);
       
       const formattedDate = session.deletedAt ? new Date(session.deletedAt).toLocaleString() : (session.updatedAt ? new Date(session.updatedAt).toLocaleString() : '—');
       
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td style="font-weight: 600;">${name}</td>
-        <td style="font-family: monospace; font-size: 11px; color: var(--text-gray-3);">${session.sessionId}</td>
-        <td style="color: var(--text-gray-2); font-size: 12px;">${formattedDate}</td>
+        <td style="font-weight: 600;">${escapeHtml(name)}</td>
+        <td style="font-family: monospace; font-size: 11px; color: var(--text-gray-3);">${escapeHtml(session.sessionId)}</td>
+        <td style="color: var(--text-gray-2); font-size: 12px;">${escapeHtml(formattedDate)}</td>
         <td>
           <div style="display: flex; gap: 8px;">
             <button class="btn-secondary-action btn-sm" onclick="restoreTrashSession('${session.sessionId}')" style="height: 24px; font-size: 11px; padding: 0 8px;">Restore</button>
@@ -1254,8 +1264,7 @@ window.restoreTrashSession = async function(sessionId) {
       body: JSON.stringify({ sessionId })
     });
     if (!response.ok) throw new Error("Restore failed");
-    await loadSessions();
-    await loadTrash();
+    await refreshSessionViews();
   } catch (err) {
     alert("Error: " + err.message);
   }
@@ -1270,10 +1279,10 @@ window.deleteTrashSessionPermanently = async function(sessionId) {
         body: JSON.stringify({ sessionId })
       });
       if (!response.ok) throw new Error("Delete failed");
-      await loadTrash();
+      localStorage.removeItem(`display_name_${sessionId}`);
+      await refreshSessionViews();
     } catch (err) {
       alert("Error: " + err.message);
     }
   }
 }
-

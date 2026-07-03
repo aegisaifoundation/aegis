@@ -44,5 +44,5 @@
     "shared/delete-snapshot",
     "shared/runtime-status"
   ],
-  "defaultProvider": "mock"
+  "defaultProvider": "local/gguf"
 }

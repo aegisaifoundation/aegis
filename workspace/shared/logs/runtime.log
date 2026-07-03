@@ -79,3 +79,5 @@
 [2026-07-03T16:37:49.515Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
 [2026-07-03T16:37:56.010Z] [MEMORY.UPDATED] [memory-system] {"sessionId":"session_1783093594642","memoryType":"history","actor":"system"}
 [2026-07-03T16:39:22.647Z] [EXECUTION_COMPLETED] [system] {"input":"create a folder named gokulllll and create 3 files inside it named file1.txt file2.txt file3.txt","status":"COMPLETED"}
+[2026-07-03T17:33:35.561Z] [INFO] [LoggingPlugin] Logging plugin initialized.
+[2026-07-03T17:33:36.528Z] [RUNTIME_STARTED] [system] {"version":"1.0.0"}

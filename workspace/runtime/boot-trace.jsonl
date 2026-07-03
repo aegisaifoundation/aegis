@@ -128,3 +128,4 @@
 {"timestamp":"2026-07-03T16:25:49.336Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
 {"timestamp":"2026-07-03T16:27:52.989Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
 {"timestamp":"2026-07-03T16:33:54.970Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-07-03T17:33:34.930Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}

@@ -38,38 +38,6 @@ export class ProjectionGenerator {
             lines.push('- None');
         }
         lines.push('');
-        // Tasks list
-        lines.push('tasks:');
-        const tasksList = state.tasks || state.activeTasks || [];
-        if (tasksList.length > 0) {
-            for (const task of tasksList) {
-                // Strip any existing checkbox prefix from the static tasks list
-                const cleanTask = task.replace(/^-\s+/, '').replace(/^\[[\s\S]*?\]\s*/, '');
-                lines.push(`- ${cleanTask}`);
-            }
-        }
-        else {
-            lines.push('- None');
-        }
-        lines.push('');
-        // Active tasks with statuses
-        lines.push('active task');
-        lines.push('');
-        if (state.activeTasks && state.activeTasks.length > 0) {
-            for (const task of state.activeTasks) {
-                const hasPrefix = /^\[[!✓✗\s]\]/.test(task);
-                if (hasPrefix) {
-                    lines.push(task);
-                }
-                else {
-                    lines.push(`[ ] ${task}`);
-                }
-            }
-        }
-        else {
-            lines.push('None');
-        }
-        lines.push('');
         // If there is temporary execution context, we append it at the bottom to ensure
         // ProjectionConsistencyValidator continues to pass without errors if it contains keys.
         const tempContext = state.temporaryExecutionContext || {};
@@ -121,14 +89,53 @@ export class ProjectionGenerator {
         return this.trimProjection(content, ProjectionGenerator.MAX_SESSION_WORDS);
     }
     /**
+     * Generates task.md projection from SessionState.
+     */
+    generateTaskProjection(state) {
+        const lines = [];
+        lines.push('# Tasks');
+        lines.push('');
+        const tasksList = state.tasks || [];
+        if (tasksList.length > 0) {
+            for (const task of tasksList) {
+                const cleanTask = task.replace(/^-\s+/, '').replace(/^\[[\s\S]*?\]\s*/, '');
+                lines.push(`- ${cleanTask}`);
+            }
+        }
+        else {
+            lines.push('- None');
+        }
+        lines.push('');
+        lines.push('# Active Tasks');
+        lines.push('');
+        if (state.activeTasks && state.activeTasks.length > 0) {
+            for (const task of state.activeTasks) {
+                const hasPrefix = /^\[[!✓✗\s]\]/.test(task);
+                if (hasPrefix) {
+                    lines.push(task);
+                }
+                else {
+                    lines.push(`[ ] ${task}`);
+                }
+            }
+        }
+        else {
+            lines.push('None');
+        }
+        lines.push('');
+        return lines.join('\n');
+    }
+    /**
      * Projects session state to markdown files. Writes using MemoryGateway.
      */
     async projectSessionState(sessionId, state, txId, actor = 'system') {
         const currentState = state || await memoryGateway.getSessionState(sessionId, actor);
         const workingProj = this.generateWorkingMemoryProjection(currentState);
         const sessionProj = this.generateSessionMemoryProjection(currentState);
+        const taskProj = this.generateTaskProjection(currentState);
         await memoryGateway.updateWorkingMemory(sessionId, workingProj, txId, actor);
         await memoryGateway.updateSessionMemory(sessionId, sessionProj, txId, actor);
+        await memoryGateway.updateTask(sessionId, taskProj, txId, actor);
     }
     /**
      * Trims content to the word limit.

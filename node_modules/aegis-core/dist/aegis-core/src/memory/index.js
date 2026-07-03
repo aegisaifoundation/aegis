@@ -26,3 +26,18 @@ export * from './Memory.js';
 export * from './MemoryRegistry.js';
 export * from './MemoryLoader.js';
 export * from './MemoryContext.js';
+// Event Bus
+export * from './eventbus/MemoryEvent.js';
+export * from './eventbus/MemoryEventBus.js';
+export * from './eventbus/handlers/AuditLogger.js';
+export * from './eventbus/handlers/EmbeddingHandler.js';
+// Semantic Retrieval & Search
+export * from './embedding/MemoryEmbeddingManager.js';
+export * from './search/VectorSearchProvider.js';
+export * from './search/MemorySearchManager.js';
+// Reflection Subsystem
+export * from './eventbus/handlers/ReflectionHandler.js';
+export * from './refinement/MemoryReflectionManager.js';
+export * from './refinement/MemoryRankingManager.js';
+export * from './refinement/MemoryCompressionManager.js';
+export * from './refinement/MemoryConflictResolver.js';
