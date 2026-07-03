@@ -121,7 +121,8 @@ export class SessionStateManager {
             // 6. Consistency Validation (pre-validate in memory before committing)
             const workingProj = projectionGenerator.generateWorkingMemoryProjection(mutated);
             const updatedSessionProj = projectionGenerator.generateSessionMemoryProjection(mutated);
-            const consistency = projectionConsistencyValidator.validateProjectionSynchronization(workingProj, updatedSessionProj, mutated);
+            const updatedTaskProj = projectionGenerator.generateTaskProjection(mutated);
+            const consistency = projectionConsistencyValidator.validateProjectionSynchronization(workingProj, updatedSessionProj, updatedTaskProj, mutated);
             if (!consistency.valid) {
                 throw new Error(`Consistency validation failed during mutation pipeline: ${consistency.reason}`);
             }

@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { loadEnvironment } from '../utils/environment.js';
-import { memoryManager, memoryRegistry, memoryLoader } from '../memory/index.js';
+import { memoryManager, memoryRegistry, memoryLoader, memoryEventBus, AuditLogger, memoryEmbeddingManager, memorySearchManager, EmbeddingHandler, memoryReflectionManager, ReflectionHandler, memoryRankingManager, memoryCompressionManager, memoryConflictResolver } from '../memory/index.js';
 import { providerManager } from '../providers/index.js';
 import { terminalTransport } from '../transports/index.js';
 import { workspaceManager } from './WorkspaceManager.js';
@@ -24,6 +24,26 @@ export class BootstrapManager {
         serviceRegistry.register('config', configurationManager);
         serviceRegistry.register('workspaceManager', workspaceManager);
         serviceRegistry.register('memoryRegistry', memoryRegistry);
+        serviceRegistry.register('memoryEventBus', memoryEventBus);
+        serviceRegistry.register('memoryEmbeddingManager', memoryEmbeddingManager);
+        serviceRegistry.register('memorySearchManager', memorySearchManager);
+        serviceRegistry.register('memoryReflectionManager', memoryReflectionManager);
+        serviceRegistry.register('memoryRankingManager', memoryRankingManager);
+        serviceRegistry.register('memoryCompressionManager', memoryCompressionManager);
+        serviceRegistry.register('memoryConflictResolver', memoryConflictResolver);
+        // Subscribe handlers to memory events asynchronously
+        memoryEventBus.subscribe('*', async (event) => {
+            await AuditLogger.handleEvent(event);
+        });
+        memoryEventBus.subscribe('workingMemory.updated', async (event) => {
+            await EmbeddingHandler.handleEvent(event);
+        });
+        memoryEventBus.subscribe('sessionMemory.updated', async (event) => {
+            await EmbeddingHandler.handleEvent(event);
+        });
+        memoryEventBus.subscribe('session.archived', async (event) => {
+            await ReflectionHandler.handleEvent(event);
+        });
         // Graceful Shutdown Registration
         eventBus.on('runtime_shutdown_requested', async () => {
             console.log('\n[System] Shutdown requested. Cleaning up and exiting...');

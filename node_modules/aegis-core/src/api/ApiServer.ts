@@ -96,6 +96,30 @@ export function startApiServer() {
         return;
       }
 
+      // Endpoint: POST /api/sessions/rename
+      if (pathname === '/api/sessions/rename' && req.method === 'POST') {
+        const { sessionId, displayName, description } = parsedBody;
+        const trimmedDisplayName = String(displayName ?? '').trim();
+        if (!sessionId || !trimmedDisplayName) {
+          res.setHeader('Content-Type', 'application/json');
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: 'sessionId and displayName are required' }));
+          return;
+        }
+
+        const metadata = await memoryGateway.loadSession(sessionId, 'system').catch(() => null);
+        await runtimeSessionManager.renameSession(
+          sessionId,
+          trimmedDisplayName,
+          description ?? metadata?.description ?? '',
+          'user'
+        );
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(JSON.stringify({ success: true, sessionId, displayName: trimmedDisplayName }));
+        return;
+      }
+
       // Endpoint: POST /api/sessions/delete
       if (pathname === '/api/sessions/delete' && req.method === 'POST') {
         const { sessionId } = parsedBody;
@@ -105,6 +129,18 @@ export function startApiServer() {
           res.end(JSON.stringify({ error: 'sessionId is required' }));
           return;
         }
+
+        const activeSessionId = await runtimeSessionManager.getActiveSession();
+        if (activeSessionId === sessionId) {
+          const sessions = await runtimeSessionManager.listSessions();
+          const replacement = sessions.find(session => session.sessionId !== sessionId);
+          if (replacement) {
+            await runtimeSessionManager.checkoutSession(replacement.sessionId, 'user');
+          } else {
+            await runtimeSessionManager.createNewSession([], 'user');
+          }
+        }
+
         await runtimeSessionManager.deleteSession(sessionId, 'user');
         res.setHeader('Content-Type', 'application/json');
         res.writeHead(200);

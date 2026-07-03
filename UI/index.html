@@ -45,7 +45,7 @@
 
       <!-- Sessions List (Scrollable) -->
       <div class="sidebar-scroll-area">
-        <div class="sidebar-sec-label">Pinned Sessions</div>
+        <div class="sidebar-sec-label">Sessions</div>
         <ul id="session-list">
           <!-- Dynamically populated via app.js -->
         </ul>
@@ -210,7 +210,10 @@
             <div class="gguf-control-header">
               <div class="gguf-title-group">
                 <span class="gguf-icon">🤖</span>
-                <h3>GGUF Local Model Settings</h3>
+                <div>
+                  <h3>GGUF Local Model Settings</h3>
+                  <p>Local inference runtime and LoRA adapter control</p>
+                </div>
               </div>
               <div class="gguf-status-badge">
                 <span id="gguf-status-dot" class="status-dot offline"></span>
@@ -219,7 +222,7 @@
             </div>
             <div class="gguf-control-body">
               <div class="lora-select-group">
-                <label for="lora-select">Active LoRA Adapter:</label>
+                <label for="lora-select">Active LoRA Adapter</label>
                 <div class="select-btn-group">
                   <select id="lora-select" class="lora-dropdown">
                     <option value="" disabled selected>Select LoRA...</option>
@@ -229,7 +232,7 @@
                 </div>
               </div>
               <div class="lora-current-info">
-                <span>Current Status:</span>
+                <span>Current Status</span>
                 <span id="lora-current-status" class="lora-badge">No Adapter Attached</span>
               </div>
             </div>
@@ -392,7 +395,7 @@
         <section id="page-sessions-stub" class="page-section">
           <div class="section-heading">
             <h1>Sessions Index</h1>
-            <p>Advanced federated training session records and clinical data lineage archives.</p>
+            <p>Active session folders available for checkout, rename, export, or deletion.</p>
           </div>
           <div class="sessions-index-container">
             <table class="sessions-index-table">
@@ -448,7 +451,7 @@
         <section id="page-trash-stub" class="page-section">
           <div class="section-heading-row">
             <div class="section-heading">
-              <h1>Archived Trash Files</h1>
+              <h1>Trash</h1>
               <p>Restore or permanently purge deleted sessions and logs.</p>
             </div>
             <button id="btn-empty-trash" class="btn-danger-solid" style="width: auto; height: 32px; padding: 0 16px;">Empty Trash</button>
