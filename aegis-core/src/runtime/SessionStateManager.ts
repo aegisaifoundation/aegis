@@ -136,10 +136,12 @@ export class SessionStateManager {
       // 6. Consistency Validation (pre-validate in memory before committing)
       const workingProj = projectionGenerator.generateWorkingMemoryProjection(mutated);
       const updatedSessionProj = projectionGenerator.generateSessionMemoryProjection(mutated);
+      const updatedTaskProj = projectionGenerator.generateTaskProjection(mutated);
 
       const consistency = projectionConsistencyValidator.validateProjectionSynchronization(
         workingProj,
         updatedSessionProj,
+        updatedTaskProj,
         mutated
       );
       if (!consistency.valid) {

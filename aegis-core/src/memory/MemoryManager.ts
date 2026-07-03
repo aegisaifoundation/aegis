@@ -14,6 +14,7 @@ import { MemoryRecoveryManager } from './recovery/MemoryRecoveryManager.js';
 import { memoryCleanupScheduler } from './scheduler/MemoryCleanupScheduler.js';
 import { MemoryMigrationManager } from './migration/MemoryMigrationManager.js';
 import { calculateChecksum } from './utils/MemoryFileHelpers.js';
+import { memoryEventBus } from './eventbus/MemoryEventBus.js';
 
 export class MemoryManager {
   private refiner = new MemoryRefiner();
@@ -140,6 +141,16 @@ export class MemoryManager {
       this.cache.set(sessionId, meta);
       await MemoryIndexManager.registerSession(meta);
       eventBus.emit(EventTypes.SESSION_CREATED, { sessionId, tags, actor }, 'memory-system');
+      
+      memoryEventBus.publish({
+        eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+        topic: 'session.created',
+        timestamp: new Date().toISOString(),
+        sessionId,
+        actor,
+        payload: { tags }
+      });
+      
       return meta;
     } finally {
       release();
@@ -171,6 +182,16 @@ export class MemoryManager {
       this.cache.set(sessionId, migrated);
       await MemoryIndexManager.registerSession(migrated);
       eventBus.emit(EventTypes.SESSION_LOADED, { sessionId, actor }, 'memory-system');
+      
+      memoryEventBus.publish({
+        eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+        topic: 'session.loaded',
+        timestamp: new Date().toISOString(),
+        sessionId,
+        actor,
+        payload: { metadata: migrated }
+      });
+      
       return migrated;
     } finally {
       release();
@@ -184,6 +205,15 @@ export class MemoryManager {
       this.cache.delete(sessionId);
       await MemoryIndexManager.unregisterSession(sessionId);
       eventBus.emit(EventTypes.MEMORY_DELETED, { sessionId, actor }, 'memory-system');
+      
+      memoryEventBus.publish({
+        eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+        topic: 'session.deleted',
+        timestamp: new Date().toISOString(),
+        sessionId,
+        actor,
+        payload: {}
+      });
     } finally {
       release();
     }
@@ -203,6 +233,15 @@ export class MemoryManager {
       this.cache.set(sessionId, meta);
       await MemoryIndexManager.registerSession(meta);
       eventBus.emit(EventTypes.SESSION_ARCHIVED, { sessionId, actor }, 'memory-system');
+      
+      memoryEventBus.publish({
+        eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+        topic: 'session.archived',
+        timestamp: new Date().toISOString(),
+        sessionId,
+        actor,
+        payload: {}
+      });
     } finally {
       release();
     }
@@ -235,6 +274,20 @@ export class MemoryManager {
     try {
       await memoryGateway.updateWorkingMemory(sessionId, content, undefined, actor);
       eventBus.emit(EventTypes.MEMORY_UPDATED, { sessionId, memoryType: 'working', actor }, 'memory-system');
+    } finally {
+      release();
+    }
+  }
+
+  public async getTask(sessionId: string, actor: string = 'system'): Promise<string> {
+    return await memoryGateway.getTask(sessionId, actor);
+  }
+
+  public async updateTask(sessionId: string, content: string, actor: string = 'system'): Promise<void> {
+    const release = await memoryLockManager.acquire(sessionId);
+    try {
+      await memoryGateway.updateTask(sessionId, content, undefined, actor);
+      eventBus.emit(EventTypes.MEMORY_UPDATED, { sessionId, memoryType: 'task', actor }, 'memory-system');
     } finally {
       release();
     }
@@ -299,11 +352,16 @@ export class MemoryManager {
       await this.createSnapshot(sessionId, 'history', actor);
       await this.createSnapshot(sessionId, 'sessionMemory', actor);
       await this.createSnapshot(sessionId, 'workingMemory', actor);
+      await this.createSnapshot(sessionId, 'task', actor);
 
       const working = await memoryGateway.getWorkingMemory(sessionId, actor);
       const refinedWorking = await this.refiner.refineWorkingMemory(sessionId, working);
       await memoryGateway.updateWorkingMemory(sessionId, refinedWorking, undefined, actor);
       eventBus.emit(EventTypes.MEMORY_PRUNED, { sessionId, actor }, 'memory-system');
+
+      const taskContent = await memoryGateway.getTask(sessionId, actor);
+      const refinedTask = await this.refiner.refineTaskMemory(sessionId, taskContent);
+      await memoryGateway.updateTask(sessionId, refinedTask, undefined, actor);
 
       const history = await memoryGateway.getHistory(sessionId, actor);
       const sessionMem = await memoryGateway.getSessionMemory(sessionId, actor);
@@ -323,7 +381,7 @@ export class MemoryManager {
 
   public async createSnapshot(
     sessionId: string,
-    fileType: 'history' | 'sessionMemory' | 'workingMemory',
+    fileType: 'history' | 'sessionMemory' | 'workingMemory' | 'task',
     actor: string = 'system'
   ): Promise<string> {
     const wsRoot = path.dirname(workspaceManager.getWorkspacePath());
@@ -335,7 +393,8 @@ export class MemoryManager {
     }
 
     const fileName = fileType === 'sessionMemory' ? 'session-memory.md' :
-                     fileType === 'workingMemory' ? 'working-memory.md' : 'history.json';
+                     fileType === 'workingMemory' ? 'working-memory.md' :
+                     fileType === 'task' ? 'task.md' : 'history.json';
     const filePath = path.join(sessionDir, fileName);
     
     if (!existsSync(filePath)) {
@@ -344,11 +403,21 @@ export class MemoryManager {
 
     const content = await fs.readFile(filePath, 'utf8');
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const snapFileName = `${fileType === 'sessionMemory' ? 'session-memory' : fileType === 'workingMemory' ? 'working-memory' : 'history'}-${timestamp}.snap`;
+    const snapFileName = `${fileType === 'sessionMemory' ? 'session-memory' : fileType === 'workingMemory' ? 'working-memory' : fileType === 'task' ? 'task' : 'history'}-${timestamp}.snap`;
     const snapPath = path.join(snapshotDir, snapFileName);
 
     await fs.writeFile(snapPath, content, 'utf8');
     eventBus.emit(EventTypes.MEMORY_SNAPSHOT_CREATED, { sessionId, fileType, snapFileName, actor }, 'memory-system');
+    
+    memoryEventBus.publish({
+      eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+      topic: 'snapshot.created',
+      timestamp: new Date().toISOString(),
+      sessionId,
+      actor,
+      payload: { fileType, snapFileName }
+    });
+    
     return snapFileName;
   }
 
@@ -436,6 +505,13 @@ export class MemoryManager {
         if (!existsSync(workingPath)) return true;
         const current = calculateChecksum(await fs.readFile(workingPath, 'utf8'));
         if (current !== meta.checksums.workingMemory) return true;
+      }
+
+      if (meta.checksums.task) {
+        const taskPath = path.join(sessionDir, 'task.md');
+        if (!existsSync(taskPath)) return true;
+        const current = calculateChecksum(await fs.readFile(taskPath, 'utf8'));
+        if (current !== meta.checksums.task) return true;
       }
 
       return false;

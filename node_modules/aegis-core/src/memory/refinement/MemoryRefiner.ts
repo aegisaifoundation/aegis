@@ -184,4 +184,48 @@ export class MemoryRefiner implements IMemoryRefiner {
     }
     return words.slice(0, limit).join(' ') + '\n\n*System warning: Concluding content pruned to satisfy word count quota limits.*';
   }
+
+  /**
+   * Refines task memory by pruning completed tasks.
+   */
+  public async refineTaskMemory(
+    sessionId: string,
+    currentTaskMemory: string
+  ): Promise<string> {
+    if (!currentTaskMemory) return '';
+
+    const lines = currentTaskMemory.split('\n');
+    const refinedLines: string[] = [];
+    let inActiveTasks = false;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('# Active Tasks')) {
+        inActiveTasks = true;
+        refinedLines.push(line);
+        continue;
+      }
+
+      if (inActiveTasks) {
+        if (trimmed.startsWith('#')) {
+          inActiveTasks = false;
+        } else {
+          const isCompleted = trimmed.includes('[✓]') || trimmed.includes('[✔]') || trimmed.includes('[x]') || trimmed.includes('[X]');
+          if (isCompleted) {
+            continue;
+          }
+        }
+      } else if (trimmed.startsWith('-')) {
+        const isCompleted = trimmed.includes('[✓]') || trimmed.includes('[✔]') || trimmed.includes('[x]') || trimmed.includes('[X]');
+        if (isCompleted) {
+          continue;
+        }
+      }
+
+      refinedLines.push(line);
+    }
+
+    return refinedLines.join('\n');
+  }
 }
+

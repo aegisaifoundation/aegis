@@ -55,6 +55,7 @@ async function runValidation() {
     assert(existsSync(path.join(sessionDir, 'history.json')), "history.json exists");
     assert(existsSync(path.join(sessionDir, 'session-memory.md')), "session-memory.md exists");
     assert(existsSync(path.join(sessionDir, 'working-memory.md')), "working-memory.md exists");
+    assert(existsSync(path.join(sessionDir, 'task.md')), "task.md exists");
 
     // 3. Operations & History Append
     console.log("\n3. Testing Interaction Log Appends...");
@@ -64,37 +65,43 @@ async function runValidation() {
     assert(history[0].content === 'remember to always use dark mode preferred', "History content matches");
 
     // 4. Working Memory Update
-    console.log("\n4. Testing Working Memory & Limits...");
-    const initialWorking = '## Current Tasks\n- [ ] Code completion\n- [x] Run compilation\n\n## Intermediate Conclusions\n- Compiling looks good\n';
+    console.log("\n4. Testing Working Memory, Tasks & Limits...");
+    const initialWorking = '## Intermediate Conclusions\n- Compiling looks good\n';
     await memoryManager.updateWorkingMemory(sessionId, initialWorking, 'agent');
     const workingContent = await memoryManager.getWorkingMemory(sessionId, 'agent');
-    assert(workingContent.includes('Code completion'), "Working memory written successfully");
+    assert(workingContent.includes('Compiling looks good'), "Working memory written successfully");
+
+    const initialTask = '# Tasks\n- [ ] Code completion\n- [x] Run compilation\n\n# Active Tasks\n- [ ] Code completion\n- [x] Run compilation\n';
+    await memoryManager.updateTask(sessionId, initialTask, 'agent');
+    const taskContent = await memoryManager.getTask(sessionId, 'agent');
+    assert(taskContent.includes('Code completion'), "Task memory written successfully");
 
     // 5. Checksums & Verification
     console.log("\n5. Testing Integrity Checks...");
     const metaReload = await memoryManager.loadSession(sessionId, 'agent');
     assert(metaReload.checksums.workingMemory !== undefined, "Checksum stored for working memory");
+    assert(metaReload.checksums.task !== undefined, "Checksum stored for task memory");
 
     // 6. Memory Refinement & Compaction
     console.log("\n6. Compressing and Refining...");
     await memoryManager.compress(sessionId, 'agent');
     
-    const refinedWorking = await memoryManager.getWorkingMemory(sessionId, 'agent');
+    const refinedTask = await memoryManager.getTask(sessionId, 'agent');
     const refinedSession = await memoryManager.getSessionMemory(sessionId, 'agent');
     
     // Pruning assertion (Task 2 was marked [x] so it should be pruned)
-    assert(!refinedWorking.includes('Run compilation'), "Completed task successfully pruned from working memory");
-    assert(refinedWorking.includes('Code completion'), "Active task retained in working memory");
+    assert(!refinedTask.includes('Run compilation'), "Completed task successfully pruned from task memory");
+    assert(refinedTask.includes('Code completion'), "Active task retained in task memory");
     
     // Extraction assertion (User said "remember to always use dark mode preferred")
     assert(refinedSession.includes('remember to always use dark mode preferred'), "Fact extracted and refined into session-memory.md");
 
-    // 7. Snapshots
+    // 7. Snapshot System...
     console.log("\n7. Snapshot System...");
     const snapsDir = path.resolve(wsRoot, `memory/snapshots/${sessionId}`);
     assert(existsSync(snapsDir), "Snapshots folder created for session");
     const snaps = await fs.readdir(snapsDir);
-    assert(snaps.length >= 2, "Created working and session memory snapshots before compression");
+    assert(snaps.length >= 3, "Created working, session, and task memory snapshots before compression");
 
     // 8. Transactions & Rollback
     console.log("\n8. Memory Transactions...");

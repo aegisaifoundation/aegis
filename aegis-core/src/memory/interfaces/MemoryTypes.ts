@@ -146,6 +146,7 @@ export interface SessionMetadata {
     history?: string;
     sessionMemory?: string;
     workingMemory?: string;
+    task?: string;
   };
   confidence: Record<string, number>;
   tags: string[];

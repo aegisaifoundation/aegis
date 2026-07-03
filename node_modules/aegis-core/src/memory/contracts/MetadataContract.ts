@@ -20,7 +20,8 @@ export const SessionMetadataSchema = z.object({
   checksums: z.object({
     history: z.string().optional(),
     sessionMemory: z.string().optional(),
-    workingMemory: z.string().optional()
+    workingMemory: z.string().optional(),
+    task: z.string().optional()
   }),
   confidence: z.record(z.number()),
   tags: z.array(z.string()),
