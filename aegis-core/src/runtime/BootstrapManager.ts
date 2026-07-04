@@ -20,6 +20,7 @@ const __dirname = path.dirname(__filename);
 
 export class BootstrapManager {
   async bootstrap(): Promise<void> {
+    // Orchestrates the chronological loading of workspace environment variables, memory index caches, plugin assets, and providers.
     console.log('[System] Initializing AEGIS Core Runtime Kernel...');
 
     // Register services in ServiceRegistry
