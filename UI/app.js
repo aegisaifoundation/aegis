@@ -11,8 +11,7 @@ let currentBotText = "";
 let currentStepBlock = null;
 
 function getStoredSessionName(session) {
-  const localName = localStorage.getItem(`display_name_${session.sessionId}`);
-  return localName || session.displayName || `Session ${session.sessionId.split('_').pop()}`;
+  return session.displayName || localStorage.getItem(`display_name_${session.sessionId}`) || `Session ${session.sessionId.split('_').pop()}`;
 }
 
 function escapeHtml(value) {
