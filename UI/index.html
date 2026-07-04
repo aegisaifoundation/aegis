@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.0.1">
+  <link rel="stylesheet" href="style.css?v=1.0.2">
 </head>
 <body>
 
@@ -17,143 +17,145 @@
 
     <!-- COLUMN 1: LEFT SIDEBAR (Width: 280px) -->
     <aside id="left-sidebar" class="sidebar-col">
-      
-      <!-- Logo Block -->
-      <div class="sidebar-brand">
-        <div class="logo-text">AEGIS</div>
-        <div class="logo-sub">Enterprise AI Operating System</div>
-      </div>
-
-      <!-- Action Button -->
-      <div class="sidebar-action">
-        <button id="btn-new-session" class="btn-primary-action">
-          <span>+ New Session</span>
-          <span class="kb-hint">⌘N</span>
-        </button>
-      </div>
-
-      <!-- Search Section -->
-      <div class="sidebar-search">
-        <div class="search-field">
-          <svg class="search-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input type="text" id="session-search" placeholder="Search sessions...">
+      <div class="sidebar-wrapper">
+        
+        <!-- Logo Block -->
+        <div class="sidebar-brand">
+          <div class="logo-text">AEGIS</div>
+          <div class="logo-sub">Enterprise AI Operating System</div>
         </div>
-      </div>
 
-      <!-- Sessions List (Scrollable) -->
-      <div class="sidebar-scroll-area">
-        <div class="sidebar-sec-label">Sessions</div>
-        <ul id="session-list">
-          <!-- Dynamically populated via app.js -->
-        </ul>
-      </div>
-
-      <!-- Navigation Section -->
-      <div class="sidebar-nav-sec">
-        <div class="sidebar-sec-label">System Console</div>
-        <nav class="sidebar-nav">
-          <button class="nav-btn active" data-target="page-home">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            </svg>
-            <span>Home</span>
+        <!-- Action Button -->
+        <div class="sidebar-action">
+          <button id="btn-new-session" class="btn-primary-action">
+            <span>+ New Session</span>
+            <span class="kb-hint">⌘N</span>
           </button>
-          
-          <button class="nav-btn" data-target="page-sessions-stub">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            <span>Sessions</span>
-          </button>
-
-          <button class="nav-btn" data-target="page-tools">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-            </svg>
-            <span>Tools</span>
-          </button>
-
-          <button class="nav-btn" data-target="page-skills">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path>
-            </svg>
-            <span>Skills</span>
-          </button>
-
-          <button class="nav-btn" data-target="page-plugins">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
-              <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
-            </svg>
-            <span>Plugins</span>
-          </button>
-
-          <button class="nav-btn" data-target="page-models-stub">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="2" y1="12" x2="22" y2="12"></line>
-            </svg>
-            <span>Models</span>
-          </button>
-
-          <button class="nav-btn" data-target="page-providers-stub">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-            </svg>
-            <span>Providers</span>
-          </button>
-
-          <button class="nav-btn" data-target="page-logs-stub">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            </svg>
-            <span>Logs</span>
-          </button>
-
-          <button class="nav-btn" data-target="page-alerts-stub">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-            </svg>
-            <span>Alerts</span>
-          </button>
-
-          <button class="nav-btn" data-target="page-trash-stub">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-            <span>Trash</span>
-          </button>
-
-          <button class="nav-btn" data-target="page-settings-stub">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="3"></circle>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-            </svg>
-            <span>Settings</span>
-          </button>
-        </nav>
-      </div>
-
-      <!-- Bottom User Panel -->
-      <div class="sidebar-user-panel">
-        <div class="user-avatar-circle">OP</div>
-        <div class="user-meta">
-          <div class="user-fullname">AEGIS Operator</div>
-          <div class="user-role-label">System Administrator</div>
         </div>
-        <button class="user-settings-shortcut" title="Quick Settings">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </button>
+
+        <!-- Search Section -->
+        <div class="sidebar-search">
+          <div class="search-field">
+            <svg class="search-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="session-search" placeholder="Search sessions...">
+          </div>
+        </div>
+
+        <!-- Sessions List (Scrollable) -->
+        <div class="sidebar-scroll-area">
+          <div class="sidebar-sec-label">Sessions</div>
+          <ul id="session-list">
+            <!-- Dynamically populated via app.js -->
+          </ul>
+        </div>
+
+        <!-- Navigation Section -->
+        <div class="sidebar-nav-sec">
+          <div class="sidebar-sec-label">System Console</div>
+          <nav class="sidebar-nav">
+            <button class="nav-btn active" data-target="page-home">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              </svg>
+              <span>Home</span>
+            </button>
+            
+            <button class="nav-btn" data-target="page-sessions-stub">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span>Sessions</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-tools">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+              </svg>
+              <span>Tools</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-skills">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path>
+              </svg>
+              <span>Skills</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-plugins">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+              </svg>
+              <span>Plugins</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-models-stub">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+              </svg>
+              <span>Models</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-providers-stub">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+              </svg>
+              <span>Providers</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-logs-stub">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              </svg>
+              <span>Logs</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-alerts-stub">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              </svg>
+              <span>Alerts</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-trash-stub">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>Trash</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-settings-stub">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+              <span>Settings</span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Bottom User Panel -->
+        <div class="sidebar-user-panel">
+          <div class="user-avatar-circle">OP</div>
+          <div class="user-meta">
+            <div class="user-fullname">AEGIS Operator</div>
+            <div class="user-role-label">System Administrator</div>
+          </div>
+          <button class="user-settings-shortcut" title="Quick Settings">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        </div>
       </div>
     </aside>
 
@@ -163,6 +165,12 @@
       <!-- Top Header -->
       <header class="workspace-header">
         <div class="header-left">
+          <button id="btn-toggle-left-sidebar" class="btn-header-icon" title="Toggle Left Sidebar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="9" y1="3" x2="9" y2="21"></line>
+            </svg>
+          </button>
           <div class="breadcrumb">
             <span class="bc-item">Home</span>
             <span class="bc-separator">/</span>
@@ -189,6 +197,13 @@
                 <span id="agent-status-text">Idle</span>
               </div>
             </div>
+
+            <button id="btn-toggle-right-sidebar" class="btn-header-icon" title="Toggle Inspector Panel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="15" y1="3" x2="15" y2="21"></line>
+              </svg>
+            </button>
           </div>
         </div>
       </header>
@@ -478,124 +493,126 @@
 
     <!-- COLUMN 3: INSPECTOR PANEL (Width: 320px) -->
     <aside id="right-sidebar" class="inspector-col">
-      <div class="inspector-scroll-area">
-        
-        <!-- Accordion Section: Session Details -->
-        <div class="inspector-group active">
-          <div class="inspector-group-header">
-            <span>Session Details</span>
-            <svg class="inspector-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </div>
-          <div class="inspector-group-body">
-            <div class="meta-field-list">
-              <div class="meta-field">
-                <span class="meta-label">Session ID</span>
-                <div class="meta-value-row">
-                  <span id="session-details-id" class="meta-val-trunc">1783093594642</span>
-                  <button class="btn-copy-tiny" id="btn-copy-session-id" title="Copy Session ID">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                  </button>
+      <div class="inspector-wrapper">
+        <div class="inspector-scroll-area">
+          
+          <!-- Accordion Section: Session Details -->
+          <div class="inspector-group active">
+            <div class="inspector-group-header">
+              <span>Session Details</span>
+              <svg class="inspector-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+            <div class="inspector-group-body">
+              <div class="meta-field-list">
+                <div class="meta-field">
+                  <span class="meta-label">Session ID</span>
+                  <div class="meta-value-row">
+                    <span id="session-details-id" class="meta-val-trunc">1783093594642</span>
+                    <button class="btn-copy-tiny" id="btn-copy-session-id" title="Copy Session ID">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
-              </div>
-              
-              <div class="meta-field">
-                <span class="meta-label">Created</span>
-                <span class="meta-value" id="session-details-created">Jul 3, 2025, 09:27 PM</span>
-              </div>
-              
-              <div class="meta-field">
-                <span class="meta-label">Status</span>
-                <div class="meta-status-row">
-                  <span class="status-indicator-dot active-color"></span>
-                  <span class="meta-value" id="session-details-status">Active</span>
+                
+                <div class="meta-field">
+                  <span class="meta-label">Created</span>
+                  <span class="meta-value" id="session-details-created">Jul 3, 2025, 09:27 PM</span>
                 </div>
-              </div>
-              
-              <div class="meta-field">
-                <span class="meta-label">Provider</span>
-                <span class="meta-value" id="session-details-provider">local/ollama</span>
-              </div>
-              
-              <div class="meta-field">
-                <span class="meta-label">Core Node</span>
-                <div class="meta-status-row">
-                  <span class="status-indicator-dot active-color" id="session-details-node-dot"></span>
-                  <span class="meta-value" id="session-details-node">Idle</span>
+                
+                <div class="meta-field">
+                  <span class="meta-label">Status</span>
+                  <div class="meta-status-row">
+                    <span class="status-indicator-dot active-color"></span>
+                    <span class="meta-value" id="session-details-status">Active</span>
+                  </div>
                 </div>
-              </div>
-              
-              <div class="meta-field">
-                <span class="meta-label">Model</span>
-                <span class="meta-value" id="session-details-model">Not Selected</span>
+                
+                <div class="meta-field">
+                  <span class="meta-label">Provider</span>
+                  <span class="meta-value" id="session-details-provider">local/ollama</span>
+                </div>
+                
+                <div class="meta-field">
+                  <span class="meta-label">Core Node</span>
+                  <div class="meta-status-row">
+                    <span class="status-indicator-dot active-color" id="session-details-node-dot"></span>
+                    <span class="meta-value" id="session-details-node">Idle</span>
+                  </div>
+                </div>
+                
+                <div class="meta-field">
+                  <span class="meta-label">Model</span>
+                  <span class="meta-value" id="session-details-model">Not Selected</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Section: Actions -->
-        <div class="inspector-group active">
-          <div class="inspector-group-header">
-            <span>Session Actions</span>
+          <!-- Section: Actions -->
+          <div class="inspector-group active">
+            <div class="inspector-group-header">
+              <span>Session Actions</span>
+            </div>
+            <div class="inspector-group-body">
+              <div class="actions-stack">
+                <button class="btn-inspector-action" id="btn-rename-session">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                  </svg>
+                  <span>Rename Session</span>
+                </button>
+                
+                <button class="btn-inspector-action" id="btn-export-session">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>Export Session</span>
+                </button>
+                
+                <button class="btn-inspector-action" id="btn-clear-messages">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  <span>Clear Messages</span>
+                </button>
+                
+                <button class="btn-inspector-action danger-border" id="btn-delete-session-right">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  <span>Delete Session</span>
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="inspector-group-body">
-            <div class="actions-stack">
-              <button class="btn-inspector-action" id="btn-rename-session">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 20h9"></path>
-                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                </svg>
-                <span>Rename Session</span>
-              </button>
-              
-              <button class="btn-inspector-action" id="btn-export-session">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                <span>Export Session</span>
-              </button>
-              
-              <button class="btn-inspector-action" id="btn-clear-messages">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M3 6h18"></path>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                </svg>
-                <span>Clear Messages</span>
-              </button>
-              
-              <button class="btn-inspector-action danger-border" id="btn-delete-session-right">
+
+          <!-- Section: Danger Zone -->
+          <div class="inspector-group active">
+            <div class="inspector-group-header red-header">
+              <span>Danger Zone</span>
+            </div>
+            <div class="inspector-group-body">
+              <button class="btn-danger-solid" id="btn-delete-all-sessions">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="3 6 5 6 21 6"></polyline>
                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                 </svg>
-                <span>Delete Session</span>
+                <span>Delete All Sessions</span>
               </button>
             </div>
           </div>
-        </div>
 
-        <!-- Section: Danger Zone -->
-        <div class="inspector-group active">
-          <div class="inspector-group-header red-header">
-            <span>Danger Zone</span>
-          </div>
-          <div class="inspector-group-body">
-            <button class="btn-danger-solid" id="btn-delete-all-sessions">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
-              <span>Delete All Sessions</span>
-            </button>
-          </div>
         </div>
-
       </div>
     </aside>
 
@@ -630,6 +647,6 @@
   </footer>
 
   <!-- Main JavaScript File -->
-  <script src="app.js?v=1.0.2"></script>
+  <script src="app.js?v=1.0.3"></script>
 </body>
 </html>

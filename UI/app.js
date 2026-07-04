@@ -38,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initLiveActivityTracker();
   initProviderSelector();
   initUnifiedActions();
+  initSidebarToggles();
   
   // Initial load
   loadSessions();
@@ -1283,5 +1284,42 @@ window.deleteTrashSessionPermanently = async function(sessionId) {
     } catch (err) {
       alert("Error: " + err.message);
     }
+  }
+}
+
+function initSidebarToggles() {
+  const appContainer = document.getElementById("app-container");
+  const btnToggleLeft = document.getElementById("btn-toggle-left-sidebar");
+  const btnToggleRight = document.getElementById("btn-toggle-right-sidebar");
+
+  if (!appContainer) return;
+
+  // Restore states
+  const leftCollapsed = localStorage.getItem("left_sidebar_collapsed") === "true";
+  const rightCollapsed = localStorage.getItem("right_sidebar_collapsed") === "true";
+
+  if (leftCollapsed) {
+    appContainer.classList.add("collapsed-left");
+  }
+  if (rightCollapsed) {
+    appContainer.classList.add("collapsed-right");
+  }
+
+  // Toggle Left
+  if (btnToggleLeft) {
+    btnToggleLeft.addEventListener("click", () => {
+      appContainer.classList.toggle("collapsed-left");
+      const isCollapsed = appContainer.classList.contains("collapsed-left");
+      localStorage.setItem("left_sidebar_collapsed", isCollapsed);
+    });
+  }
+
+  // Toggle Right
+  if (btnToggleRight) {
+    btnToggleRight.addEventListener("click", () => {
+      appContainer.classList.toggle("collapsed-right");
+      const isCollapsed = appContainer.classList.contains("collapsed-right");
+      localStorage.setItem("right_sidebar_collapsed", isCollapsed);
+    });
   }
 }
