@@ -1,11 +1,16 @@
 {
   "sessionId": "session_1783143307880",
   "createdAt": "2026-07-04T05:35:07.906Z",
-  "updatedAt": "2026-07-04T05:35:07.906Z",
-  "lastAccessedAt": "2026-07-04T06:01:59.724Z",
+  "updatedAt": "2026-07-04T07:27:57.535Z",
+  "lastAccessedAt": "2026-07-04T07:27:37.443Z",
   "memoryVersion": "1.0.0",
   "lifecycleState": "ACTIVE",
-  "checksums": {},
+  "checksums": {
+    "history": "e44afcd79352bce8b8a2d1706be9c54ac92e114f7f2bd548253c357bae2e3837",
+    "task": "0e15818f90316b1bc268fcf33090bc64b108b8735f819f4f1a611dfc8f509f2f",
+    "workingMemory": "e5ecf9300e0bfacb5cbf00b0de83c75e13efa0f3fcca2d7c3ff15c60fbabc276",
+    "sessionMemory": "5be246b036a95013637d52bab921c3479c47de31e87ee34496b34110a86eaee4"
+  },
   "confidence": {},
   "tags": [],
   "quotas": {
@@ -15,5 +20,6 @@
     "maxSessionMemorySize": 1000,
     "maxSnapshots": 10
   },
-  "lastMountedAt": "2026-07-04T06:01:56.525Z"
+  "lastMountedAt": "2026-07-04T07:23:05.879Z",
+  "lastValidatedAt": "2026-07-04T07:23:05.879Z"
 }

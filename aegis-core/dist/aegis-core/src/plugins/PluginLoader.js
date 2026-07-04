@@ -12,9 +12,13 @@ import { providerManager } from '../providers/index.js';
 import { workspaceManager } from '../runtime/WorkspaceManager.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+// Cache the aegis-core root path — computed once, reused on every plugin load
+let _cachedAegisCoreRoot = null;
 export class PluginLoader {
     contexts = new Map();
     getAegisCoreRoot() {
+        if (_cachedAegisCoreRoot !== null)
+            return _cachedAegisCoreRoot;
         let current = __dirname;
         while (true) {
             const packageJson = path.join(current, 'package.json');
@@ -22,6 +26,7 @@ export class PluginLoader {
                 try {
                     const pkg = JSON.parse(fs.readFileSync(packageJson, 'utf8'));
                     if (pkg.name === 'aegis-core') {
+                        _cachedAegisCoreRoot = current;
                         return current;
                     }
                 }
@@ -35,7 +40,8 @@ export class PluginLoader {
             }
             current = parent;
         }
-        return process.cwd();
+        _cachedAegisCoreRoot = process.cwd();
+        return _cachedAegisCoreRoot;
     }
     getWorkspaceRoot() {
         return path.dirname(this.getAegisCoreRoot());

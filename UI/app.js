@@ -341,6 +341,58 @@ async function loadActiveSession() {
   }
 }
 
+/**
+ * Refreshes only the session metadata (title, goal, details panel)
+ * WITHOUT re-rendering the chat messages. Used after streaming to avoid duplicates.
+ */
+async function refreshSessionDetails() {
+  if (!activeSessionId) return;
+
+  try {
+    const response = await fetch(`${API_BASE}/sessions/active`);
+    if (!response.ok) return;
+    const sessionDetails = await response.json();
+    
+    const { activeSessionId: id, metadata, state } = sessionDetails;
+    
+    // Update headers
+    const name = getStoredSessionName({ sessionId: id, displayName: metadata?.displayName });
+    document.getElementById("active-session-title").innerText = name;
+    
+    let subtitleText = "Federated Health Agent";
+    if (state?.goal) {
+      subtitleText = `Goal: ${state.goal}`;
+    }
+    document.getElementById("active-session-subtitle").innerText = subtitleText;
+
+    // Update right details panel
+    const detailId = document.getElementById("session-details-id");
+    const detailCreated = document.getElementById("session-details-created");
+    const detailStatus = document.getElementById("session-details-status");
+    const detailProvider = document.getElementById("session-details-provider");
+    const detailNode = document.getElementById("session-details-node");
+    const detailModel = document.getElementById("session-details-model");
+
+    if (detailId) detailId.textContent = id;
+    if (detailCreated) {
+      const createdDate = new Date(metadata?.createdAt || Date.now());
+      detailCreated.textContent = createdDate.toLocaleString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+    if (detailStatus) detailStatus.textContent = metadata?.lifecycleState || "Active";
+    if (detailProvider) detailProvider.textContent = state?.provider || "local/ollama";
+    if (detailNode) detailNode.textContent = document.getElementById("agent-status-text")?.textContent || "Idle";
+    if (detailModel) detailModel.textContent = state?.model || "Not Selected";
+  } catch (err) {
+    console.error("Could not refresh session details:", err);
+  }
+}
+
 /* ==========================================================================
    4. CHAT INTERFACE & SSE STREAM HANDLER
    ========================================================================== */
@@ -490,8 +542,8 @@ async function sendMessage() {
     showThinkingIndicator(false);
     setAgentStatus("online", "Core Node Idle");
     
-    // Refresh active session stats to capture facts / objective updates
-    loadActiveSession();
+    // Refresh session details (title, goal, status) WITHOUT re-rendering chat messages
+    refreshSessionDetails();
   }
 }
 

@@ -1,7 +1,60 @@
 import path from 'path';
 import fs from 'fs/promises';
-import { existsSync } from 'fs';
+import { existsSync, mkdirSync } from 'fs';
 import { workspaceManager } from '../runtime/WorkspaceManager.js';
+
+// ── Log level configuration ───────────────────────────────────────
+type LogLevel = 'info' | 'warn' | 'error' | 'none';
+const LOG_LEVEL_ORDER: Record<LogLevel, number> = { info: 0, warn: 1, error: 2, none: 99 };
+const configuredLevel: LogLevel = (process.env.AEGIS_LOG_LEVEL as LogLevel) || 'info';
+const configuredLevelOrder = LOG_LEVEL_ORDER[configuredLevel] ?? 0;
+
+// ── Module-level path + directory cache ──────────────────────────
+let cachedLogPath: string | null = null;
+let logDirEnsured = false;
+const FLUSH_THRESHOLD = 100;
+const FLUSH_INTERVAL_MS = 3000;
+
+const lineBuffer: string[] = [];
+let flushTimer: NodeJS.Timeout | null = null;
+
+function getLogFilePath(): string {
+  if (!cachedLogPath) {
+    const wsRoot = path.dirname(workspaceManager.getWorkspacePath());
+    cachedLogPath = path.resolve(wsRoot, 'logs/runtime.log');
+  }
+  return cachedLogPath;
+}
+
+function ensureLogDir(): void {
+  if (logDirEnsured) return;
+  const logPath = getLogFilePath();
+  const logDir = path.dirname(logPath);
+  if (!existsSync(logDir)) {
+    mkdirSync(logDir, { recursive: true });
+  }
+  logDirEnsured = true;
+}
+
+async function flushBuffer(): Promise<void> {
+  if (lineBuffer.length === 0) return;
+  try {
+    ensureLogDir();
+    const content = lineBuffer.splice(0, lineBuffer.length).join('');
+    await fs.appendFile(getLogFilePath(), content, 'utf8');
+  } catch (err) {
+    console.error('[StructuredLogger] Failed to flush log buffer:', err);
+  }
+}
+
+function startFlushTimer(): void {
+  if (flushTimer) return;
+  flushTimer = setInterval(() => {
+    if (lineBuffer.length > 0) {
+      flushBuffer().catch(console.error);
+    }
+  }, FLUSH_INTERVAL_MS);
+}
 
 export class StructuredLogger {
   private static instance = new StructuredLogger();
@@ -10,23 +63,16 @@ export class StructuredLogger {
     return this.instance;
   }
 
-  private getLogFilePath(): string {
-    const wsRoot = path.dirname(workspaceManager.getWorkspacePath());
-    return path.resolve(wsRoot, 'logs/runtime.log');
-  }
-
   /**
-   * Logs a structured event to workspace/logs/runtime.log.
+   * Logs a structured event — buffered, non-blocking.
+   * Respects AEGIS_LOG_LEVEL environment variable.
    */
-  public async log(level: 'info' | 'warn' | 'error', event: string, sessionId?: string, details?: Record<string, any>): Promise<void> {
-    const logPath = this.getLogFilePath();
-    const logDir = path.dirname(logPath);
+  public log(level: 'info' | 'warn' | 'error', event: string, sessionId?: string, details?: Record<string, any>): void {
+    // Skip if below configured log level
+    if (LOG_LEVEL_ORDER[level] < configuredLevelOrder) return;
 
     try {
-      if (!existsSync(logDir)) {
-        await fs.mkdir(logDir, { recursive: true });
-      }
-
+      startFlushTimer();
       const logEntry = {
         timestamp: new Date().toISOString(),
         level,
@@ -34,25 +80,45 @@ export class StructuredLogger {
         sessionId: sessionId || 'system',
         details: details || {}
       };
-
-      const line = JSON.stringify(logEntry) + '\n';
-      await fs.appendFile(logPath, line, 'utf8');
+      lineBuffer.push(JSON.stringify(logEntry) + '\n');
+      if (lineBuffer.length >= FLUSH_THRESHOLD) {
+        flushBuffer().catch(console.error);
+      }
     } catch (err) {
-      // In case logging itself fails, print to console so we don't swallow it completely
       console.error(`[StructuredLogger] Logging failed for event "${event}":`, err);
     }
   }
 
+  /** Async variant kept for backward compatibility — delegates to sync log(). */
   public async info(event: string, sessionId?: string, details?: Record<string, any>): Promise<void> {
-    await this.log('info', event, sessionId, details);
+    this.log('info', event, sessionId, details);
   }
 
   public async warn(event: string, sessionId?: string, details?: Record<string, any>): Promise<void> {
-    await this.log('warn', event, sessionId, details);
+    this.log('warn', event, sessionId, details);
   }
 
   public async error(event: string, sessionId?: string, details?: Record<string, any>): Promise<void> {
-    await this.log('error', event, sessionId, details);
+    this.log('error', event, sessionId, details);
+  }
+
+  /**
+   * Forces an immediate flush of buffered log lines.
+   * Call on shutdown or checkpoint.
+   */
+  public async flush(): Promise<void> {
+    await flushBuffer();
+  }
+
+  /**
+   * Stops the auto-flush timer and flushes remaining entries.
+   */
+  public async shutdown(): Promise<void> {
+    if (flushTimer) {
+      clearInterval(flushTimer);
+      flushTimer = null;
+    }
+    await flushBuffer();
   }
 }
 

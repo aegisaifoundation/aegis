@@ -1,7 +1,21 @@
 import { toolRegistry } from '../tools/index.js';
 import { pluginRegistry } from '../plugins/PluginRegistry.js';
+// ── System prompt cache ──────────────────────────────────────────
+// The system prompt only changes when tools or plugins are loaded/unloaded.
+// We cache it and invalidate it whenever those registries change.
+let cachedSystemPrompt = null;
+/**
+ * Called by tool/plugin loading code to invalidate the cached system prompt
+ * when the registry changes.
+ */
+export function invalidateSystemPromptCache() {
+    cachedSystemPrompt = null;
+}
 export class PromptBuilder {
     buildSystemPrompt() {
+        if (cachedSystemPrompt !== null) {
+            return cachedSystemPrompt;
+        }
         const tools = toolRegistry.getAllTools();
         const plugins = pluginRegistry.list();
         let prompt = `You are Aegis Core Agent, an advanced modular AI orchestrator.\n`;
@@ -41,6 +55,7 @@ export class PromptBuilder {
         prompt += `Response Guidelines:\n`;
         prompt += `1. Provide clear, concise, and structured answers.\n`;
         prompt += `2. If you need to use a tool, generate the <tool> block. Do not output anything else in the same turn that would conflict with the tool execution.\n`;
+        cachedSystemPrompt = prompt;
         return prompt;
     }
 }

@@ -14,6 +14,7 @@ export * from './registry/MemoryModuleRegistry.js';
 export * from './locking/MemoryLockManager.js';
 export * from './refinement/MemoryRefiner.js';
 export * from './transactions/MemoryTransactionManager.js';
+export * from './MemoryWriteBuffer.js';
 export * from './indexing/MemoryIndexManager.js';
 export * from './migration/MemoryMigrationManager.js';
 export * from './recovery/MemoryRecoveryManager.js';

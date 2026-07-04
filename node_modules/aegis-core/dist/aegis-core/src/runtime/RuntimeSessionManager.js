@@ -20,6 +20,9 @@ import { checkpointManager } from './CheckpointManager.js';
 import { runtimeHealthValidator } from './RuntimeHealthValidator.js';
 import { sessionStateManager } from './SessionStateManager.js';
 import { projectionGenerator } from '../memory/ProjectionGenerator.js';
+import { memoryWriteBuffer } from '../memory/MemoryWriteBuffer.js';
+import { MemoryObservability } from '../memory/utils/MemoryObservability.js';
+import { logger } from '../utils/StructuredLogger.js';
 export class RuntimeSessionManager {
     static instance = new RuntimeSessionManager();
     heartbeatInterval = null;
@@ -43,6 +46,8 @@ export class RuntimeSessionManager {
                 await fs.mkdir(dir, { recursive: true });
             }
         }
+        // Start write buffer auto-flush (coalesces rapid file writes)
+        memoryWriteBuffer.startAutoFlush(5000);
         // Startup markings
         await runtimeStateManager.markStartup();
         // 1. Run health validation on startup
@@ -174,6 +179,37 @@ export class RuntimeSessionManager {
             await sessionMountManager.unmount(state.mountedSessionId);
         }
         await runtimeStateManager.markShutdown();
+        // Flush all buffered writes before exit
+        try {
+            await memoryGateway.flushAll();
+        }
+        catch (err) {
+            console.warn('[RuntimeSessionManager] flushAll failed during shutdown:', err.message);
+        }
+        try {
+            await memoryWriteBuffer.stopAutoFlush();
+        }
+        catch (err) {
+            console.warn('[RuntimeSessionManager] MemoryWriteBuffer flush failed:', err.message);
+        }
+        try {
+            await MemoryIndexManager.flush();
+        }
+        catch (err) {
+            console.warn('[RuntimeSessionManager] MemoryIndexManager flush failed:', err.message);
+        }
+        try {
+            await MemoryObservability.shutdown();
+        }
+        catch (err) {
+            console.warn('[RuntimeSessionManager] MemoryObservability shutdown failed:', err.message);
+        }
+        try {
+            await logger.shutdown();
+        }
+        catch (err) {
+            console.warn('[RuntimeSessionManager] Logger shutdown failed:', err.message);
+        }
     }
     // ==========================================
     // Session Swapping & Creation
@@ -559,17 +595,20 @@ export class RuntimeSessionManager {
             return;
         this.heartbeatInterval = setInterval(async () => {
             try {
-                const state = await runtimeStateManager.loadState();
+                // Use cached state to avoid a disk read — only write if cache is already warm
+                const state = await runtimeStateManager.loadState(); // returns from cache on second+ call
                 state.lastHeartbeatAt = new Date().toISOString();
-                await runtimeStateManager.saveState(state);
+                // Save asynchronously — fire-and-forget to avoid blocking the interval callback
+                runtimeStateManager.saveState(state).catch((err) => console.error('[RuntimeSessionManager] Heartbeat write failed:', err));
                 eventBus.emit(EventTypes.RUNTIME_HEARTBEAT_UPDATED, { timestamp: state.lastHeartbeatAt }, 'runtime-watchdog');
             }
             catch (err) {
-                console.error('[RuntimeSessionManager] Heartbeat write failed:', err);
+                console.error('[RuntimeSessionManager] Heartbeat tick failed:', err);
             }
         }, 10000); // Update heartbeat every 10 seconds
         this.watchdogInterval = setInterval(async () => {
             try {
+                // loadState() returns from in-memory cache — zero disk I/O
                 const state = await runtimeStateManager.loadState();
                 const lastHb = new Date(state.lastHeartbeatAt).getTime();
                 const delta = Date.now() - lastHb;
