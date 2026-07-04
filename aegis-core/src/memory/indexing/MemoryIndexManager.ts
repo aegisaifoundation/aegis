@@ -10,6 +10,8 @@ interface IndexEntry {
   updatedAt: string;
   lastAccessedAt: string;
   lifecycleState: string;
+  displayName?: string;
+  description?: string;
 }
 
 interface IndexRegistry {
@@ -36,7 +38,9 @@ export class MemoryIndexManager {
         createdAt: metadata.createdAt,
         updatedAt: metadata.updatedAt,
         lastAccessedAt: metadata.lastAccessedAt,
-        lifecycleState: metadata.lifecycleState
+        lifecycleState: metadata.lifecycleState,
+        displayName: metadata.displayName,
+        description: metadata.description
       };
       
       await safeJsonWrite(filePath, registry);
