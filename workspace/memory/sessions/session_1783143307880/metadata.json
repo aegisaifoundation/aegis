@@ -1,8 +1,8 @@
 {
   "sessionId": "session_1783143307880",
   "createdAt": "2026-07-04T05:35:07.906Z",
-  "updatedAt": "2026-07-04T05:35:07.906Z",
-  "lastAccessedAt": "2026-07-04T06:01:59.724Z",
+  "updatedAt": "2026-07-04T06:33:49.143Z",
+  "lastAccessedAt": "2026-07-04T06:33:49.137Z",
   "memoryVersion": "1.0.0",
   "lifecycleState": "ACTIVE",
   "checksums": {},
@@ -15,5 +15,6 @@
     "maxSessionMemorySize": 1000,
     "maxSnapshots": 10
   },
-  "lastMountedAt": "2026-07-04T06:01:56.525Z"
+  "lastMountedAt": "2026-07-04T06:33:49.137Z",
+  "lastValidatedAt": "2026-07-04T06:33:49.137Z"
 }
