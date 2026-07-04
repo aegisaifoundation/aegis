@@ -12,6 +12,7 @@ from llama_cpp import Llama
 # Constants
 UI_DIR = os.path.dirname(os.path.abspath(__file__))
 AEGIS_CORE_DIR = os.path.join(os.path.dirname(UI_DIR), "aegis-core")
+# Default port for AEGIS local dashboard web server
 UI_PORT = 5001
 
 # ==========================================================================
