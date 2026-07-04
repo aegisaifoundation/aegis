@@ -44,5 +44,5 @@
     "shared/delete-snapshot",
     "shared/runtime-status"
   ],
-  "defaultProvider": "local/gguf"
+  "defaultProvider": "local/ollama"
 }
