@@ -7,24 +7,26 @@
       ],
       "createdAt": "2026-05-28T04:26:09.392Z",
       "updatedAt": "2026-05-28T04:26:09.418Z",
-      "lastAccessedAt": "2026-07-03T17:34:14.947Z",
+      "lastAccessedAt": "2026-07-04T05:42:49.730Z",
       "lifecycleState": "ACTIVE"
     },
-    "session_1783093594642": {
-      "sessionId": "session_1783093594642",
+    "session_1783143307880": {
+      "sessionId": "session_1783143307880",
       "tags": [],
-      "createdAt": "2026-07-03T15:46:34.668Z",
-      "updatedAt": "2026-07-03T16:39:22.512Z",
-      "lastAccessedAt": "2026-07-03T17:34:23.379Z",
+      "createdAt": "2026-07-04T05:35:07.906Z",
+      "updatedAt": "2026-07-04T05:35:07.906Z",
+      "lastAccessedAt": "2026-07-04T06:01:56.525Z",
       "lifecycleState": "ACTIVE"
     },
-    "session_1783100068592": {
-      "sessionId": "session_1783100068592",
+    "session_1783143782328": {
+      "sessionId": "session_1783143782328",
       "tags": [],
-      "createdAt": "2026-07-03T17:34:28.677Z",
-      "updatedAt": "2026-07-03T17:34:28.677Z",
-      "lastAccessedAt": "2026-07-03T17:34:28.963Z",
-      "lifecycleState": "ACTIVE"
+      "createdAt": "2026-07-04T05:43:02.372Z",
+      "updatedAt": "2026-07-04T05:57:55.610Z",
+      "lastAccessedAt": "2026-07-04T05:57:55.597Z",
+      "lifecycleState": "ACTIVE",
+      "displayName": "session 1",
+      "description": ""
     }
   }
 }
