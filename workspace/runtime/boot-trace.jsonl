@@ -132,4 +132,14 @@
 {"timestamp":"2026-07-04T05:24:26.615Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
 {"timestamp":"2026-07-04T05:47:40.302Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
 {"timestamp":"2026-07-04T05:57:55.333Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
-{"timestamp":"2026-07-04T06:33:48.985Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-07-04T07:23:05.664Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-07-05T12:15:20.661Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-07-05T12:15:20.669Z","stage":"CHECKPOINT_RESTORED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-07-05T12:15:20.676Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"9a1fcc35-9a3f-4992-a40e-f0b8127d12a0"}
+{"timestamp":"2026-07-05T12:15:21.063Z","stage":"SAFE_MODE_ENTERED","reason":"Booted in SAFE_MODE."}
+{"timestamp":"2026-07-05T12:19:22.814Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-07-05T12:22:04.653Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-07-05T12:23:00.585Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-07-05T12:24:19.021Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-07-05T12:37:38.271Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-07-05T12:40:06.859Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}

@@ -249,4 +249,6 @@ export class RuntimeStateManager {
   }
 }
 
+import { serviceRegistry } from '@aegis/runtime';
 export const runtimeStateManager = RuntimeStateManager.getInstance();
+serviceRegistry.register('runtimeStateManager', runtimeStateManager);

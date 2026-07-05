@@ -1,0 +1,8 @@
+export declare enum SkillState {
+    DISCOVERED = "DISCOVERED",
+    INITIALIZING = "INITIALIZING",
+    ACTIVE = "ACTIVE",
+    FAILED = "FAILED",
+    DISABLED = "DISABLED",
+    UNLOADED = "UNLOADED"
+}

@@ -30,7 +30,7 @@ export class SessionStateManager {
         };
         this.validateSessionState(defaultState);
         await memoryGateway.updateSessionState(sessionId, defaultState, undefined, actor);
-        await logger.info('SESSION_STATE_INITIALIZED', sessionId, { defaultState });
+        logger.log('info', 'SESSION_STATE_INITIALIZED', sessionId, { defaultState });
         return defaultState;
     }
     /**
@@ -79,8 +79,11 @@ export class SessionStateManager {
     }
     /**
      * Performs an atomic state update using the full transaction pipeline:
-     * Validation -> Transaction Begin -> Checkpoint -> Mutation -> Projection -> Consistency Check -> Commit -> Dispatch.
-     * Rollback on ANY failure.
+     * Validation → Transaction Begin → Mutation → Projection → Consistency Check → Commit → Dispatch.
+     *
+     * OPTIMIZATION: Checkpoint is NOT created here on every mutation. It is the caller's
+     * responsibility to create a turn-level checkpoint via checkpointSessionState() once
+     * per user turn (in RuntimeExecutor.execute()) before any mutations begin.
      */
     async updateSessionState(sessionId, updates, actor = 'system') {
         const current = await this.loadSessionState(sessionId, actor);
@@ -96,13 +99,10 @@ export class SessionStateManager {
         const txId = `tx_mutate_${sessionId}_${Date.now()}`;
         memoryTransactionManager.beginTransaction(txId);
         try {
-            // 3. Checkpoint Creation
-            await checkpointManager.createCheckpoint('pre-mutation-checkpoint', sessionId);
-            await logger.info('MUTATION_CHECKPOINT_CREATED', sessionId, { checkpoint: 'pre-mutation-checkpoint' });
-            // 3.5. Refine memory if word limit is exceeded
+            // 3. Refine memory if word limit is exceeded
             let sessionProj = projectionGenerator.generateSessionMemoryProjection(mutated);
             if (!projectionGenerator.validateProjectionSize(sessionProj, 1000)) {
-                await logger.info('SESSION_MEMORY_LIMIT_EXCEEDED', sessionId, {
+                logger.log('info', 'SESSION_MEMORY_LIMIT_EXCEEDED', sessionId, {
                     wordCount: sessionProj.trim().split(/\s+/).filter(Boolean).length
                 });
                 try {
@@ -110,13 +110,13 @@ export class SessionStateManager {
                     mutated.stableFacts = refinedFacts;
                 }
                 catch (err) {
-                    await logger.error('SESSION_MEMORY_REFINEMENT_FAILED', sessionId, { error: err.message });
+                    logger.log('error', 'SESSION_MEMORY_REFINEMENT_FAILED', sessionId, { error: err.message });
                     throw new Error(`Failed to refine session memory: ${err.message}`);
                 }
             }
             // 4. Mutation (register state write)
             await this.saveSessionState(mutated, txId, actor);
-            // 5. Projection Regeneration (register markdown writes under same transaction)
+            // 5. Projection Regeneration — dirty-aware, parallel writes
             await projectionGenerator.projectSessionState(sessionId, mutated, txId, actor);
             // 6. Consistency Validation (pre-validate in memory before committing)
             const workingProj = projectionGenerator.generateWorkingMemoryProjection(mutated);
@@ -128,37 +128,38 @@ export class SessionStateManager {
             }
             // 7. Commit
             await memoryTransactionManager.commitTransaction(txId);
-            await logger.info('SESSION_STATE_MUTATION_COMMITTED', sessionId, { updates });
+            logger.log('info', 'SESSION_STATE_MUTATION_COMMITTED', sessionId, { updates });
             // 8. Event Dispatch
             eventBus.emit('session_state_updated', { sessionId, updates });
         }
         catch (err) {
             // 9. Rollback on failure
-            await logger.error('SESSION_STATE_MUTATION_FAILED', sessionId, { error: err.message, updates });
+            logger.log('error', 'SESSION_STATE_MUTATION_FAILED', sessionId, { error: err.message, updates });
             try {
                 await memoryTransactionManager.rollbackTransaction(txId);
-                await checkpointManager.rollbackToCheckpoint('pre-mutation-checkpoint', sessionId);
-                await logger.warn('SESSION_STATE_ROLLBACK_COMPLETED', sessionId);
+                logger.log('warn', 'SESSION_STATE_ROLLBACK_COMPLETED', sessionId);
             }
             catch (rollbackErr) {
-                await logger.error('MUTATION_ROLLBACK_CRITICAL_ERROR', sessionId, { error: rollbackErr.message });
+                logger.log('error', 'MUTATION_ROLLBACK_CRITICAL_ERROR', sessionId, { error: rollbackErr.message });
             }
             throw err;
         }
     }
     /**
      * Checkpoints both runtime and session states.
+     * Should be called ONCE per user turn (at the start of RuntimeExecutor.execute()),
+     * not inside updateSessionState.
      */
     async checkpointSessionState(sessionId, name) {
         await checkpointManager.createCheckpoint(name, sessionId);
-        await logger.info('CHECKPOINT_CREATED', sessionId, { checkpointName: name });
+        logger.log('info', 'CHECKPOINT_CREATED', sessionId, { checkpointName: name });
     }
     /**
      * Restores both runtime and session states from checkpoint, then projects markdown files.
      */
     async recoverSessionState(sessionId, name) {
         await checkpointManager.rollbackToCheckpoint(name, sessionId);
-        await logger.warn('RECOVERY_RESTORE_COMPLETED', sessionId, { checkpointName: name });
+        logger.log('warn', 'RECOVERY_RESTORE_COMPLETED', sessionId, { checkpointName: name });
     }
     /**
      * Refines the list of stable facts using the LLM.
@@ -172,9 +173,7 @@ Current facts to refine:
 ${facts.map((f, i) => `${i + 1}. ${f}`).join('\n')}
 `;
         const response = await providerManager.generate(prompt);
-        // Parse response resiliently
         const trimmed = response.trim();
-        // Helper to parse JSON array safely
         const parseRefinedFacts = (text) => {
             try {
                 const parsed = JSON.parse(text);
@@ -200,7 +199,6 @@ ${facts.map((f, i) => `${i + 1}. ${f}`).join('\n')}
                 }
                 catch (e) { }
             }
-            // Fallback: Split by lines and remove bullet list symbols
             return text.split('\n')
                 .map(l => l.trim().replace(/^[-*+•]\s+/, '').replace(/^\d+\.\s+/, ''))
                 .filter(l => l.length > 0);

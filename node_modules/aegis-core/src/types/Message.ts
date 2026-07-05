@@ -1,7 +1,1 @@
-export interface Message {
-  id?: string;
-  role: 'user' | 'assistant' | 'system' | 'tool' | 'workflow' | 'event' | 'runtime' | 'observation';
-  content: string;
-  timestamp: string;
-  metadata?: Record<string, any>;
-}
+export type { Message } from '@aegis/runtime';

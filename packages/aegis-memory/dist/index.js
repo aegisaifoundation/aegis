@@ -1,0 +1,44 @@
+export * from './MemoryManager.js';
+export * from './MemoryGateway.js';
+export * from './SessionMemory.js';
+// Pluggable Interfaces
+export * from './interfaces/IMemoryModule.js';
+export * from './interfaces/IMemoryStore.js';
+export * from './interfaces/IMemoryProvider.js';
+export * from './interfaces/IMemoryGateway.js';
+export * from './interfaces/IMemoryRefiner.js';
+export * from './interfaces/MemoryTypes.js';
+// Registry
+export * from './registry/MemoryModuleRegistry.js';
+// Core Subsystems
+export * from './locking/MemoryLockManager.js';
+export * from './refinement/MemoryRefiner.js';
+export * from './transactions/MemoryTransactionManager.js';
+export * from './MemoryWriteBuffer.js';
+export * from './indexing/MemoryIndexManager.js';
+export * from './migration/MemoryMigrationManager.js';
+export * from './recovery/MemoryRecoveryManager.js';
+export * from './scheduler/MemoryCleanupScheduler.js';
+// Utilities & Observability
+export * from './utils/MemoryFileHelpers.js';
+export * from './utils/MemoryObservability.js';
+// Previous Infrastructure
+export * from './Memory.js';
+export * from './MemoryRegistry.js';
+export * from './MemoryLoader.js';
+export * from './MemoryContext.js';
+// Event Bus
+export * from './eventbus/MemoryEvent.js';
+export * from './eventbus/MemoryEventBus.js';
+export * from './eventbus/handlers/AuditLogger.js';
+export * from './eventbus/handlers/EmbeddingHandler.js';
+// Semantic Retrieval & Search
+export * from './embedding/MemoryEmbeddingManager.js';
+export * from './search/VectorSearchProvider.js';
+export * from './search/MemorySearchManager.js';
+// Reflection Subsystem
+export * from './eventbus/handlers/ReflectionHandler.js';
+export * from './refinement/MemoryReflectionManager.js';
+export * from './refinement/MemoryRankingManager.js';
+export * from './refinement/MemoryCompressionManager.js';
+export * from './refinement/MemoryConflictResolver.js';

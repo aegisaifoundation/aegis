@@ -1,6 +1,1 @@
-export interface EventEnvelope<T = any> {
-  event: string;
-  timestamp: number;
-  source: string;
-  payload: T;
-}
+export type { EventEnvelope } from '@aegis/runtime';

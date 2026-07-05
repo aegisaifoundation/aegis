@@ -12,10 +12,12 @@
     },
     "session_1783143307880": {
       "sessionId": "session_1783143307880",
-      "tags": [],
-      "createdAt": "2026-07-04T05:35:07.906Z",
-      "updatedAt": "2026-07-04T06:33:49.143Z",
-      "lastAccessedAt": "2026-07-04T06:33:49.137Z",
+      "tags": [
+        "repaired"
+      ],
+      "createdAt": "2026-07-05T12:15:20.323Z",
+      "updatedAt": "2026-07-05T12:24:19.286Z",
+      "lastAccessedAt": "2026-07-05T12:24:19.286Z",
       "lifecycleState": "ACTIVE"
     },
     "session_1783143782328": {
@@ -23,10 +25,28 @@
       "tags": [],
       "createdAt": "2026-07-04T05:43:02.372Z",
       "updatedAt": "2026-07-04T05:57:55.610Z",
-      "lastAccessedAt": "2026-07-04T05:57:55.597Z",
+      "lastAccessedAt": "2026-07-05T12:40:12.743Z",
       "lifecycleState": "ACTIVE",
       "displayName": "session 1",
       "description": ""
+    },
+    "session_1783253720836": {
+      "sessionId": "session_1783253720836",
+      "tags": [
+        "to-quarantine"
+      ],
+      "createdAt": "2026-07-05T12:15:20.846Z",
+      "updatedAt": "2026-07-05T12:40:07.150Z",
+      "lastAccessedAt": "2026-07-05T12:40:07.150Z",
+      "lifecycleState": "ACTIVE"
+    },
+    "session_1783254192921": {
+      "sessionId": "session_1783254192921",
+      "tags": [],
+      "createdAt": "2026-07-05T12:23:12.939Z",
+      "updatedAt": "2026-07-05T12:23:12.939Z",
+      "lastAccessedAt": "2026-07-05T12:23:13.111Z",
+      "lifecycleState": "ACTIVE"
     }
   }
 }

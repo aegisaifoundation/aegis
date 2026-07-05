@@ -13,9 +13,22 @@ import { readMemoryFile, writeMemoryFile, safeJsonRead, safeJsonWrite, calculate
 import { memoryTransactionManager } from './transactions/MemoryTransactionManager.js';
 import { MemoryObservability } from './utils/MemoryObservability.js';
 import { memoryEventBus } from './eventbus/MemoryEventBus.js';
+import { memoryWriteBuffer } from './MemoryWriteBuffer.js';
 
 export class MemoryGateway implements IMemoryGateway {
   private static instance = new MemoryGateway();
+
+  // ── In-memory caches ─────────────────────────────────────────────
+  /** Cached session metadata, keyed by sessionId. */
+  private metadataCache = new Map<string, SessionMetadata>();
+  /** Buffered in-memory history per session, keyed by sessionId. */
+  private historyCache = new Map<string, { messages: Message[]; memoryVersion: string }>();
+  /** Tracks whether historyCache has unflushed writes. */
+  private historyDirty = new Set<string>();
+  /** lastAccessedAt flush debounce: tracks which sessions need the timestamp flushed. */
+  private accessedSessions = new Set<string>();
+  /** Whether the background flush timer is running. */
+  private flushTimerRunning = false;
 
   public static getInstance(): MemoryGateway {
     return this.instance;
@@ -24,6 +37,58 @@ export class MemoryGateway implements IMemoryGateway {
   private getSessionDir(sessionId: string): string {
     const wsRoot = path.dirname(workspaceManager.getWorkspacePath());
     return path.resolve(wsRoot, `memory/sessions/${sessionId}`);
+  }
+
+  // ── Cache helpers ─────────────────────────────────────────────────
+
+  /** Invalidate cached metadata for a session (e.g., after a write). */
+  public invalidateMetadataCache(sessionId: string): void {
+    this.metadataCache.delete(sessionId);
+  }
+
+  /** Flush pending lastAccessedAt updates to disk (called at turn boundary / shutdown). */
+  public async flushAccessTimestamps(): Promise<void> {
+    if (this.accessedSessions.size === 0) return;
+    const sessions = Array.from(this.accessedSessions);
+    this.accessedSessions.clear();
+
+    await Promise.allSettled(sessions.map(async (sessionId) => {
+      const cached = this.metadataCache.get(sessionId);
+      if (cached) {
+        const metadataPath = path.join(this.getSessionDir(sessionId), 'metadata.json');
+        memoryWriteBuffer.markDirty(metadataPath, JSON.stringify(cached, null, 2));
+      }
+    }));
+  }
+
+  /** Flush buffered history for a specific session to disk. Called at turn boundary. */
+  public async flushHistory(sessionId: string): Promise<void> {
+    if (!this.historyDirty.has(sessionId)) return;
+    const history = this.historyCache.get(sessionId);
+    if (!history) return;
+
+    const filePath = path.join(this.getSessionDir(sessionId), 'history.json');
+    const content = JSON.stringify(history, null, 2);
+    await writeMemoryFile(filePath, content);
+
+    // Update checksum in metadata
+    const cached = this.metadataCache.get(sessionId);
+    if (cached) {
+      cached.checksums.history = calculateChecksum(content);
+      cached.updatedAt = new Date().toISOString();
+      const metadataPath = path.join(this.getSessionDir(sessionId), 'metadata.json');
+      memoryWriteBuffer.markDirty(metadataPath, JSON.stringify(cached, null, 2));
+    }
+
+    this.historyDirty.delete(sessionId);
+  }
+
+  /** Flush all dirty session histories + pending write buffer. */
+  public async flushAll(): Promise<void> {
+    const dirtyIds = Array.from(this.historyDirty);
+    await Promise.allSettled(dirtyIds.map((id) => this.flushHistory(id)));
+    await this.flushAccessTimestamps();
+    await memoryWriteBuffer.flush();
   }
 
   /**
@@ -88,17 +153,31 @@ export class MemoryGateway implements IMemoryGateway {
     };
     await safeJsonWrite(metadataPath, validated);
 
+    // Seed in-memory history cache
+    this.historyCache.set(sessionId, { messages: [], memoryVersion: '1.0.0' });
+    this.metadataCache.set(sessionId, validated);
+
     await MemoryObservability.logAudit(actor, 'write', 'session', sessionId, { action: 'created' });
 
     return validated;
   }
 
   /**
-   * Loads the session metadata. Checks permissions and updates last accessed.
+   * Loads the session metadata. Checks permissions and updates last accessed (buffered).
    */
   public async loadSession(sessionId: string, actor: string = 'system'): Promise<SessionMetadata> {
     if (!MemoryPermissions.check('read', actor)) {
       throw new Error(`Permission denied: Actor ${actor} cannot read.`);
+    }
+
+    // Return cached metadata if available — avoids disk read + write on every call
+    const cached = this.metadataCache.get(sessionId);
+    if (cached) {
+      // Record access for buffered timestamp flush (no immediate disk write)
+      cached.lastAccessedAt = new Date().toISOString();
+      this.accessedSessions.add(sessionId);
+      MemoryObservability.logAuditAsync(actor, 'read', 'session', sessionId, { action: 'loaded' });
+      return cached;
     }
 
     const sessionDir = this.getSessionDir(sessionId);
@@ -114,10 +193,12 @@ export class MemoryGateway implements IMemoryGateway {
     }
 
     const meta = MetadataContract.validateMetadata(rawMeta);
+    // Update lastAccessedAt in memory only — flush at turn boundary
     meta.lastAccessedAt = new Date().toISOString();
-    await safeJsonWrite(metadataPath, meta);
+    this.metadataCache.set(sessionId, meta);
+    this.accessedSessions.add(sessionId);
 
-    await MemoryObservability.logAudit(actor, 'read', 'session', sessionId, { action: 'loaded' });
+    MemoryObservability.logAuditAsync(actor, 'read', 'session', sessionId, { action: 'loaded' });
 
     return meta;
   }
@@ -135,6 +216,12 @@ export class MemoryGateway implements IMemoryGateway {
       await fs.rm(sessionDir, { recursive: true, force: true });
     }
 
+    // Clear all caches for this session
+    this.metadataCache.delete(sessionId);
+    this.historyCache.delete(sessionId);
+    this.historyDirty.delete(sessionId);
+    this.accessedSessions.delete(sessionId);
+
     await MemoryObservability.logAudit(actor, 'delete', 'session', sessionId, { action: 'deleted' });
   }
 
@@ -146,8 +233,10 @@ export class MemoryGateway implements IMemoryGateway {
       throw new Error(`Permission denied: Actor ${actor} cannot read.`);
     }
     const filePath = path.join(this.getSessionDir(sessionId), 'working-memory.md');
-    const content = await readMemoryFile(filePath);
-    await MemoryObservability.logAudit(actor, 'read', 'workingMemory', sessionId);
+    // Check write buffer first (avoids disk read when content was just written)
+    const buffered = memoryWriteBuffer.getPending(filePath);
+    const content = buffered !== null ? buffered : await readMemoryFile(filePath);
+    MemoryObservability.logAuditAsync(actor, 'read', 'workingMemory', sessionId);
     return content;
   }
 
@@ -172,7 +261,7 @@ export class MemoryGateway implements IMemoryGateway {
       meta.updatedAt = new Date().toISOString();
       await memoryTransactionManager.registerWrite(txId, metadataPath, JSON.stringify(meta, null, 2));
 
-      await MemoryObservability.logAudit(actor, 'write', 'workingMemory', sessionId, { txId });
+      MemoryObservability.logAuditAsync(actor, 'write', 'workingMemory', sessionId, { txId });
     } else {
       const localTxId = `tx_${sessionId}_${Date.now()}`;
       memoryTransactionManager.beginTransaction(localTxId);
@@ -182,10 +271,11 @@ export class MemoryGateway implements IMemoryGateway {
         const meta = await this.loadSession(sessionId, actor);
         meta.checksums.workingMemory = calculateChecksum(content);
         meta.updatedAt = new Date().toISOString();
+        this.metadataCache.set(sessionId, meta);
         await memoryTransactionManager.registerWrite(localTxId, metadataPath, JSON.stringify(meta, null, 2));
 
         await memoryTransactionManager.commitTransaction(localTxId);
-        await MemoryObservability.logAudit(actor, 'write', 'workingMemory', sessionId);
+        MemoryObservability.logAuditAsync(actor, 'write', 'workingMemory', sessionId);
         
         memoryEventBus.publish({
           eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
@@ -210,8 +300,9 @@ export class MemoryGateway implements IMemoryGateway {
       throw new Error(`Permission denied: Actor ${actor} cannot read.`);
     }
     const filePath = path.join(this.getSessionDir(sessionId), 'session-memory.md');
-    const content = await readMemoryFile(filePath);
-    await MemoryObservability.logAudit(actor, 'read', 'sessionMemory', sessionId);
+    const buffered = memoryWriteBuffer.getPending(filePath);
+    const content = buffered !== null ? buffered : await readMemoryFile(filePath);
+    MemoryObservability.logAuditAsync(actor, 'read', 'sessionMemory', sessionId);
     return content;
   }
 
@@ -236,7 +327,7 @@ export class MemoryGateway implements IMemoryGateway {
       meta.updatedAt = new Date().toISOString();
       await memoryTransactionManager.registerWrite(txId, metadataPath, JSON.stringify(meta, null, 2));
 
-      await MemoryObservability.logAudit(actor, 'write', 'sessionMemory', sessionId, { txId });
+      MemoryObservability.logAuditAsync(actor, 'write', 'sessionMemory', sessionId, { txId });
     } else {
       const localTxId = `tx_${sessionId}_${Date.now()}`;
       memoryTransactionManager.beginTransaction(localTxId);
@@ -246,10 +337,11 @@ export class MemoryGateway implements IMemoryGateway {
         const meta = await this.loadSession(sessionId, actor);
         meta.checksums.sessionMemory = calculateChecksum(content);
         meta.updatedAt = new Date().toISOString();
+        this.metadataCache.set(sessionId, meta);
         await memoryTransactionManager.registerWrite(localTxId, metadataPath, JSON.stringify(meta, null, 2));
 
         await memoryTransactionManager.commitTransaction(localTxId);
-        await MemoryObservability.logAudit(actor, 'write', 'sessionMemory', sessionId);
+        MemoryObservability.logAuditAsync(actor, 'write', 'sessionMemory', sessionId);
         
         memoryEventBus.publish({
           eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
@@ -267,58 +359,54 @@ export class MemoryGateway implements IMemoryGateway {
   }
 
   /**
-   * Appends interaction logs to history.json under a transaction scope.
+   * Appends interaction logs to history — buffered in-memory, flushed at turn boundary.
    */
   public async appendHistory(sessionId: string, message: Message, actor: string = 'system'): Promise<void> {
     if (!MemoryPermissions.check('write', actor)) {
       throw new Error(`Permission denied: Actor ${actor} cannot write.`);
     }
 
-    const sessionDir = this.getSessionDir(sessionId);
-    const filePath = path.join(sessionDir, 'history.json');
-    const metadataPath = path.join(sessionDir, 'metadata.json');
-    
-    const history = await safeJsonRead<{ messages: Message[]; memoryVersion: string }>(filePath, { messages: [], memoryVersion: '1.0.0' });
-    history.messages.push(message);
-    
-    const txId = `tx_${sessionId}_${Date.now()}`;
-    memoryTransactionManager.beginTransaction(txId);
-    try {
-      const content = JSON.stringify(history, null, 2);
-      await memoryTransactionManager.registerWrite(txId, filePath, content);
-      
-      const meta = await this.loadSession(sessionId, actor);
-      meta.checksums.history = calculateChecksum(content);
-      meta.updatedAt = new Date().toISOString();
-      await memoryTransactionManager.registerWrite(txId, metadataPath, JSON.stringify(meta, null, 2));
-
-      await memoryTransactionManager.commitTransaction(txId);
-      await MemoryObservability.logAudit(actor, 'write', 'history', sessionId, { messageId: message.id });
-      
-      memoryEventBus.publish({
-        eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
-        topic: 'history.appended',
-        timestamp: new Date().toISOString(),
-        sessionId,
-        actor,
-        payload: { message }
-      });
-    } catch (err) {
-      await memoryTransactionManager.rollbackTransaction(txId);
-      throw err;
+    // Ensure history is loaded into cache
+    if (!this.historyCache.has(sessionId)) {
+      const filePath = path.join(this.getSessionDir(sessionId), 'history.json');
+      const history = await safeJsonRead<{ messages: Message[]; memoryVersion: string }>(filePath, { messages: [], memoryVersion: '1.0.0' });
+      this.historyCache.set(sessionId, history);
     }
+
+    // Mutate in-memory cache only — no disk I/O on every message
+    const history = this.historyCache.get(sessionId)!;
+    history.messages.push(message);
+    this.historyDirty.add(sessionId);
+
+    MemoryObservability.logAuditAsync(actor, 'write', 'history', sessionId, { messageId: message.id });
+    
+    memoryEventBus.publish({
+      eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+      topic: 'history.appended',
+      timestamp: new Date().toISOString(),
+      sessionId,
+      actor,
+      payload: { message }
+    });
   }
 
   /**
-   * Reads raw history.json logs.
+   * Reads raw history — returns in-memory cache when available.
    */
   public async getHistory(sessionId: string, actor: string = 'system'): Promise<Message[]> {
     if (!MemoryPermissions.check('read', actor)) {
       throw new Error(`Permission denied: Actor ${actor} cannot read.`);
     }
+
+    if (this.historyCache.has(sessionId)) {
+      MemoryObservability.logAuditAsync(actor, 'read', 'history', sessionId);
+      return this.historyCache.get(sessionId)!.messages;
+    }
+
     const filePath = path.join(this.getSessionDir(sessionId), 'history.json');
     const history = await safeJsonRead<{ messages: Message[]; memoryVersion: string }>(filePath, { messages: [], memoryVersion: '1.0.0' });
-    await MemoryObservability.logAudit(actor, 'read', 'history', sessionId);
+    this.historyCache.set(sessionId, history);
+    MemoryObservability.logAuditAsync(actor, 'read', 'history', sessionId);
     return history.messages;
   }
 
@@ -331,7 +419,7 @@ export class MemoryGateway implements IMemoryGateway {
     }
     const filePath = path.join(this.getSessionDir(sessionId), 'entities.json');
     const entities = await safeJsonRead<MemoryEntity[]>(filePath, []);
-    await MemoryObservability.logAudit(actor, 'read', 'entities', sessionId);
+    MemoryObservability.logAuditAsync(actor, 'read', 'entities', sessionId);
     return entities;
   }
 
@@ -358,7 +446,7 @@ export class MemoryGateway implements IMemoryGateway {
     try {
       await memoryTransactionManager.registerWrite(txId, filePath, JSON.stringify(entities, null, 2));
       await memoryTransactionManager.commitTransaction(txId);
-      await MemoryObservability.logAudit(actor, 'write', 'entities', sessionId, { entityId: entity.id });
+      MemoryObservability.logAuditAsync(actor, 'write', 'entities', sessionId, { entityId: entity.id });
       
       memoryEventBus.publish({
         eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
@@ -383,6 +471,13 @@ export class MemoryGateway implements IMemoryGateway {
     }
     const sessionDir = this.getSessionDir(sessionId);
     const filePath = path.join(sessionDir, 'session-state.json');
+    // Check write buffer first
+    const buffered = memoryWriteBuffer.getPending(filePath);
+    if (buffered !== null) {
+      const state = JSON.parse(buffered) as SessionState;
+      MemoryObservability.logAuditAsync(actor, 'read', 'sessionState', sessionId);
+      return state;
+    }
     if (!existsSync(filePath)) {
       throw new Error(`session-state.json not found for session ${sessionId}`);
     }
@@ -390,12 +485,12 @@ export class MemoryGateway implements IMemoryGateway {
     if (!state) {
       throw new Error(`session-state.json corrupted or empty for session ${sessionId}`);
     }
-    await MemoryObservability.logAudit(actor, 'read', 'sessionState', sessionId);
+    MemoryObservability.logAuditAsync(actor, 'read', 'sessionState', sessionId);
     return state;
   }
 
   /**
-   * Writes session-state.json to disk atomically. Registers write if inside a transaction.
+   * Writes session-state.json — uses write buffer for non-critical path, direct write inside transactions.
    */
   public async updateSessionState(sessionId: string, state: SessionState, txId?: string, actor: string = 'system'): Promise<void> {
     if (!MemoryPermissions.check('write', actor)) {
@@ -407,14 +502,14 @@ export class MemoryGateway implements IMemoryGateway {
 
     if (txId) {
       await memoryTransactionManager.registerWrite(txId, filePath, content);
-      await MemoryObservability.logAudit(actor, 'write', 'sessionState', sessionId, { txId });
+      MemoryObservability.logAuditAsync(actor, 'write', 'sessionState', sessionId, { txId });
     } else {
       const localTxId = `tx_state_${sessionId}_${Date.now()}`;
       memoryTransactionManager.beginTransaction(localTxId);
       try {
         await memoryTransactionManager.registerWrite(localTxId, filePath, content);
         await memoryTransactionManager.commitTransaction(localTxId);
-        await MemoryObservability.logAudit(actor, 'write', 'sessionState', sessionId, { localTxId });
+        MemoryObservability.logAuditAsync(actor, 'write', 'sessionState', sessionId, { localTxId });
         
         memoryEventBus.publish({
           eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
@@ -439,8 +534,9 @@ export class MemoryGateway implements IMemoryGateway {
       throw new Error(`Permission denied: Actor ${actor} cannot read.`);
     }
     const filePath = path.join(this.getSessionDir(sessionId), 'task.md');
-    const content = await readMemoryFile(filePath);
-    await MemoryObservability.logAudit(actor, 'read', 'taskMemory', sessionId);
+    const buffered = memoryWriteBuffer.getPending(filePath);
+    const content = buffered !== null ? buffered : await readMemoryFile(filePath);
+    MemoryObservability.logAuditAsync(actor, 'read', 'taskMemory', sessionId);
     return content;
   }
 
@@ -464,7 +560,7 @@ export class MemoryGateway implements IMemoryGateway {
       meta.updatedAt = new Date().toISOString();
       await memoryTransactionManager.registerWrite(txId, metadataPath, JSON.stringify(meta, null, 2));
 
-      await MemoryObservability.logAudit(actor, 'write', 'taskMemory', sessionId, { txId });
+      MemoryObservability.logAuditAsync(actor, 'write', 'taskMemory', sessionId, { txId });
     } else {
       const localTxId = `tx_${sessionId}_${Date.now()}`;
       memoryTransactionManager.beginTransaction(localTxId);
@@ -474,10 +570,11 @@ export class MemoryGateway implements IMemoryGateway {
         const meta = await this.loadSession(sessionId, actor);
         meta.checksums.task = calculateChecksum(content);
         meta.updatedAt = new Date().toISOString();
+        this.metadataCache.set(sessionId, meta);
         await memoryTransactionManager.registerWrite(localTxId, metadataPath, JSON.stringify(meta, null, 2));
 
         await memoryTransactionManager.commitTransaction(localTxId);
-        await MemoryObservability.logAudit(actor, 'write', 'taskMemory', sessionId);
+        MemoryObservability.logAuditAsync(actor, 'write', 'taskMemory', sessionId);
         
         memoryEventBus.publish({
           eventId: `evt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,

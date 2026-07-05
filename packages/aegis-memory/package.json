@@ -1,0 +1,17 @@
+{
+  "name": "@aegis/memory",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@aegis/runtime": "*",
+    "@aegis/providers": "*",
+    "@aegis/tools": "*",
+    "@aegis/skills": "*",
+    "ollama": "^0.5.1"
+  }
+}

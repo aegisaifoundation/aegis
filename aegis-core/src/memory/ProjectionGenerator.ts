@@ -1,13 +1,71 @@
-import path from 'path';
-import { existsSync } from 'fs';
 import { SessionState } from './interfaces/MemoryTypes.js';
 import { memoryGateway } from './MemoryGateway.js';
 import { toolRegistry } from '../tools/index.js';
 import { skillRegistry } from '../skills/index.js';
+import { calculateChecksum } from './utils/MemoryFileHelpers.js';
 
 export class ProjectionGenerator {
   public static readonly MAX_WORKING_WORDS = 1000;
   public static readonly MAX_SESSION_WORDS = 1000;
+
+  // ── Per-session projection content hash cache ─────────────────
+  /** Tracks the last-written content hash of each projection per session. */
+  private projectionHashes = new Map<string, { working: string; session: string; task: string }>();
+
+  // ── Static section caches (tool/skill list strings) ───────────
+  /** Cached tool list section — invalidated when tools change. */
+  private cachedToolSection: string | null = null;
+  /** Cached skill list section — invalidated when skills change. */
+  private cachedSkillSection: string | null = null;
+
+  // ── Cache invalidation ────────────────────────────────────────
+
+  public invalidateToolCache(): void {
+    this.cachedToolSection = null;
+  }
+
+  public invalidateSkillCache(): void {
+    this.cachedSkillSection = null;
+  }
+
+  public invalidateProjectionHashes(sessionId: string): void {
+    this.projectionHashes.delete(sessionId);
+  }
+
+  // ── Section builders ──────────────────────────────────────────
+
+  private buildToolSection(): string {
+    if (this.cachedToolSection !== null) return this.cachedToolSection;
+    const tools = toolRegistry.getAllTools();
+    const lines: string[] = ['available tools:'];
+    if (tools.length > 0) {
+      for (const tool of tools) lines.push(`- ${tool.name}`);
+    } else {
+      lines.push('- None');
+    }
+    lines.push('');
+    this.cachedToolSection = lines.join('\n');
+    return this.cachedToolSection;
+  }
+
+  private buildSkillSection(): string {
+    if (this.cachedSkillSection !== null) return this.cachedSkillSection;
+    const skills = skillRegistry.list();
+    const lines: string[] = ['available skills:'];
+    if (skills.length > 0) {
+      for (const skill of skills) {
+        const suffix = skill.name.toLowerCase().endsWith('skill') ? '' : ' skill';
+        lines.push(`- ${skill.name}${suffix}`);
+      }
+    } else {
+      lines.push('- None');
+    }
+    lines.push('');
+    this.cachedSkillSection = lines.join('\n');
+    return this.cachedSkillSection;
+  }
+
+  // ── Projection generators ─────────────────────────────────────
 
   /**
    * Generates working-memory.md projection from SessionState.
@@ -20,33 +78,11 @@ export class ProjectionGenerator {
     lines.push(`- current objective: ${state.currentObjective || 'None'}`);
     lines.push('');
     
-    // Available tools
-    lines.push('available tools:');
-    const tools = toolRegistry.getAllTools();
-    if (tools.length > 0) {
-      for (const tool of tools) {
-        lines.push(`- ${tool.name}`);
-      }
-    } else {
-      lines.push('- None');
-    }
-    lines.push('');
+    // Cached static sections
+    lines.push(this.buildToolSection());
+    lines.push(this.buildSkillSection());
 
-    // Available skills
-    lines.push('available skills:');
-    const skills = skillRegistry.list();
-    if (skills.length > 0) {
-      for (const skill of skills) {
-        const suffix = skill.name.toLowerCase().endsWith('skill') ? '' : ' skill';
-        lines.push(`- ${skill.name}${suffix}`);
-      }
-    } else {
-      lines.push('- None');
-    }
-    lines.push('');
-
-    // If there is temporary execution context, we append it at the bottom to ensure
-    // ProjectionConsistencyValidator continues to pass without errors if it contains keys.
+    // Temporary execution context
     const tempContext = state.temporaryExecutionContext || {};
     const keys = Object.keys(tempContext);
     if (keys.length > 0) {
@@ -87,9 +123,7 @@ export class ProjectionGenerator {
     lines.push('## Stable Facts');
     const facts = state.stableFacts || [];
     if (facts.length > 0) {
-      for (const fact of facts) {
-        lines.push(`- ${fact}`);
-      }
+      for (const fact of facts) lines.push(`- ${fact}`);
     } else {
       lines.push('None');
     }
@@ -138,7 +172,8 @@ export class ProjectionGenerator {
   }
 
   /**
-   * Projects session state to markdown files. Writes using MemoryGateway.
+   * Projects session state to markdown files.
+   * Skips writing a file when its content hash hasn't changed (dirty-aware).
    */
   public async projectSessionState(sessionId: string, state?: SessionState, txId?: string, actor: string = 'system'): Promise<void> {
     const currentState = state || await memoryGateway.getSessionState(sessionId, actor);
@@ -146,9 +181,31 @@ export class ProjectionGenerator {
     const sessionProj = this.generateSessionMemoryProjection(currentState);
     const taskProj = this.generateTaskProjection(currentState);
 
-    await memoryGateway.updateWorkingMemory(sessionId, workingProj, txId, actor);
-    await memoryGateway.updateSessionMemory(sessionId, sessionProj, txId, actor);
-    await memoryGateway.updateTask(sessionId, taskProj, txId, actor);
+    const hashes = this.projectionHashes.get(sessionId) ?? { working: '', session: '', task: '' };
+    const newWorkingHash = calculateChecksum(workingProj);
+    const newSessionHash = calculateChecksum(sessionProj);
+    const newTaskHash = calculateChecksum(taskProj);
+
+    // Only write projections whose content actually changed
+    const writes: Promise<void>[] = [];
+
+    if (newWorkingHash !== hashes.working) {
+      writes.push(memoryGateway.updateWorkingMemory(sessionId, workingProj, txId, actor));
+      hashes.working = newWorkingHash;
+    }
+    if (newSessionHash !== hashes.session) {
+      writes.push(memoryGateway.updateSessionMemory(sessionId, sessionProj, txId, actor));
+      hashes.session = newSessionHash;
+    }
+    if (newTaskHash !== hashes.task) {
+      writes.push(memoryGateway.updateTask(sessionId, taskProj, txId, actor));
+      hashes.task = newTaskHash;
+    }
+
+    if (writes.length > 0) {
+      await Promise.all(writes);
+      this.projectionHashes.set(sessionId, hashes);
+    }
   }
 
   /**

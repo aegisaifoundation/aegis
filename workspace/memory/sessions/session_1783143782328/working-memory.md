@@ -2,12 +2,12 @@
 - current objective: None
 
 available tools:
-- FileTool
-- FolderTool
-- MemoryTool
 - memory-read
 - memory-write
 - memory-delete
+- FolderTool
+- FileTool
+- MemoryTool
 
 available skills:
 - None

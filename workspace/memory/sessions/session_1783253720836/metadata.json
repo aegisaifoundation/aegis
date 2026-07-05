@@ -1,0 +1,25 @@
+{
+  "sessionId": "session_1783253720836",
+  "createdAt": "2026-07-05T12:15:20.846Z",
+  "updatedAt": "2026-07-05T12:15:20.846Z",
+  "lastAccessedAt": "2026-07-05T12:40:12.714Z",
+  "memoryVersion": "1.0.0",
+  "lifecycleState": "INACTIVE",
+  "checksums": {},
+  "confidence": {},
+  "tags": [
+    "to-quarantine"
+  ],
+  "quotas": {
+    "maxSessions": 100,
+    "maxHistorySize": 10485760,
+    "maxWorkingMemorySize": 1500,
+    "maxSessionMemorySize": 1000,
+    "maxSnapshots": 10
+  },
+  "quarantineReason": "INTEGRITY_CHECK_FAILED",
+  "quarantinedAt": "2026-07-05T12:15:20.875Z",
+  "corruptionScore": 1,
+  "lastMountedAt": "2026-07-05T12:40:07.150Z",
+  "lastValidatedAt": "2026-07-05T12:40:07.150Z"
+}

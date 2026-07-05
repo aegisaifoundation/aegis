@@ -12,6 +12,7 @@ import { workspaceManager } from './WorkspaceManager.js';
 import { runtimeSessionManager } from './RuntimeSessionManager.js';
 import { sessionStateManager } from './SessionStateManager.js';
 import { providerManager } from '../providers/index.js';
+import { memoryGateway } from '../memory/MemoryGateway.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const runtimeConfigPath = path.resolve(__dirname, '../config/runtime.json');
@@ -54,6 +55,7 @@ export class RuntimeExecutor {
         if (this.status !== 'IDLE') {
             throw new Error(`Cannot execute input; current state is ${this.status}`);
         }
+        // ── Cache session ID for this turn — avoid repeated disk reads ──
         const sessionId = (await runtimeSessionManager.getActiveSession()) || 'default';
         const executedActions = [];
         let assistantContent = '';
@@ -77,6 +79,8 @@ export class RuntimeExecutor {
                 eventBus.emit('message_received', { role: 'assistant', content: assistantContent });
                 eventBus.emit('thinking_finished');
                 await conversationContext.addMessage('assistant', assistantContent);
+                // Flush buffered history to disk at turn boundary
+                await memoryGateway.flushHistory(sessionId);
                 this.status = 'COMPLETED';
                 eventBus.emit('execution_completed', { input: userInput, status: 'COMPLETED' });
                 return;
@@ -85,6 +89,13 @@ export class RuntimeExecutor {
             eventBus.emit('execution_started', { input: userInput });
             eventBus.emit('message_received', { role: 'user', content: userInput });
             eventBus.emit('thinking_started');
+            // ── Turn-level checkpoint: created ONCE per turn, not per mutation ──
+            try {
+                await sessionStateManager.checkpointSessionState(sessionId, 'pre-mutation-checkpoint');
+            }
+            catch {
+                // Non-fatal — checkpoint failure should not block the turn
+            }
             // 1. Goal Detection & Plan Generation (Only run if message assigns a task)
             const isTask = isTaskAssignment(userInput);
             if (isTask) {
@@ -126,7 +137,6 @@ User Message: "${userInput}"
                     const response = await providerManager.generate(detectionPrompt);
                     const parsed = parseDetectionResponse(response);
                     if (parsed && parsed.isNewGoal) {
-                        // Clear previous plan and start writing new objective, plan, and tasks
                         await sessionStateManager.updateSessionState(sessionId, {
                             goal: parsed.goal || parsed.currentObjective || '',
                             currentObjective: parsed.currentObjective || '',
@@ -223,11 +233,15 @@ User Message: "${userInput}"
                 }
             }
             if (this.status === 'INTERRUPTED') {
+                // Flush history even on interrupt
+                await memoryGateway.flushHistory(sessionId);
                 eventBus.emit('interrupt');
                 eventBus.emit('execution_completed', { input: userInput, status: 'INTERRUPTED' });
             }
             else {
-                // 2. Turn Concluded: Fact Extraction and Implemented Details Logging (Only run if message assigns a task)
+                // ── Post-turn: Flush history to disk (was written per-message before) ──
+                await memoryGateway.flushHistory(sessionId);
+                // 2. Turn Concluded: Fact Extraction and Implemented Details Logging (Only run if task)
                 try {
                     const freshState = await sessionStateManager.loadSessionState(sessionId);
                     let combinedFacts = freshState.stableFacts || [];
@@ -235,8 +249,10 @@ User Message: "${userInput}"
                     let updatedActiveTasks = freshState.activeTasks || [];
                     let updatedObjective = freshState.currentObjective || '';
                     if (isTask) {
-                        // Auto Fact Extraction
-                        const extractionPrompt = `You are Aegis, a cognitive AI. Analyze the latest user message and assistant response from the conversation.
+                        // ── OPTIMIZATION: Run all 3 post-turn LLM analyses in parallel ──
+                        const actionsSummary = executedActions.map(a => `- Executed tool '${a.toolName}' with input ${JSON.stringify(a.input)}`).join('\n');
+                        const extractionPromptTask = (async () => {
+                            const extractionPrompt = `You are Aegis, a cognitive AI. Analyze the latest user message and assistant response from the conversation.
 Extract any new, permanent facts, user preferences, or goals that are important to remember across session iterations.
 Do not extract transient steps, commands, error messages, or conversational fluff.
 Provide your output as a raw JSON array of strings, matching the format: ["fact 1", "fact 2", ...]. If no new relevant facts or preferences are mentioned, return [].
@@ -249,14 +265,12 @@ Latest Assistant Response:
 ${assistantContent}
 </assistant>
 `;
-                        const extractionResponse = await providerManager.generate(extractionPrompt);
-                        const newFacts = parseFactsResponse(extractionResponse);
-                        const currentFacts = freshState.stableFacts || [];
-                        combinedFacts = Array.from(new Set([...currentFacts, ...newFacts])).filter(Boolean);
-                        // Implemented Details Tracking
-                        if (freshState.currentObjective && freshState.currentObjective !== 'None') {
-                            const actionsSummary = executedActions.map(a => `- Executed tool '${a.toolName}' with input ${JSON.stringify(a.input)}`).join('\n');
-                            const detailsPrompt = `You are Aegis, a cognitive AI. Analyze the actions performed during the latest turn to satisfy the user's objective.
+                            const extractionResponse = await providerManager.generate(extractionPrompt);
+                            return parseFactsResponse(extractionResponse);
+                        })();
+                        const detailsPromptTask = freshState.currentObjective && freshState.currentObjective !== 'None'
+                            ? (async () => {
+                                const detailsPrompt = `You are Aegis, a cognitive AI. Analyze the actions performed during the latest turn to satisfy the user's objective.
 Objective: "${freshState.currentObjective}"
 Implementation Plan: "${freshState.implementationPlan || 'None'}"
 Actions executed:
@@ -269,16 +283,13 @@ Provide your output as a raw JSON object containing the key "implementedDetails"
   "implementedDetails": "..."
 }
 `;
-                            const detailsResponse = await providerManager.generate(detailsPrompt);
-                            const parsedDetails = parseDetailsResponse(detailsResponse);
-                            if (parsedDetails && parsedDetails.implementedDetails) {
-                                implementedDetails = parsedDetails.implementedDetails;
-                            }
-                        }
-                        // Tasks Progress Tracking
-                        if (freshState.activeTasks && freshState.activeTasks.length > 0) {
-                            const actionsSummary = executedActions.map(a => `- Executed tool '${a.toolName}' with input ${JSON.stringify(a.input)}`).join('\n');
-                            const progressPrompt = `You are Aegis, a cognitive AI tracking execution progress.
+                                const detailsResponse = await providerManager.generate(detailsPrompt);
+                                return parseDetailsResponse(detailsResponse);
+                            })()
+                            : Promise.resolve(null);
+                        const progressPromptTask = freshState.activeTasks && freshState.activeTasks.length > 0
+                            ? (async () => {
+                                const progressPrompt = `You are Aegis, a cognitive AI tracking execution progress.
 Analyze the conversation and the actions executed during this turn.
 Goal: "${freshState.goal || freshState.currentObjective || 'None'}"
 Current Objective before this turn: "${freshState.currentObjective || 'None'}"
@@ -309,15 +320,28 @@ Return the output as a raw JSON object with the following structure:
   "activeTasks": ["...", "..."]
 }
 `;
-                            const progressResponse = await providerManager.generate(progressPrompt);
-                            const parsedProgress = parseProgressResponse(progressResponse);
-                            if (parsedProgress) {
-                                if (parsedProgress.currentObjective !== undefined) {
-                                    updatedObjective = parsedProgress.currentObjective;
-                                }
-                                if (parsedProgress.activeTasks !== undefined) {
-                                    updatedActiveTasks = parsedProgress.activeTasks;
-                                }
+                                const progressResponse = await providerManager.generate(progressPrompt);
+                                return parseProgressResponse(progressResponse);
+                            })()
+                            : Promise.resolve(null);
+                        // Wait for all 3 LLM calls in parallel
+                        const [newFacts, parsedDetails, parsedProgress] = await Promise.all([
+                            extractionPromptTask,
+                            detailsPromptTask,
+                            progressPromptTask
+                        ]);
+                        // Apply results
+                        const currentFacts = freshState.stableFacts || [];
+                        combinedFacts = Array.from(new Set([...currentFacts, ...newFacts])).filter(Boolean);
+                        if (parsedDetails && parsedDetails.implementedDetails) {
+                            implementedDetails = parsedDetails.implementedDetails;
+                        }
+                        if (parsedProgress) {
+                            if (parsedProgress.currentObjective !== undefined) {
+                                updatedObjective = parsedProgress.currentObjective;
+                            }
+                            if (parsedProgress.activeTasks !== undefined) {
+                                updatedActiveTasks = parsedProgress.activeTasks;
                             }
                         }
                     }

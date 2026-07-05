@@ -5,12 +5,12 @@
   "enableInterruptions": true,
   "workspaceRoot": "../workspace/shared",
   "autoloadTools": [
-    "shared/FileTool",
-    "shared/FolderTool",
     "shared/MemoryTool",
     "shared/memory-read",
     "shared/memory-write",
-    "shared/memory-delete"
+    "shared/memory-delete",
+    "shared/FolderTool",
+    "shared/FileTool"
   ],
   "autoloadPlugins": [
     "shared/logging"

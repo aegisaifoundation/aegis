@@ -3,7 +3,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import LoraConfig, get_peft_model, TaskType, PeftModel
 
-BASE_MODEL_PATH = "../model/TinyLlama-1.1B"
+BASE_MODEL_PATH = "../model/gemma-3-4b-it"
 GLOBAL_LORA_PATH = "./received_global"
 LOCAL_OUTPUT_PATH = "./local_lora"
 
@@ -17,6 +17,8 @@ tokenizer = AutoTokenizer.from_pretrained(
     BASE_MODEL_PATH,
     local_files_only=True
 )
+if tokenizer.pad_token is None:
+    tokenizer.pad_token = tokenizer.eos_token
 
 model = AutoModelForCausalLM.from_pretrained(
     BASE_MODEL_PATH,
@@ -68,6 +70,9 @@ inputs = tokenizer(
     truncation=True,
     padding=True
 ).to(model.device)
+
+if "token_type_ids" not in inputs:
+    inputs["token_type_ids"] = torch.zeros_like(inputs["input_ids"])
 
 labels = inputs["input_ids"]
 
