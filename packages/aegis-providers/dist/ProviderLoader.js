@@ -12,7 +12,7 @@ export class ProviderLoader {
         let current = __dirname;
         while (true) {
             const packageJson = path.join(current, 'package.json');
-            if (fs.existsSync(packageJson)) {
+            if (fs.existsSync(packageJson) && !current.includes('node_modules')) {
                 try {
                     const pkg = JSON.parse(fs.readFileSync(packageJson, 'utf8'));
                     if (pkg.name === 'aegis-core') {
@@ -29,7 +29,15 @@ export class ProviderLoader {
             }
             current = parent;
         }
-        return process.cwd();
+        let cwd = process.cwd();
+        const nmIndex = cwd.indexOf('node_modules');
+        if (nmIndex !== -1) {
+            cwd = cwd.substring(0, nmIndex);
+        }
+        if (fs.existsSync(path.resolve(cwd, 'aegis-core/package.json'))) {
+            return path.resolve(cwd, 'aegis-core');
+        }
+        return cwd;
     }
     getWorkspaceRoot() {
         return path.dirname(this.getAegisCoreRoot());
