@@ -1,0 +1,5 @@
+Mini Project/federated_project/offload/
+models/
+*.dat
+*.safetensors
+*.gguf
