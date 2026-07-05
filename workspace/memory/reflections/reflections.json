@@ -188,5 +188,43 @@
       "Clinician preference: remember to always configure port parameters",
       "Always implement timeout retry logic for clinical integrations like FHIRConnector."
     ]
+  },
+  {
+    "reflectionId": "ref_1783253747868_41mj5n738",
+    "sessionId": "test-reflection-session",
+    "timestamp": "2026-07-05T12:15:47.868Z",
+    "whatWorked": [
+      "Successfully resolved objective: Resolved chest scan evaluation successfully and saved results...."
+    ],
+    "whatFailed": [
+      "Tool execution error: FHIR service connection failed with status code 504 Gateway Timeout..."
+    ],
+    "heuristicsGenerated": [
+      "Clinician preference: remember to always configure port parameters",
+      "Always implement timeout retry logic for clinical integrations like FHIRConnector."
+    ],
+    "futureRules": [
+      "Clinician preference: remember to always configure port parameters",
+      "Always implement timeout retry logic for clinical integrations like FHIRConnector."
+    ]
+  },
+  {
+    "reflectionId": "ref_1783253747883_cdnd37eze",
+    "sessionId": "test-reflection-session",
+    "timestamp": "2026-07-05T12:15:47.883Z",
+    "whatWorked": [
+      "Successfully resolved objective: Resolved chest scan evaluation successfully and saved results...."
+    ],
+    "whatFailed": [
+      "Tool execution error: FHIR service connection failed with status code 504 Gateway Timeout..."
+    ],
+    "heuristicsGenerated": [
+      "Clinician preference: remember to always configure port parameters",
+      "Always implement timeout retry logic for clinical integrations like FHIRConnector."
+    ],
+    "futureRules": [
+      "Clinician preference: remember to always configure port parameters",
+      "Always implement timeout retry logic for clinical integrations like FHIRConnector."
+    ]
   }
 ]
