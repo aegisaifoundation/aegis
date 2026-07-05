@@ -1,8 +1,1 @@
-export enum SkillState {
-  DISCOVERED = 'DISCOVERED',
-  INITIALIZING = 'INITIALIZING',
-  ACTIVE = 'ACTIVE',
-  FAILED = 'FAILED',
-  DISABLED = 'DISABLED',
-  UNLOADED = 'UNLOADED'
-}
+export * from '@aegis/skills';

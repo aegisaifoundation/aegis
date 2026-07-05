@@ -2,7 +2,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
 
-BASE_MODEL_PATH = "./model/TinyLlama-1.1B"
+BASE_MODEL_PATH = "./model/gemma-3-4b-it"
 LORA_PATH = "./client_b/local_lora"  # change for client_b or global
 
 device = "cuda" if torch.cuda.is_available() else "cpu"

@@ -1,9 +1,9 @@
 ---
-base_model: ../model/TinyLlama-1.1B
+base_model: ../model/gemma-3-4b-it
 library_name: peft
 pipeline_tag: text-generation
 tags:
-- base_model:adapter:../model/TinyLlama-1.1B
+- base_model:adapter:../model/gemma-3-4b-it
 - lora
 - transformers
 ---
