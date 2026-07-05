@@ -17,7 +17,7 @@ export class WorkspaceManager {
     while (true) {
       const corePath = path.join(current, 'aegis-core');
       const packageJson = path.join(corePath, 'package.json');
-      if (fs.existsSync(packageJson)) {
+      if (fs.existsSync(packageJson) && !corePath.includes('node_modules')) {
         try {
           const pkg = JSON.parse(fs.readFileSync(packageJson, 'utf8'));
           if (pkg.name === 'aegis-core') {
@@ -26,7 +26,7 @@ export class WorkspaceManager {
         } catch (e) {}
       }
       const selfPackageJson = path.join(current, 'package.json');
-      if (fs.existsSync(selfPackageJson)) {
+      if (fs.existsSync(selfPackageJson) && !current.includes('node_modules')) {
         try {
           const pkg = JSON.parse(fs.readFileSync(selfPackageJson, 'utf8'));
           if (pkg.name === 'aegis-core') {
@@ -40,10 +40,15 @@ export class WorkspaceManager {
       }
       current = parent;
     }
-    if (fs.existsSync(path.resolve(process.cwd(), 'aegis-core/package.json'))) {
-      return path.resolve(process.cwd(), 'aegis-core');
+    let cwd = process.cwd();
+    const nmIndex = cwd.indexOf('node_modules');
+    if (nmIndex !== -1) {
+      cwd = cwd.substring(0, nmIndex);
     }
-    return process.cwd();
+    if (fs.existsSync(path.resolve(cwd, 'aegis-core/package.json'))) {
+      return path.resolve(cwd, 'aegis-core');
+    }
+    return cwd;
   }
 
   public initialize(): void {
