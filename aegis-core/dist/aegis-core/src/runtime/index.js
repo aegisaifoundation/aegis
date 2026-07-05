@@ -4,7 +4,7 @@ export * from './ToolParser.js';
 export * from './RuntimeExecutor.js';
 export * from './ServiceRegistry.js';
 export * from './RuntimeServices.js';
-export * from './WorkspaceManager.js';
+export { WorkspaceManager, workspaceManager } from './WorkspaceManager.js';
 export * from './BootstrapManager.js';
 // Session Continuity Subsystems
 export * from './RuntimeSessionManager.js';

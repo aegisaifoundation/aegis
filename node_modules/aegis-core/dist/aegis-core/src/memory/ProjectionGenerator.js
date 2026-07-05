@@ -169,24 +169,20 @@ export class ProjectionGenerator {
         const newWorkingHash = calculateChecksum(workingProj);
         const newSessionHash = calculateChecksum(sessionProj);
         const newTaskHash = calculateChecksum(taskProj);
-        // Only write projections whose content actually changed
-        const writes = [];
+        // Only write projections whose content actually changed sequentially to avoid file-locking collisions on Windows
         if (newWorkingHash !== hashes.working) {
-            writes.push(memoryGateway.updateWorkingMemory(sessionId, workingProj, txId, actor));
+            await memoryGateway.updateWorkingMemory(sessionId, workingProj, txId, actor);
             hashes.working = newWorkingHash;
         }
         if (newSessionHash !== hashes.session) {
-            writes.push(memoryGateway.updateSessionMemory(sessionId, sessionProj, txId, actor));
+            await memoryGateway.updateSessionMemory(sessionId, sessionProj, txId, actor);
             hashes.session = newSessionHash;
         }
         if (newTaskHash !== hashes.task) {
-            writes.push(memoryGateway.updateTask(sessionId, taskProj, txId, actor));
+            await memoryGateway.updateTask(sessionId, taskProj, txId, actor);
             hashes.task = newTaskHash;
         }
-        if (writes.length > 0) {
-            await Promise.all(writes);
-            this.projectionHashes.set(sessionId, hashes);
-        }
+        this.projectionHashes.set(sessionId, hashes);
     }
     /**
      * Trims content to the word limit.
