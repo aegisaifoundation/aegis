@@ -12,49 +12,46 @@ export class WorkspaceManager {
     this.initialize();
   }
 
-  private getAegisCoreRoot(): string {
-    let current = __dirname;
+  private getRepositoryRoot(startDir: string): string {
+    let current = path.resolve(startDir);
+    const seen = new Set<string>();
+
     while (true) {
-      const corePath = path.join(current, 'aegis-core');
-      const packageJson = path.join(corePath, 'package.json');
-      if (fs.existsSync(packageJson) && !corePath.includes('node_modules')) {
-        try {
-          const pkg = JSON.parse(fs.readFileSync(packageJson, 'utf8'));
-          if (pkg.name === 'aegis-core') {
-            return corePath;
-          }
-        } catch (e) {}
+      const aegisCorePackage = path.join(current, 'aegis-core', 'package.json');
+      const runtimePackage = path.join(current, 'packages', 'aegis-runtime', 'package.json');
+      if (fs.existsSync(aegisCorePackage) && fs.existsSync(runtimePackage)) {
+        return current;
       }
-      const selfPackageJson = path.join(current, 'package.json');
-      if (fs.existsSync(selfPackageJson) && !current.includes('node_modules')) {
-        try {
-          const pkg = JSON.parse(fs.readFileSync(selfPackageJson, 'utf8'));
-          if (pkg.name === 'aegis-core') {
-            return current;
-          }
-        } catch (e) {}
-      }
+
       const parent = path.dirname(current);
-      if (parent === current) {
+      if (parent === current || seen.has(parent)) {
         break;
       }
+      seen.add(current);
       current = parent;
     }
-    let cwd = process.cwd();
-    const nmIndex = cwd.indexOf('node_modules');
-    if (nmIndex !== -1) {
-      cwd = cwd.substring(0, nmIndex);
+
+    const cwd = process.cwd();
+    const nodeModulesIndex = cwd.indexOf('node_modules');
+    const sanitizedCwd = nodeModulesIndex === -1 ? cwd : cwd.substring(0, nodeModulesIndex);
+    if (fs.existsSync(path.resolve(sanitizedCwd, 'aegis-core/package.json'))) {
+      return sanitizedCwd;
     }
-    if (fs.existsSync(path.resolve(cwd, 'aegis-core/package.json'))) {
-      return path.resolve(cwd, 'aegis-core');
-    }
-    return cwd;
+    return sanitizedCwd;
+  }
+
+  private getAegisCoreRoot(): string {
+    const repositoryRoot = this.getRepositoryRoot(__dirname);
+    return path.resolve(repositoryRoot, 'aegis-core');
   }
 
   public initialize(): void {
+    const repositoryRoot = this.getRepositoryRoot(__dirname);
     const coreRoot = this.getAegisCoreRoot();
     const configPath = path.resolve(coreRoot, 'src/config/runtime.json');
-    let workspaceRootConfig = '../workspace/shared'; // default fallback
+    const workspaceRootOverride = process.env.AEGIS_WORKSPACE_ROOT;
+
+    let workspaceRootConfig = '../workspace/shared';
 
     try {
       if (fs.existsSync(configPath)) {
@@ -67,16 +64,17 @@ export class WorkspaceManager {
       console.warn('WorkspaceManager: Failed to read runtime.json, using default path.', e);
     }
 
-    if (path.isAbsolute(workspaceRootConfig)) {
+    if (workspaceRootOverride) {
+      this.workspacePath = path.normalize(path.resolve(workspaceRootOverride));
+    } else if (path.isAbsolute(workspaceRootConfig)) {
       this.workspacePath = path.normalize(workspaceRootConfig);
     } else {
       this.workspacePath = path.resolve(coreRoot, workspaceRootConfig);
     }
 
     const workspaceDir = path.dirname(this.workspacePath);
-
     const directoriesToCreate = [
-      this.workspacePath, // shared/
+      this.workspacePath,
       path.resolve(workspaceDir, 'sessions'),
       path.resolve(workspaceDir, 'reports'),
       path.resolve(workspaceDir, 'generated'),
@@ -90,6 +88,14 @@ export class WorkspaceManager {
         fs.mkdirSync(dir, { recursive: true });
       }
     }
+
+    const expectedMemoryRoot = path.resolve(repositoryRoot, 'workspace', 'memory');
+    const expectedSessionsRoot = path.resolve(repositoryRoot, 'workspace', 'memory', 'sessions');
+    const expectedTrashRoot = path.resolve(repositoryRoot, 'workspace', 'memory', 'trash');
+
+    fs.mkdirSync(expectedMemoryRoot, { recursive: true });
+    fs.mkdirSync(expectedSessionsRoot, { recursive: true });
+    fs.mkdirSync(expectedTrashRoot, { recursive: true });
   }
 
   public getWorkspacePath(): string {

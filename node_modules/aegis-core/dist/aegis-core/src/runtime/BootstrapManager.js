@@ -17,6 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 export class BootstrapManager {
     async bootstrap() {
+        // Orchestrates the chronological loading of workspace environment variables, memory index caches, plugin assets, and providers.
         console.log('[System] Initializing AEGIS Core Runtime Kernel...');
         // Register services in ServiceRegistry
         serviceRegistry.register('eventBus', eventBus);
