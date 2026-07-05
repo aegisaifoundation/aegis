@@ -1,0 +1,9 @@
+export declare enum ProviderState {
+    DISCOVERED = "DISCOVERED",
+    INITIALIZING = "INITIALIZING",
+    READY = "READY",
+    BUSY = "BUSY",
+    FAILED = "FAILED",
+    DISCONNECTED = "DISCONNECTED",
+    UNLOADED = "UNLOADED"
+}
