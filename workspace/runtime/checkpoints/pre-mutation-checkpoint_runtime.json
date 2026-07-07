@@ -1,0 +1,36 @@
+{
+  "runtimeId": "0476bb84-599a-4a0d-9646-c77a0b5ae1da",
+  "runtimeClusterId": "cluster-default",
+  "runtimeEpoch": 3,
+  "activeSessionId": "session_1783143782328",
+  "mountedSessionId": "session_1783143782328",
+  "runtimeState": "ACTIVE",
+  "bootMode": "RECOVERY_MODE",
+  "lastBootAt": "2026-07-04T05:47:40.306Z",
+  "lastShutdownAt": "2026-06-19T09:36:27.330Z",
+  "runtimeVersion": "1.0.0",
+  "lastSessionSwitchAt": "2026-07-04T05:47:40.398Z",
+  "recoveryRequired": true,
+  "recoveryReason": "UNCLEAN_SHUTDOWN",
+  "recoveryAttempts": 36,
+  "runtimeLockState": "IDLE",
+  "mountGeneration": 125,
+  "mountToken": "477b3286-36a9-4703-9aaa-12eed0fca88e",
+  "lastShutdownClean": false,
+  "lastHeartbeatAt": "2026-07-04T05:48:51.719Z",
+  "activeCapabilities": {
+    "tools": [],
+    "plugins": [],
+    "providers": [],
+    "workflows": []
+  },
+  "runtimeHealthStatus": "RECOVERING",
+  "runtimeContextVersion": "1.0.0",
+  "runtimeMode": "NORMAL",
+  "checkoutStage": "FINALIZING",
+  "mountLease": {
+    "ownerRuntimeId": "0476bb84-599a-4a0d-9646-c77a0b5ae1da",
+    "acquiredAt": "2026-07-04T05:47:40.398Z",
+    "expiresAt": "2026-07-04T05:57:40.398Z"
+  }
+}
