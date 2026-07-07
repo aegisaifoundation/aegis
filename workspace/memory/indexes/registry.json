@@ -3,12 +3,12 @@
     "default": {
       "sessionId": "default",
       "tags": [
-        "default"
+        "repaired"
       ],
-      "createdAt": "2026-07-05T14:32:06.029Z",
-      "updatedAt": "2026-07-05T15:15:12.446Z",
-      "lastAccessedAt": "2026-07-05T15:15:12.446Z",
-      "lifecycleState": "INACTIVE"
+      "createdAt": "2026-07-05T16:49:22.945Z",
+      "updatedAt": "2026-07-05T16:49:22.945Z",
+      "lastAccessedAt": "2026-07-05T16:50:14.362Z",
+      "lifecycleState": "ACTIVE"
     },
     "session_1783143307880": {
       "sessionId": "session_1783143307880",
@@ -54,17 +54,6 @@
       "createdAt": "2026-07-05T14:35:17.287Z",
       "updatedAt": "2026-07-05T15:15:12.492Z",
       "lastAccessedAt": "2026-07-05T15:15:12.492Z",
-      "lifecycleState": "ACTIVE"
-    },
-    "test-validation-session": {
-      "sessionId": "test-validation-session",
-      "tags": [
-        "test",
-        "validation"
-      ],
-      "createdAt": "2026-07-05T16:11:50.859Z",
-      "updatedAt": "2026-07-05T16:11:50.921Z",
-      "lastAccessedAt": "2026-07-05T16:11:50.957Z",
       "lifecycleState": "ACTIVE"
     }
   }
