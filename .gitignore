@@ -1,0 +1,10 @@
+Mini Project/federated_project/offload/
+models/
+*.dat
+*.safetensors
+*.gguf
+node_modules/
+workspace/logs/
+workspace/memory/
+workspace/runtime/checkpoints/
+workspace/shared/logs/
