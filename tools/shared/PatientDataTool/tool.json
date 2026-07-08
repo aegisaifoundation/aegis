@@ -1,0 +1,11 @@
+{
+  "name": "PatientDataTool",
+  "version": "1.0.0",
+  "description": "Deterministic helpers for shaping and analyzing patient record data (normalization, chronological timeline construction, latest-encounter lookup). Shared by all patient-record-oriented Skills.",
+  "permissions": [],
+  "actions": [
+    "normalize",
+    "buildTimeline",
+    "getLatestEncounter"
+  ]
+}
