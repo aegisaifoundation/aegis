@@ -1,0 +1,9 @@
+import execute from './execute.js';
+
+export default {
+  name: 'lifestyle-recommendation',
+  category: 'shared',
+  description: 'Suggests general lifestyle guidance (diet, activity, habits) for a patient based on their clinical history summary, conditions, and medications.',
+  version: '1.0.0',
+  execute
+};

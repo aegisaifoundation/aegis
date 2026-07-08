@@ -1,0 +1,9 @@
+import execute from './execute.js';
+
+export default {
+  name: 'patient-timeline-builder',
+  category: 'shared',
+  description: 'Builds a chronological timeline of a patient\'s encounters from raw clinical text or a structured record, with a human-readable narrative.',
+  version: '1.0.0',
+  execute
+};
