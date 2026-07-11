@@ -52,15 +52,8 @@ export class ApiEngine implements IEngine {
   async start(): Promise<void> {
     this.context.getLogger().info('Starting REST API Server...', 'api');
     try {
-      const workspacePath = this.context.getWorkspacePath();
-      const repoRoot = this.getRepositoryRoot(workspacePath);
-      
-      const apiServerPath = path.resolve(repoRoot, 'aegis-core/dist/aegis-core/src/api/ApiServer.js');
-      const moduleUrl = pathToFileURL(apiServerPath).toString();
-      
-      this.context.getLogger().info(`[ApiEngine] Dynamically importing ApiServer from ${moduleUrl}`, 'api');
-      const apiServerModule = await import(moduleUrl);
-      apiServerModule.startApiServer();
+      const { startApiServer } = await import('./ApiServer.js');
+      await startApiServer();
       
       this.serverActive = true;
       this.context.getLogger().info('[ApiEngine] REST API Server successfully started.', 'api');

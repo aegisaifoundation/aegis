@@ -9,6 +9,10 @@
   },
   "dependencies": {
     "@aegis/sdk": "*",
-    "@aegis/runtime": "*"
+    "@aegis/runtime": "*",
+    "@aegis/tools": "*",
+    "@aegis/skills": "*",
+    "@aegis/plugins": "*",
+    "@aegis/providers": "*"
   }
 }

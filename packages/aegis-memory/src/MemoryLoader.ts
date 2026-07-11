@@ -13,7 +13,7 @@ export class MemoryLoader {
       if (fs.existsSync(packageJson)) {
         try {
           const pkg = JSON.parse(fs.readFileSync(packageJson, 'utf8'));
-          if (pkg.name === 'aegis-core') {
+          if (pkg.name === '@aegis/memory') {
             return current;
           }
         } catch (e) {}

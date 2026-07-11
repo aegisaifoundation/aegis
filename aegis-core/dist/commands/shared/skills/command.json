@@ -1,7 +1,0 @@
-{
-    "name": "skills",
-    "category": "shared",
-    "description": "List loaded skills and their states",
-    "version": "1.0.0",
-    "entry": "index.ts"
-}

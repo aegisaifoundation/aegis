@@ -14,18 +14,18 @@ export class CheckpointManager {
         const wsRoot = path.dirname(workspaceManager.getWorkspacePath());
         return path.resolve(wsRoot, 'runtime/checkpoints');
     }
-    async createCheckpoint(name) {
+    async createCheckpoint(name, sessionId) {
         const cpDir = this.getCheckpointsDir();
         if (!existsSync(cpDir)) {
             await fs.mkdir(cpDir, { recursive: true });
         }
         for (const target of this.registries) {
-            await target.createCheckpoint(name);
+            await target.createCheckpoint(name, sessionId);
         }
     }
-    async rollbackToCheckpoint(name) {
+    async rollbackToCheckpoint(name, sessionId) {
         for (const target of this.registries) {
-            await target.rollbackToCheckpoint(name);
+            await target.rollbackToCheckpoint(name, sessionId);
         }
     }
 }

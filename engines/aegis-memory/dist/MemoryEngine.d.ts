@@ -1,5 +1,6 @@
 import { IEngine, IEngineMetadata, IRuntimeContext_v1, EngineHealthReport } from '@aegis/sdk';
-export declare class MemoryEngine implements IEngine {
+import { ICheckpointable } from '@aegis/runtime';
+export declare class MemoryEngine implements IEngine, ICheckpointable {
     readonly metadata: IEngineMetadata;
     private context;
     initialize(context: IRuntimeContext_v1): Promise<void>;
@@ -11,4 +12,6 @@ export declare class MemoryEngine implements IEngine {
     reload(): Promise<void>;
     shutdown(): Promise<void>;
     dispose(): Promise<void>;
+    createCheckpoint(name: string, sessionId?: string): Promise<void>;
+    rollbackToCheckpoint(name: string, sessionId?: string): Promise<void>;
 }

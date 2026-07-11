@@ -1,0 +1,37 @@
+{"timestamp":"2026-07-11T18:17:20.985Z","level":"info","event":"Kernel log system initialized","sessionId":"system","details":{"hardware":{"cpu":"13th Gen Intel(R) Core(TM) i5-13420H","cores":12,"ramGb":16,"cudaEnabled":false},"platform":"win32","arch":"x64"}}
+{"timestamp":"2026-07-11T18:17:20.986Z","level":"info","event":"System storage verified and state checks successful","sessionId":"system","details":{}}
+{"timestamp":"2026-07-11T18:17:21.003Z","level":"info","event":"AgentEngine initialized successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-11T18:17:21.003Z","level":"info","event":"ApiEngine initialized successfully.","sessionId":"api","details":{}}
+{"timestamp":"2026-07-11T18:17:21.003Z","level":"info","event":"MemoryEngine initialized successfully.","sessionId":"memory","details":{}}
+{"timestamp":"2026-07-11T18:17:21.003Z","level":"info","event":"AgentEngine started successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-11T18:17:21.003Z","level":"info","event":"Starting REST API Server...","sessionId":"api","details":{}}
+{"timestamp":"2026-07-11T18:17:21.004Z","level":"info","event":"[ApiEngine] Dynamically importing ApiServer from file:///C:/aegis/aegis-core/dist/aegis-core/src/api/ApiServer.js","sessionId":"api","details":{}}
+{"timestamp":"2026-07-11T18:17:21.009Z","level":"error","event":"[ApiEngine] Failed to start REST API Server: Cannot find module 'C:\\aegis\\aegis-core\\dist\\aegis-core\\src\\api\\ApiServer.js' imported from C:\\aegis\\engines\\aegis-api\\dist\\ApiEngine.js","sessionId":"api","details":{}}
+{"timestamp":"2026-07-11T18:17:45.929Z","level":"info","event":"Kernel log system initialized","sessionId":"system","details":{"hardware":{"cpu":"13th Gen Intel(R) Core(TM) i5-13420H","cores":12,"ramGb":16,"cudaEnabled":false},"platform":"win32","arch":"x64"}}
+{"timestamp":"2026-07-11T18:17:45.929Z","level":"info","event":"System storage verified and state checks successful","sessionId":"system","details":{}}
+{"timestamp":"2026-07-11T18:17:45.942Z","level":"info","event":"AgentEngine initialized successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-11T18:17:45.942Z","level":"info","event":"ApiEngine initialized successfully.","sessionId":"api","details":{}}
+{"timestamp":"2026-07-11T18:17:45.942Z","level":"info","event":"MemoryEngine initialized successfully.","sessionId":"memory","details":{}}
+{"timestamp":"2026-07-11T18:17:45.942Z","level":"info","event":"AgentEngine started successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-11T18:17:45.942Z","level":"info","event":"Starting REST API Server...","sessionId":"api","details":{}}
+{"timestamp":"2026-07-11T18:17:45.942Z","level":"info","event":"[ApiEngine] Dynamically importing ApiServer from file:///C:/aegis/aegis-core/dist/aegis-core/src/api/ApiServer.js","sessionId":"api","details":{}}
+{"timestamp":"2026-07-11T18:17:45.946Z","level":"error","event":"[ApiEngine] Failed to start REST API Server: Cannot find module 'C:\\aegis\\aegis-core\\dist\\aegis-core\\src\\api\\ApiServer.js' imported from C:\\aegis\\engines\\aegis-api\\dist\\ApiEngine.js","sessionId":"api","details":{}}
+{"timestamp":"2026-07-11T18:31:44.698Z","level":"info","event":"Kernel log system initialized","sessionId":"system","details":{"hardware":{"cpu":"13th Gen Intel(R) Core(TM) i5-13420H","cores":12,"ramGb":16,"cudaEnabled":false},"platform":"win32","arch":"x64"}}
+{"timestamp":"2026-07-11T18:31:44.700Z","level":"info","event":"System storage verified and state checks successful","sessionId":"system","details":{}}
+{"timestamp":"2026-07-11T18:31:44.976Z","level":"info","event":"AgentEngine initialized successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-11T18:31:44.976Z","level":"info","event":"ApiEngine initialized successfully.","sessionId":"api","details":{}}
+{"timestamp":"2026-07-11T18:31:44.976Z","level":"info","event":"MemoryEngine initialized successfully.","sessionId":"memory","details":{}}
+{"timestamp":"2026-07-11T18:31:44.976Z","level":"info","event":"AgentEngine started successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-11T18:31:44.976Z","level":"info","event":"Starting REST API Server...","sessionId":"api","details":{}}
+{"timestamp":"2026-07-11T18:31:45.026Z","level":"info","event":"[ApiEngine] REST API Server successfully started.","sessionId":"api","details":{}}
+{"timestamp":"2026-07-11T18:31:45.026Z","level":"info","event":"MemoryEngine started successfully.","sessionId":"memory","details":{}}
+{"timestamp":"2026-07-11T18:31:45.026Z","level":"info","event":"AEGIS Core Runtime Kernel is ACTIVE","sessionId":"system","details":{}}
+{"timestamp":"2026-07-11T18:32:19.622Z","level":"info","event":"Kernel log system initialized","sessionId":"system","details":{"hardware":{"cpu":"13th Gen Intel(R) Core(TM) i5-13420H","cores":12,"ramGb":16,"cudaEnabled":false},"platform":"win32","arch":"x64"}}
+{"timestamp":"2026-07-11T18:32:19.623Z","level":"info","event":"System storage verified and state checks successful","sessionId":"system","details":{}}
+{"timestamp":"2026-07-11T18:32:19.625Z","level":"info","event":"AEGIS Core Runtime Kernel is ACTIVE","sessionId":"system","details":{}}
+{"timestamp":"2026-07-11T18:32:55.684Z","level":"info","event":"Kernel log system initialized","sessionId":"system","details":{"hardware":{"cpu":"13th Gen Intel(R) Core(TM) i5-13420H","cores":12,"ramGb":16,"cudaEnabled":false},"platform":"win32","arch":"x64"}}
+{"timestamp":"2026-07-11T18:32:55.686Z","level":"info","event":"System storage verified and state checks successful","sessionId":"system","details":{}}
+{"timestamp":"2026-07-11T18:32:55.688Z","level":"info","event":"AEGIS Core Runtime Kernel is ACTIVE","sessionId":"system","details":{}}
+{"timestamp":"2026-07-11T18:33:32.420Z","level":"info","event":"Kernel log system initialized","sessionId":"system","details":{"hardware":{"cpu":"13th Gen Intel(R) Core(TM) i5-13420H","cores":12,"ramGb":16,"cudaEnabled":false},"platform":"win32","arch":"x64"}}
+{"timestamp":"2026-07-11T18:33:32.421Z","level":"info","event":"System storage verified and state checks successful","sessionId":"system","details":{}}
+{"timestamp":"2026-07-11T18:33:32.422Z","level":"info","event":"AEGIS Core Runtime Kernel is ACTIVE","sessionId":"system","details":{}}

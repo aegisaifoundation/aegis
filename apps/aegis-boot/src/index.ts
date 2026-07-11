@@ -53,43 +53,73 @@ async function main() {
     process.exit(0);
   }
   
-  console.log('[Bootloader] Daemon not detected. Running AEGIS Core Runtime inline...');
+  console.log('[Bootloader] Daemon not detected. Spawning background runtime daemon...');
   
   const repoRoot = getRepositoryRoot();
+  const daemonJsPath = path.resolve(repoRoot, 'packages/aegis-runtime/dist/daemon.js');
+  const daemonTsPath = path.resolve(repoRoot, 'packages/aegis-runtime/src/daemon.ts');
   
-  // Import and run the daemon inline — no child process spawn.
-  // This keeps the daemon alive as long as the parent (python launcher) is alive.
-  const daemonPath = path.resolve(repoRoot, 'packages/aegis-runtime/src/boot/Bootloader.js');
-  const daemonTsPath = path.resolve(repoRoot, 'packages/aegis-runtime/src/boot/Bootloader.ts');
+  const isDev = fs.existsSync(daemonTsPath);
+  console.log(`[Bootloader] Spawning daemon in ${isDev ? 'development (TSX)' : 'production (JS)'} mode...`);
   
-  try {
-    // Dynamic import of the Bootloader — tsx handles .ts resolution
-    const { Bootloader } = await import(
-      fs.existsSync(daemonTsPath)
-        ? `file:///${daemonTsPath.replace(/\\/g, '/')}`
-        : `file:///${daemonPath.replace(/\\/g, '/')}`
-    );
-    
-    console.log('[Bootloader] Starting AEGIS Runtime Kernel inline...');
-    const kernelApi = await Bootloader.boot();
-    console.log('[Bootloader] AEGIS Runtime Kernel is ACTIVE inline.');
-    
-    // Keep the process alive indefinitely — the kernel runs HTTP servers internally
-    // The parent process (python launcher) manages the lifecycle
-    process.on('SIGINT', async () => {
-      console.log('[Bootloader] Received SIGINT. Shutting down...');
-      try { await kernelApi.shutdown(); } catch {}
-      process.exit(0);
+  const { spawn } = await import('child_process');
+  
+  let child;
+  if (isDev) {
+    child = spawn('node', [
+      '--import', 'tsx',
+      '--experimental-specifier-resolution=node',
+      '--no-warnings',
+      daemonTsPath
+    ], {
+      detached: true,
+      stdio: 'ignore',
+      cwd: repoRoot
     });
-    
-    process.on('SIGTERM', async () => {
-      console.log('[Bootloader] Received SIGTERM. Shutting down...');
-      try { await kernelApi.shutdown(); } catch {}
-      process.exit(0);
+  } else {
+    child = spawn('node', [
+      '--experimental-specifier-resolution=node',
+      '--no-warnings',
+      daemonJsPath
+    ], {
+      detached: true,
+      stdio: 'ignore',
+      cwd: repoRoot
     });
+  }
+  
+  child.unref();
+  
+  console.log('[Bootloader] Waiting for daemon to initialize and become healthy...');
+  const hasApiEngine = fs.existsSync(path.resolve(repoRoot, 'engines/aegis-api'));
+  
+  let healthy = false;
+  for (let i = 0; i < 20; i++) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-  } catch (err: any) {
-    console.error('[Bootloader] Fatal error during inline daemon startup:', err);
+    if (child.exitCode !== null) {
+      break;
+    }
+    
+    if (hasApiEngine) {
+      healthy = await checkRuntimeHealth();
+      if (healthy) {
+        break;
+      }
+    } else {
+      // In zero-engine mode, if daemon is still alive after 3 seconds, it is healthy.
+      if (i >= 3) {
+        healthy = true;
+        break;
+      }
+    }
+  }
+  
+  if (healthy) {
+    console.log('[Bootloader] AEGIS Runtime Daemon successfully booted and verified healthy. Exiting bootloader.');
+    process.exit(0);
+  } else {
+    console.error('[Bootloader] Error: AEGIS Runtime Daemon failed to initialize within timeout.');
     process.exit(1);
   }
 }

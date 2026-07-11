@@ -13,22 +13,22 @@ import { providerManager } from '@aegis/providers';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Cache the aegis-core root path — computed once, reused on every plugin load
-let _cachedAegisCoreRoot: string | null = null;
+// Cache the plugins root path — computed once, reused on every plugin load
+let _cachedPluginRoot: string | null = null;
 
 export class PluginLoader {
   private contexts: Map<string, PluginContext> = new Map();
 
   private getAegisCoreRoot(): string {
-    if (_cachedAegisCoreRoot !== null) return _cachedAegisCoreRoot;
+    if (_cachedPluginRoot !== null) return _cachedPluginRoot;
     let current = __dirname;
     while (true) {
       const packageJson = path.join(current, 'package.json');
       if (fs.existsSync(packageJson) && !current.includes('node_modules')) {
         try {
           const pkg = JSON.parse(fs.readFileSync(packageJson, 'utf8'));
-          if (pkg.name === 'aegis-core') {
-            _cachedAegisCoreRoot = current;
+          if (pkg.name === '@aegis/plugins') {
+            _cachedPluginRoot = current;
             return current;
           }
         } catch (e) {
@@ -46,12 +46,12 @@ export class PluginLoader {
     if (nmIndex !== -1) {
       cwd = cwd.substring(0, nmIndex);
     }
-    if (fs.existsSync(path.resolve(cwd, 'aegis-core/package.json'))) {
-      _cachedAegisCoreRoot = path.resolve(cwd, 'aegis-core');
+    if (fs.existsSync(path.resolve(cwd, 'aegis/plugins/package.json'))) {
+      _cachedPluginRoot = path.resolve(cwd, '@aegis/plugins');
     } else {
-      _cachedAegisCoreRoot = cwd;
+      _cachedPluginRoot = cwd;
     }
-    return _cachedAegisCoreRoot;
+    return _cachedPluginRoot;
   }
 
   getWorkspaceRoot(): string {

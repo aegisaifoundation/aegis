@@ -37,8 +37,7 @@ export class ConfigurationManager {
         if (fs.existsSync(productionConfig)) {
             return productionConfig;
         }
-        // Fallback to legacy workspace config folder
-        const legacyConfig = path.resolve(repoRoot, 'aegis-core/src/config/runtime.json');
+        const legacyConfig = path.resolve(repoRoot, 'packages/aegis-runtime/src/config/runtime.json');
         if (fs.existsSync(legacyConfig)) {
             return legacyConfig;
         }

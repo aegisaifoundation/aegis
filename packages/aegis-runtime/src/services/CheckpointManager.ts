@@ -4,8 +4,8 @@ import { existsSync } from 'fs';
 import { workspaceManager } from '../workspace/WorkspaceManager.js';
 
 export interface ICheckpointable {
-  createCheckpoint(name: string): Promise<void>;
-  rollbackToCheckpoint(name: string): Promise<void>;
+  createCheckpoint(name: string, sessionId?: string): Promise<void>;
+  rollbackToCheckpoint(name: string, sessionId?: string): Promise<void>;
 }
 
 export class CheckpointManager {
@@ -24,20 +24,20 @@ export class CheckpointManager {
     return path.resolve(wsRoot, 'runtime/checkpoints');
   }
 
-  public async createCheckpoint(name: string): Promise<void> {
+  public async createCheckpoint(name: string, sessionId?: string): Promise<void> {
     const cpDir = this.getCheckpointsDir();
     if (!existsSync(cpDir)) {
       await fs.mkdir(cpDir, { recursive: true });
     }
 
     for (const target of this.registries) {
-      await target.createCheckpoint(name);
+      await target.createCheckpoint(name, sessionId);
     }
   }
 
-  public async rollbackToCheckpoint(name: string): Promise<void> {
+  public async rollbackToCheckpoint(name: string, sessionId?: string): Promise<void> {
     for (const target of this.registries) {
-      await target.rollbackToCheckpoint(name);
+      await target.rollbackToCheckpoint(name, sessionId);
     }
   }
 }

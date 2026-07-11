@@ -49,7 +49,7 @@ export class WorkspaceManager {
     if (fs.existsSync(productionConfig)) {
       return productionConfig;
     }
-    const legacyConfig = path.resolve(repositoryRoot, 'aegis-core/src/config/runtime.json');
+    const legacyConfig = path.resolve(repositoryRoot, 'packages/aegis-runtime/src/config/runtime.json');
     if (fs.existsSync(legacyConfig)) {
       return legacyConfig;
     }
