@@ -4,6 +4,7 @@ export type MemoryEntry = Message;
 export * from './MemoryManager.js';
 export * from './MemoryGateway.js';
 export * from './SessionMemory.js';
+export * from './MemoryEngine.js';
 
 // Pluggable Interfaces
 export * from './interfaces/IMemoryModule.js';

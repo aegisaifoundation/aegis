@@ -9,12 +9,10 @@ export interface ReflectionRecord {
 }
 export declare class MemoryReflectionManager {
     private static instance;
-    private reflections;
-    private isLoaded;
     static getInstance(): MemoryReflectionManager;
     private getDatabasePath;
-    load(): Promise<void>;
-    save(): Promise<void>;
+    load(sessionId: string): Promise<ReflectionRecord[]>;
+    save(sessionId: string, reflections: ReflectionRecord[]): Promise<void>;
     private saveReflection;
     reflect(sessionId: string, actor?: string): Promise<ReflectionRecord | null>;
     getSessionReflections(sessionId: string): Promise<ReflectionRecord[]>;

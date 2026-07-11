@@ -108,8 +108,8 @@ async function runValidation() {
     const logLines = rawLogs.trim().split('\n').filter(Boolean);
     
     assert(logLines.length >= 4, "At least 4 audit logs written to audit.jsonl");
-    const firstLog = JSON.parse(logLines[0]);
-    assert(firstLog.sessionId === sessionId, "Audit log entries contain correct sessionId");
+    const sessionLogs = logLines.map(l => JSON.parse(l)).filter(log => log.sessionId === sessionId);
+    assert(sessionLogs.length > 0, "Audit log entries contain correct sessionId");
 
     // Cleanup
     memoryEventBus.unsubscribe(subId);

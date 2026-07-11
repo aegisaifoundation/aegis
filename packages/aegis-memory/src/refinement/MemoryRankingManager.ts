@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { workspaceManager } from '@aegis/runtime';
+import { workspaceManager, serviceRegistry } from '@aegis/runtime';
 
 export interface RankedMemoryItem {
   id: string;
@@ -23,50 +23,46 @@ export interface ArchiveRecord {
 
 export class MemoryRankingManager {
   private static instance = new MemoryRankingManager();
-  private items: RankedMemoryItem[] = [];
-  private isLoaded = false;
 
   public static getInstance(): MemoryRankingManager {
     return this.instance;
   }
 
-  private getDatabasePath(): string {
+  private getDatabasePath(sessionId: string): string {
     const wsRoot = path.dirname(workspaceManager.getWorkspacePath());
-    return path.resolve(wsRoot, 'memory/indexes/ranking.json');
+    return path.resolve(wsRoot, `memory/sessions/${sessionId}/indexes/ranking.json`);
   }
 
-  private getArchiveDirectory(): string {
+  private getArchiveDirectory(sessionId: string): string {
     const wsRoot = path.dirname(workspaceManager.getWorkspacePath());
-    return path.resolve(wsRoot, 'memory/archives');
+    return path.resolve(wsRoot, `memory/sessions/${sessionId}/archives`);
   }
 
-  public async load(): Promise<void> {
-    if (this.isLoaded) return;
+  public async load(sessionId: string): Promise<RankedMemoryItem[]> {
     try {
-      const dbPath = this.getDatabasePath();
+      const dbPath = this.getDatabasePath(sessionId);
       if (fs.existsSync(dbPath)) {
         const raw = await fs.promises.readFile(dbPath, 'utf8');
-        this.items = JSON.parse(raw);
+        return JSON.parse(raw);
       }
     } catch (err) {
-      console.error('[MemoryRankingManager] Failed to load ranking database:', err);
-      this.items = [];
+      console.error(`[MemoryRankingManager] Failed to load ranking database for session ${sessionId}:`, err);
     }
-    this.isLoaded = true;
+    return [];
   }
 
-  public async save(): Promise<void> {
+  public async save(sessionId: string, items: RankedMemoryItem[]): Promise<void> {
     try {
-      const dbPath = this.getDatabasePath();
+      const dbPath = this.getDatabasePath(sessionId);
       const dir = path.dirname(dbPath);
       if (!fs.existsSync(dir)) {
         await fs.promises.mkdir(dir, { recursive: true });
       }
       const tempPath = `${dbPath}.tmp`;
-      await fs.promises.writeFile(tempPath, JSON.stringify(this.items, null, 2), 'utf8');
+      await fs.promises.writeFile(tempPath, JSON.stringify(items, null, 2), 'utf8');
       await fs.promises.rename(tempPath, dbPath);
     } catch (err) {
-      console.error('[MemoryRankingManager] Failed to save ranking database:', err);
+      console.error(`[MemoryRankingManager] Failed to save ranking database for session ${sessionId}:`, err);
     }
   }
 
@@ -78,8 +74,8 @@ export class MemoryRankingManager {
     confidence = 0.5,
     decayRate = 0.05
   ): Promise<void> {
-    await this.load();
-    const existingIndex = this.items.findIndex(item => item.id === id);
+    const items = await this.load(sessionId);
+    const existingIndex = items.findIndex(item => item.id === id);
     const newItem: RankedMemoryItem = {
       id,
       sessionId,
@@ -94,21 +90,32 @@ export class MemoryRankingManager {
 
     if (existingIndex >= 0) {
       // Retain access metrics on update
-      newItem.accessFrequency = this.items[existingIndex].accessFrequency;
-      this.items[existingIndex] = newItem;
+      newItem.accessFrequency = items[existingIndex].accessFrequency;
+      items[existingIndex] = newItem;
     } else {
-      this.items.push(newItem);
+      items.push(newItem);
     }
-    await this.save();
+    await this.save(sessionId, items);
   }
 
   public async recordAccess(id: string): Promise<void> {
-    await this.load();
-    const item = this.items.find(i => i.id === id);
+    const activeSessionId = await this.getActiveSessionId();
+    const items = await this.load(activeSessionId);
+    const item = items.find(i => i.id === id);
     if (item) {
       item.accessFrequency += 1;
       item.lastAccessedAt = new Date().toISOString();
-      await this.save();
+      await this.save(activeSessionId, items);
+    }
+  }
+
+  private async getActiveSessionId(): Promise<string> {
+    try {
+      const runtimeStateManager: any = serviceRegistry.get('runtimeStateManager');
+      const state = await runtimeStateManager.loadState();
+      return state.activeSessionId || 'default';
+    } catch {
+      return 'default';
     }
   }
 
@@ -130,30 +137,28 @@ export class MemoryRankingManager {
     virtualTimeOffsetMs = 0,
     archiveThreshold = 0.3
   ): Promise<{ active: RankedMemoryItem[]; archived: Omit<RankedMemoryItem, 'vector'>[] }> {
-    await this.load();
+    const items = await this.load(sessionId);
 
     const active: RankedMemoryItem[] = [];
     const archived: RankedMemoryItem[] = [];
 
-    for (const item of this.items) {
-      if (item.sessionId === sessionId) {
-        const score = this.calculateScore(item, virtualTimeOffsetMs);
-        if (score < archiveThreshold) {
-          archived.push(item);
-        } else {
-          active.push(item);
-        }
+    for (const item of items) {
+      const score = this.calculateScore(item, virtualTimeOffsetMs);
+      if (score < archiveThreshold) {
+        archived.push(item);
+      } else {
+        active.push(item);
       }
     }
 
     if (archived.length > 0) {
       // Remove archived items from active list
       const archivedIds = new Set(archived.map(i => i.id));
-      this.items = this.items.filter(item => !archivedIds.has(item.id));
-      await this.save();
+      const remainingItems = items.filter(item => !archivedIds.has(item.id));
+      await this.save(sessionId, remainingItems);
 
       // Save to archive directory
-      const archiveDir = this.getArchiveDirectory();
+      const archiveDir = this.getArchiveDirectory(sessionId);
       if (!fs.existsSync(archiveDir)) {
         await fs.promises.mkdir(archiveDir, { recursive: true });
       }
@@ -173,8 +178,7 @@ export class MemoryRankingManager {
   }
 
   public async getSessionItems(sessionId: string): Promise<RankedMemoryItem[]> {
-    await this.load();
-    return this.items.filter(item => item.sessionId === sessionId);
+    return await this.load(sessionId);
   }
 }
 

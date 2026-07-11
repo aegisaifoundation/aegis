@@ -8,6 +8,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@aegis/sdk": "*",
     "dotenv": "^16.4.5",
     "zod": "^3.23.8"
   }

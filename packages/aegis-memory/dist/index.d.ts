@@ -3,6 +3,7 @@ export type MemoryEntry = Message;
 export * from './MemoryManager.js';
 export * from './MemoryGateway.js';
 export * from './SessionMemory.js';
+export * from './MemoryEngine.js';
 export * from './interfaces/IMemoryModule.js';
 export * from './interfaces/IMemoryStore.js';
 export * from './interfaces/IMemoryProvider.js';

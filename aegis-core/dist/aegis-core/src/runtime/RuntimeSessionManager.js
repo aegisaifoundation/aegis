@@ -403,6 +403,8 @@ export class RuntimeSessionManager {
             const stateFile = path.resolve(wsRoot, 'runtime/runtime-state.json');
             await memoryTransactionManager.registerWrite(txId, stateFile, JSON.stringify(state, null, 2));
             await memoryTransactionManager.commitTransaction(txId);
+            // Update memory manager active session
+            await memoryManager.switchActiveSession(sessionId);
             // Update index registry
             if (state.mountedSessionId) {
                 const oldMeta = await memoryGateway.loadSession(state.mountedSessionId, actor).catch(() => null);

@@ -8,6 +8,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@aegis/sdk": "*",
     "@aegis/runtime": "*",
     "@aegis/providers": "*",
     "@aegis/memory": "*",

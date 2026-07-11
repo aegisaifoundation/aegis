@@ -372,10 +372,22 @@ export class MemoryGateway implements IMemoryGateway {
       this.historyCache.set(sessionId, history);
     }
 
-    // Mutate in-memory cache only — no disk I/O on every message
+    // Mutate and write immediately to disk
     const history = this.historyCache.get(sessionId)!;
     history.messages.push(message);
-    this.historyDirty.add(sessionId);
+
+    const filePath = path.join(this.getSessionDir(sessionId), 'history.json');
+    const content = JSON.stringify(history, null, 2);
+    await writeMemoryFile(filePath, content);
+
+    // Update checksum in metadata immediately
+    const cached = this.metadataCache.get(sessionId);
+    if (cached) {
+      cached.checksums.history = calculateChecksum(content);
+      cached.updatedAt = new Date().toISOString();
+      const metadataPath = path.join(this.getSessionDir(sessionId), 'metadata.json');
+      await safeJsonWrite(metadataPath, cached);
+    }
 
     MemoryObservability.logAuditAsync(actor, 'write', 'history', sessionId, { messageId: message.id });
     

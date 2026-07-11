@@ -11,4 +11,6 @@ export * from './registry/RuntimeServices.js';
 export * from './types/Message.js';
 export * from './types/Tool.js';
 export * from './types/Command.js';
+export * from './boot/Bootloader.js';
+export * from './di/Container.js';
 export const RUNTIME_VERSION = "1.0.0";

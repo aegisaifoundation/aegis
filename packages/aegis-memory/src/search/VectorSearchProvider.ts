@@ -13,45 +13,41 @@ export interface VectorDocument {
 
 export class VectorSearchProvider {
   private static instance = new VectorSearchProvider();
-  private documents: VectorDocument[] = [];
-  private isLoaded = false;
 
   public static getInstance(): VectorSearchProvider {
     return this.instance;
   }
 
-  private getDatabasePath(): string {
+  private getDatabasePath(sessionId: string): string {
     const wsRoot = path.dirname(workspaceManager.getWorkspacePath());
-    return path.resolve(wsRoot, 'memory/embeddings/vectors.json');
+    return path.resolve(wsRoot, `memory/sessions/${sessionId}/vectors/vectors.json`);
   }
 
-  public async load(): Promise<void> {
-    if (this.isLoaded) return;
+  public async load(sessionId: string): Promise<VectorDocument[]> {
     try {
-      const dbPath = this.getDatabasePath();
+      const dbPath = this.getDatabasePath(sessionId);
       if (fs.existsSync(dbPath)) {
         const raw = await fs.promises.readFile(dbPath, 'utf8');
-        this.documents = JSON.parse(raw);
+        return JSON.parse(raw);
       }
     } catch (err) {
-      console.error('[VectorSearchProvider] Failed to load vector database:', err);
-      this.documents = [];
+      console.error(`[VectorSearchProvider] Failed to load vector database for session ${sessionId}:`, err);
     }
-    this.isLoaded = true;
+    return [];
   }
 
-  public async save(): Promise<void> {
+  public async save(sessionId: string, documents: VectorDocument[]): Promise<void> {
     try {
-      const dbPath = this.getDatabasePath();
+      const dbPath = this.getDatabasePath(sessionId);
       const dir = path.dirname(dbPath);
       if (!fs.existsSync(dir)) {
         await fs.promises.mkdir(dir, { recursive: true });
       }
       const tempPath = `${dbPath}.tmp`;
-      await fs.promises.writeFile(tempPath, JSON.stringify(this.documents, null, 2), 'utf8');
+      await fs.promises.writeFile(tempPath, JSON.stringify(documents, null, 2), 'utf8');
       await fs.promises.rename(tempPath, dbPath);
     } catch (err) {
-      console.error('[VectorSearchProvider] Failed to save vector database:', err);
+      console.error(`[VectorSearchProvider] Failed to save vector database for session ${sessionId}:`, err);
     }
   }
 
@@ -62,8 +58,8 @@ export class VectorSearchProvider {
     vector: number[],
     metadata: Record<string, any> = {}
   ): Promise<void> {
-    await this.load();
-    const existingIndex = this.documents.findIndex(doc => doc.id === id);
+    const documents = await this.load(sessionId);
+    const existingIndex = documents.findIndex(doc => doc.id === id);
     const newDoc: VectorDocument = {
       id,
       sessionId,
@@ -74,17 +70,18 @@ export class VectorSearchProvider {
     };
 
     if (existingIndex >= 0) {
-      this.documents[existingIndex] = newDoc;
+      documents[existingIndex] = newDoc;
     } else {
-      this.documents.push(newDoc);
+      documents.push(newDoc);
     }
-    await this.save();
+    await this.save(sessionId, documents);
   }
 
   public async deleteSession(sessionId: string): Promise<void> {
-    await this.load();
-    this.documents = this.documents.filter(doc => doc.sessionId !== sessionId);
-    await this.save();
+    const dbPath = this.getDatabasePath(sessionId);
+    if (fs.existsSync(dbPath)) {
+      await fs.promises.unlink(dbPath).catch(() => {});
+    }
   }
 
   public async query(
@@ -93,10 +90,9 @@ export class VectorSearchProvider {
     limit = 5,
     minSimilarity = 0.0
   ): Promise<Array<{ document: VectorDocument; similarity: number }>> {
-    await this.load();
+    const documents = await this.load(sessionId);
 
-    const sessionDocs = this.documents.filter(doc => doc.sessionId === sessionId);
-    const scored = sessionDocs.map(doc => {
+    const scored = documents.map(doc => {
       const similarity = this.cosineSimilarity(queryVector, doc.vector);
       return { document: doc, similarity };
     });

@@ -148,3 +148,19 @@
 {"timestamp":"2026-07-08T10:46:46.802Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
 {"timestamp":"2026-07-08T10:52:38.938Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
 {"timestamp":"2026-07-08T11:31:43.225Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-07-08T11:34:56.092Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-07-08T11:34:56.107Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"c97215a7-a132-489f-a214-216157e33e95"}
+{"timestamp":"2026-07-08T11:41:50.676Z","stage":"HEALTH_DEGRADED","reason":"Unclean shutdown detected, entering RECOVERY_MODE."}
+{"timestamp":"2026-07-08T12:45:02.150Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-07-08T12:45:02.157Z","stage":"CHECKPOINT_RESTORED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-07-08T12:45:02.167Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"0c053143-4259-4d22-b941-64f92857de41"}
+{"timestamp":"2026-07-08T12:45:02.515Z","stage":"SAFE_MODE_ENTERED","reason":"Booted in SAFE_MODE."}
+{"timestamp":"2026-07-08T12:46:27.763Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-07-08T12:46:27.772Z","stage":"CHECKPOINT_RESTORED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-07-08T12:46:27.783Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"3b784721-c25e-4480-91ee-5e846d2041c1"}
+{"timestamp":"2026-07-08T12:46:28.068Z","stage":"SAFE_MODE_ENTERED","reason":"Booted in SAFE_MODE."}
+{"timestamp":"2026-07-08T15:50:08.787Z","stage":"HEALTH_DEGRADED","reason":"Heartbeat watchdog timeout."}
+{"timestamp":"2026-07-11T08:26:27.914Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-07-11T08:26:27.923Z","stage":"CHECKPOINT_RESTORED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-07-11T08:26:27.934Z","stage":"RUNTIME_STATE_RECOVERED","runtimeId":"1cd5c390-26ce-41d6-8ef1-fe2c864dd6df"}
+{"timestamp":"2026-07-11T08:26:28.198Z","stage":"SAFE_MODE_ENTERED","reason":"Booted in SAFE_MODE."}

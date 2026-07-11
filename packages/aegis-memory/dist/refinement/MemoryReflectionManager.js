@@ -4,50 +4,45 @@ import { memoryGateway } from '../MemoryGateway.js';
 import { workspaceManager } from '@aegis/runtime';
 export class MemoryReflectionManager {
     static instance = new MemoryReflectionManager();
-    reflections = [];
-    isLoaded = false;
     static getInstance() {
         return this.instance;
     }
-    getDatabasePath() {
+    getDatabasePath(sessionId) {
         const wsRoot = path.dirname(workspaceManager.getWorkspacePath());
-        return path.resolve(wsRoot, 'memory/reflections/reflections.json');
+        return path.resolve(wsRoot, `memory/sessions/${sessionId}/reflections/reflections.json`);
     }
-    async load() {
-        if (this.isLoaded)
-            return;
+    async load(sessionId) {
         try {
-            const dbPath = this.getDatabasePath();
+            const dbPath = this.getDatabasePath(sessionId);
             if (fs.existsSync(dbPath)) {
                 const raw = await fs.promises.readFile(dbPath, 'utf8');
-                this.reflections = JSON.parse(raw);
+                return JSON.parse(raw);
             }
         }
         catch (err) {
-            console.error('[MemoryReflectionManager] Failed to load reflections database:', err);
-            this.reflections = [];
+            console.error(`[MemoryReflectionManager] Failed to load reflections database for session ${sessionId}:`, err);
         }
-        this.isLoaded = true;
+        return [];
     }
-    async save() {
+    async save(sessionId, reflections) {
         try {
-            const dbPath = this.getDatabasePath();
+            const dbPath = this.getDatabasePath(sessionId);
             const dir = path.dirname(dbPath);
             if (!fs.existsSync(dir)) {
                 await fs.promises.mkdir(dir, { recursive: true });
             }
             const tempPath = `${dbPath}.tmp`;
-            await fs.promises.writeFile(tempPath, JSON.stringify(this.reflections, null, 2), 'utf8');
+            await fs.promises.writeFile(tempPath, JSON.stringify(reflections, null, 2), 'utf8');
             await fs.promises.rename(tempPath, dbPath);
         }
         catch (err) {
-            console.error('[MemoryReflectionManager] Failed to save reflections database:', err);
+            console.error(`[MemoryReflectionManager] Failed to save reflections database for session ${sessionId}:`, err);
         }
     }
-    async saveReflection(record) {
-        await this.load();
-        this.reflections.push(record);
-        await this.save();
+    async saveReflection(sessionId, record) {
+        const reflections = await this.load(sessionId);
+        reflections.push(record);
+        await this.save(sessionId, reflections);
     }
     async reflect(sessionId, actor = 'system') {
         try {
@@ -85,7 +80,7 @@ export class MemoryReflectionManager {
                 heuristicsGenerated: [...futureRules],
                 futureRules: Array.from(new Set(futureRules))
             };
-            await this.saveReflection(reflection);
+            await this.saveReflection(sessionId, reflection);
             try {
                 const state = await memoryGateway.getSessionState(sessionId, actor);
                 const prefs = state.preferences || {};
@@ -107,8 +102,7 @@ export class MemoryReflectionManager {
         }
     }
     async getSessionReflections(sessionId) {
-        await this.load();
-        return this.reflections.filter(ref => ref.sessionId === sessionId);
+        return await this.load(sessionId);
     }
 }
 export const memoryReflectionManager = MemoryReflectionManager.getInstance();

@@ -455,6 +455,9 @@ export class RuntimeSessionManager {
 
       await memoryTransactionManager.commitTransaction(txId);
       
+      // Update memory manager active session
+      await memoryManager.switchActiveSession(sessionId);
+      
       // Update index registry
       if (state.mountedSessionId) {
         const oldMeta = await memoryGateway.loadSession(state.mountedSessionId, actor).catch(() => null);

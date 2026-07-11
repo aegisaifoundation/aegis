@@ -8,12 +8,10 @@ export interface VectorDocument {
 }
 export declare class VectorSearchProvider {
     private static instance;
-    private documents;
-    private isLoaded;
     static getInstance(): VectorSearchProvider;
     private getDatabasePath;
-    load(): Promise<void>;
-    save(): Promise<void>;
+    load(sessionId: string): Promise<VectorDocument[]>;
+    save(sessionId: string, documents: VectorDocument[]): Promise<void>;
     insert(id: string, sessionId: string, text: string, vector: number[], metadata?: Record<string, any>): Promise<void>;
     deleteSession(sessionId: string): Promise<void>;
     query(sessionId: string, queryVector: number[], limit?: number, minSimilarity?: number): Promise<Array<{

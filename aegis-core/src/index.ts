@@ -1,13 +1,22 @@
-import { bootstrapManager } from './runtime/BootstrapManager.js';
-import { startApiServer } from './api/ApiServer.js';
+import { Bootloader } from '@aegis/runtime';
+import { engineManager } from '@aegis/runtime/dist/managers/EngineManager.js';
+import { DummyEngine } from '@aegis/runtime/dist/test/DummyEngine.js';
+import { AgentEngine } from '@aegis/agent';
+import { MemoryEngine } from '@aegis/memory';
+import { ApiEngine } from '@aegis/api';
 
-bootstrapManager.bootstrap()
+// Register pluggable engines before boot
+engineManager.register(new DummyEngine());
+engineManager.register(new AgentEngine());
+engineManager.register(new MemoryEngine());
+engineManager.register(new ApiEngine());
+
+Bootloader.boot()
   .then(() => {
-    // Starts the core API HTTP server once the system is fully bootstrapped
-    startApiServer();
+    console.log('[AEGIS] Platform Microkernel booted successfully.');
   })
   .catch(err => {
-    console.error('Fatal Error during AEGIS bootstrap:', err);
+    console.error('[AEGIS] Fatal error during platform bootstrap:', err);
     process.exit(1);
   });
 
