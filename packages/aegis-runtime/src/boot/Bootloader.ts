@@ -130,8 +130,9 @@ export class Bootloader {
       getEventBus: () => eventBus
     };
 
-    // Initialize & Start registered engines
+    // Discover, Initialize & Start registered engines
     try {
+      await engineManager.discoverAndLoad(runtimeContext);
       await engineManager.initializeAll(runtimeContext);
       await engineManager.startAll();
     } catch (err: any) {

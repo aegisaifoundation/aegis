@@ -1,0 +1,21 @@
+{
+  "name": "aegis-boot",
+  "version": "1.0.0",
+  "description": "AEGIS Core Platform Bootloader bootstrap process",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node --experimental-specifier-resolution=node --no-warnings dist/index.js",
+    "dev": "node --import tsx --experimental-specifier-resolution=node --no-warnings src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@aegis/runtime": "*",
+    "@aegis/sdk": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "tsx": "^4.15.2",
+    "typescript": "^5.4.5"
+  }
+}

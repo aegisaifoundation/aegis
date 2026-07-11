@@ -12,8 +12,17 @@ import { memoryGateway } from '../memory/MemoryGateway.js';
 import { workspaceManager } from '../runtime/WorkspaceManager.js';
 import { eventBus } from '../runtime/EventBus.js';
 import { providerManager, providerRegistry } from '../providers/index.js';
+import { bootstrapManager } from '../runtime/BootstrapManager.js';
 const PORT = 3005;
-export function startApiServer() {
+export async function startApiServer() {
+    try {
+        console.log('[ApiServer] Initializing all core systems via bootstrapManager...');
+        await bootstrapManager.bootstrap();
+        console.log('[ApiServer] Core systems successfully initialized.');
+    }
+    catch (err) {
+        console.error('[ApiServer] Failed to initialize core systems:', err);
+    }
     const server = http.createServer(async (req, res) => {
         // Add CORS headers
         res.setHeader('Access-Control-Allow-Origin', '*');
@@ -53,6 +62,23 @@ export function startApiServer() {
                     res.end(JSON.stringify({ error: 'Invalid JSON body' }));
                     return;
                 }
+            }
+            // Endpoint: GET /api/health
+            if (pathname === '/api/health' && req.method === 'GET') {
+                res.setHeader('Content-Type', 'application/json');
+                res.writeHead(200);
+                res.end(JSON.stringify({ status: 'HEALTHY', version: '1.0.0' }));
+                return;
+            }
+            // Endpoint: POST /api/shutdown
+            if (pathname === '/api/shutdown' && req.method === 'POST') {
+                res.setHeader('Content-Type', 'application/json');
+                res.writeHead(200);
+                res.end(JSON.stringify({ success: true, message: 'Shutdown initiated' }));
+                setTimeout(() => {
+                    process.exit(0);
+                }, 500);
+                return;
             }
             // Endpoint: GET /api/sessions
             if (pathname === '/api/sessions' && req.method === 'GET') {

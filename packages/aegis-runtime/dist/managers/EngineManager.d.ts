@@ -5,6 +5,8 @@ export declare class EngineManager {
     register(engine: IEngine): void;
     get(id: string): IEngine | undefined;
     list(): IEngine[];
+    private getRepositoryRoot;
+    discoverAndLoad(context: any): Promise<void>;
     getLoadOrder(): string[];
     initializeAll(context: any): Promise<void>;
     startAll(): Promise<void>;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from 'ink';
 import readline from 'readline';
-import { App } from '../../../interfaces/terminal/App.js';
+import { App } from '../../../apps/terminal/App.js';
 import { runtimeExecutor } from '../runtime/index.js';
 import { commandRouter } from '../commands/index.js';
 import { eventBus } from '../runtime/index.js';

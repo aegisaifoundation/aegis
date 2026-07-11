@@ -11,7 +11,7 @@ from llama_cpp import Llama
 
 # Constants
 UI_DIR = os.path.dirname(os.path.abspath(__file__))
-AEGIS_CORE_DIR = os.path.join(os.path.dirname(UI_DIR), "aegis-core")
+AEGIS_CORE_DIR = os.path.join(os.path.dirname(UI_DIR), "apps", "aegis-boot")
 # Default port for AEGIS local dashboard web server
 UI_PORT = 5001
 
@@ -281,11 +281,17 @@ def main():
 
     # Keep main thread alive and monitor Node process
     try:
+        bootloader_finished = False
         while True:
-            ret_code = node_process.poll()
-            if ret_code is not None:
-                print(f"\n[Launcher Warning] Aegis core process exited with code {ret_code}.")
-                break
+            if not bootloader_finished:
+                ret_code = node_process.poll()
+                if ret_code is not None:
+                    if ret_code == 0:
+                        print("\n[Launcher] Aegis core bootstrap finished. Keeping UI web server alive...")
+                        bootloader_finished = True
+                    else:
+                        print(f"\n[Launcher Error] Aegis core process failed with exit code {ret_code}.")
+                        break
             time.sleep(1)
     except KeyboardInterrupt:
         shutdown_gracefully(None, None)

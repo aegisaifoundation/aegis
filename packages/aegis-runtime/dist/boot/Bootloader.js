@@ -104,8 +104,9 @@ export class Bootloader {
             getService: (tokenName) => container.resolve(tokenName),
             getEventBus: () => eventBus
         };
-        // Initialize & Start registered engines
+        // Discover, Initialize & Start registered engines
         try {
+            await engineManager.discoverAndLoad(runtimeContext);
             await engineManager.initializeAll(runtimeContext);
             await engineManager.startAll();
         }

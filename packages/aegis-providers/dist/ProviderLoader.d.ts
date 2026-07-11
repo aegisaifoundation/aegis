@@ -1,6 +1,6 @@
 import { Provider } from './Provider.js';
 export declare class ProviderLoader {
-    private getAegisCoreRoot;
+    private getMonorepoRoot;
     getWorkspaceRoot(): string;
     getProvidersDir(): string;
     discoverProviders(): Promise<string[]>;
