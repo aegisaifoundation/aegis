@@ -1,13 +1,13 @@
 {
-  "txId": "dc4af89c-aa2b-4e8b-a643-4c21a33f59aa",
+  "txId": "ce2aec18-0b39-4469-82a3-b8821e892f5c",
   "state": "COMMITTED",
-  "timestamp": "2026-07-11T18:44:26.576Z",
+  "timestamp": "2026-07-11T19:03:05.680Z",
   "packageId": "engine-a",
   "action": "remove",
   "backups": [
     {
       "originalPath": "C:\\aegis\\test-pm-sandbox\\engines\\engine-a",
-      "backupPath": "C:\\aegis\\test-pm-sandbox\\config\\package-manager\\backups\\dc4af89c-aa2b-4e8b-a643-4c21a33f59aa\\3d0bfd16-46cb-4242-a7ad-ea4da75a44be"
+      "backupPath": "C:\\aegis\\test-pm-sandbox\\config\\package-manager\\backups\\ce2aec18-0b39-4469-82a3-b8821e892f5c\\72904eb1-d85a-430b-8f0f-6afff15223c4"
     }
   ],
   "addedFiles": [],

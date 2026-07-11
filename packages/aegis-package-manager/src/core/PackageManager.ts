@@ -82,7 +82,17 @@ export class PackageManager {
     const requireSignature = config.requireSignature !== false;
     
     if (manifest.signature) {
-      const textToVerify = JSON.stringify({ ...manifest, signature: undefined }, null, 2);
+      // Reconstruct manifest exactly as it was at sign time:
+      // The builder signs before setting checksums.manifest and before setting signature.
+      // So we must strip both fields to reproduce the signed payload.
+      const manifestForVerification = {
+        ...manifest,
+        signature: undefined,
+        checksums: manifest.checksums
+          ? { ...manifest.checksums, manifest: '' }
+          : manifest.checksums
+      };
+      const textToVerify = JSON.stringify(manifestForVerification, null, 2);
       const isSignatureValid = SecurityVerifier.verifySignature(textToVerify, manifest.signature);
       if (!isSignatureValid) {
         throw new Error(`Package security error: digital signature verification failed for "${manifest.id}"`);

@@ -48,12 +48,29 @@ export class CacheManager {
         const isWindows = process.platform === 'win32';
         let result;
         if (isWindows) {
-            result = spawnSync('powershell.exe', [
-                '-NoProfile',
-                '-NonInteractive',
-                '-Command',
-                `Expand-Archive -Path '${archivePath}' -DestinationPath '${destDir}' -Force`
-            ]);
+            // PowerShell Expand-Archive only supports .zip extension natively.
+            // Copy to a temp .zip file first if the extension is non-standard.
+            const ext = path.extname(archivePath).toLowerCase();
+            let effectiveSrc = archivePath;
+            let tempCopy = null;
+            if (ext !== '.zip') {
+                tempCopy = archivePath + '.zip';
+                fs.copyFileSync(archivePath, tempCopy);
+                effectiveSrc = tempCopy;
+            }
+            try {
+                result = spawnSync('powershell.exe', [
+                    '-NoProfile',
+                    '-NonInteractive',
+                    '-Command',
+                    `Expand-Archive -Path '${effectiveSrc}' -DestinationPath '${destDir}' -Force`
+                ]);
+            }
+            finally {
+                if (tempCopy && fs.existsSync(tempCopy)) {
+                    fs.rmSync(tempCopy, { force: true });
+                }
+            }
         }
         else {
             result = spawnSync('unzip', ['-o', archivePath, '-d', destDir]);

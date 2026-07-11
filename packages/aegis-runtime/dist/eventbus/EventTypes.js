@@ -91,5 +91,15 @@ export const EventTypes = {
     RUNTIME_MOUNT_INTENT_CHANGED: 'runtime.mount.intent.changed',
     RUNTIME_MOUNT_INVARIANT_VIOLATED: 'runtime.mount.invariant.violated',
     RUNTIME_CHECKPOINT_ROLLBACK_STARTED: 'runtime.checkpoint.rollback.started',
-    RUNTIME_CHECKPOINT_ROLLBACK_COMPLETED: 'runtime.checkpoint.rollback.completed'
+    RUNTIME_CHECKPOINT_ROLLBACK_COMPLETED: 'runtime.checkpoint.rollback.completed',
+    // Package Manager Events
+    PACKAGE_INSTALLING: 'package.installing',
+    PACKAGE_INSTALLED: 'package.installed',
+    PACKAGE_REMOVED: 'package.removed',
+    PACKAGE_UPDATED: 'package.updated',
+    PACKAGE_VERIFIED: 'package.verified',
+    PACKAGE_TRANSACTION_STARTED: 'package.transaction.started',
+    PACKAGE_TRANSACTION_COMMITTED: 'package.transaction.committed',
+    PACKAGE_TRANSACTION_ROLLED_BACK: 'package.transaction.rolled_back',
+    PACKAGE_REPOSITORY_UPDATED: 'package.repository.updated'
 };

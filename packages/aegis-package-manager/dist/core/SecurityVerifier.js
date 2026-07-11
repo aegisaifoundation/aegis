@@ -1,5 +1,9 @@
 import crypto from 'crypto';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 export class SecurityVerifier {
     // Hardcoded default public key for testing signature validation
     static DEFAULT_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
@@ -23,12 +27,50 @@ t2J5Y6V1t2J5Y6V1t2J5Y6V1t2J5Y6V1t2J5Y6V1t2J5Y6V1t2J5Y6V1t2J5Y6V1
         const actualHash = this.calculateFileHash(filePath);
         return actualHash === expectedHash;
     }
-    static verifySignature(text, signatureBase64, publicKeyPem = SecurityVerifier.DEFAULT_PUBLIC_KEY) {
+    static verifySignature(text, signatureBase64, publicKeyPem) {
         try {
+            let key = publicKeyPem;
+            if (!key) {
+                const searchPaths = [
+                    process.env.AEGIS_PUBLIC_KEY_PATH,
+                    path.resolve(process.cwd(), 'config/keys/public.pem'),
+                    path.resolve(process.cwd(), 'keys/public.pem'),
+                    path.resolve(process.cwd(), 'packages/aegis-runtime/src/config/keys/public.pem'),
+                    path.resolve(__dirname, '../../../../aegis-runtime/src/config/keys/public.pem'),
+                    path.resolve(__dirname, '../../../../packages/aegis-runtime/src/config/keys/public.pem'),
+                    path.resolve(__dirname, '../config/keys/public.pem'),
+                    path.resolve(__dirname, '../../config/keys/public.pem'),
+                    path.resolve(__dirname, '../../../config/keys/public.pem')
+                ];
+                // Robust climbing search for config/keys/public.pem
+                let current = process.cwd();
+                for (let i = 0; i < 5; i++) {
+                    const p = path.resolve(current, 'config/keys/public.pem');
+                    if (!searchPaths.includes(p)) {
+                        searchPaths.push(p);
+                    }
+                    const parent = path.dirname(current);
+                    if (parent === current)
+                        break;
+                    current = parent;
+                }
+                for (const p of searchPaths) {
+                    if (p && fs.existsSync(p)) {
+                        try {
+                            key = fs.readFileSync(p, 'utf8');
+                            break;
+                        }
+                        catch { }
+                    }
+                }
+            }
+            if (!key) {
+                key = SecurityVerifier.DEFAULT_PUBLIC_KEY;
+            }
             const verifier = crypto.createVerify('SHA256');
             verifier.update(text);
             verifier.end();
-            return verifier.verify(publicKeyPem, signatureBase64, 'base64');
+            return verifier.verify(key, signatureBase64, 'base64');
         }
         catch {
             return false;
