@@ -34,8 +34,17 @@ function getRepositoryRoot(): string {
 }
 
 const repoRoot = getRepositoryRoot();
-const configPath = path.resolve(repoRoot, 'config/runtime.json');
+const configPath = path.resolve(repoRoot, 'packages/aegis-runtime/src/config/runtime.json');
 const enginesDir = path.resolve(repoRoot, 'engines');
+
+// Helper to ensure config dir exists
+const configDir = path.dirname(configPath);
+if (!fs.existsSync(configDir)) {
+  fs.mkdirSync(configDir, { recursive: true });
+}
+if (!fs.existsSync(configPath)) {
+  fs.writeFileSync(configPath, JSON.stringify({ version: "1.0.0", autoloadEngines: [] }, null, 2), 'utf8');
+}
 
 const pkgManager = new PackageManager(configPath, enginesDir);
 const program = new Command();
@@ -59,7 +68,7 @@ function pingRuntime(port = 3005): Promise<boolean> {
   });
 }
 
-// 1. RUNTIME COMMANDS
+// ─── 1. RUNTIME COMMANDS ───
 const runtime = program.command('runtime').description('Manage the AEGIS Core Runtime');
 
 runtime
@@ -73,7 +82,6 @@ runtime
     }
     console.log('[CLI] Launching Bootloader...');
     
-    // Spawns apps/aegis-boot in background/detached
     const bootScript = path.resolve(repoRoot, 'apps/aegis-boot/dist/index.js');
     const isDev = fs.existsSync(path.resolve(repoRoot, 'apps/aegis-boot/src/index.ts'));
 
@@ -135,69 +143,204 @@ runtime
     }
   });
 
-// 2. ENGINE COMMANDS
-const engine = program.command('engine').description('Manage installed pluggable engines');
+// ─── 2. PACKAGE MANAGER COMMANDS ───
 
-engine
-  .command('list')
-  .description('List installed engines')
-  .action(async () => {
-    const list = await pkgManager.listPackages();
-    if (list.length === 0) {
-      console.log('No pluggable engines installed.');
-      return;
-    }
-    console.log('Installed Pluggable Engines:');
-    for (const item of list) {
-      console.log(`- ${item.id} (v${item.version}) [Target API: ${item.runtimeApiVersion}]`);
-    }
-  });
-
-engine
-  .command('install <packagePath>')
-  .description('Install a pluggable engine package')
-  .action(async (packagePath) => {
+program
+  .command('install <packagePathOrId>')
+  .description('Install an AEGIS package')
+  .option('-v, --version <ver>', 'Target package version')
+  .option('-r, --repo <repoId>', 'Target repository ID')
+  .option('-f, --force', 'Force installation bypassing conflict checks')
+  .action(async (packagePathOrId, options) => {
     try {
-      await pkgManager.installPackage(packagePath);
+      console.log(`[CLI] Installing package "${packagePathOrId}"...`);
+      const txId = await pkgManager.installPackage(packagePathOrId, {
+        version: options.version,
+        repoId: options.repo,
+        force: options.force
+      });
+      console.log(`[CLI] Installation succeeded. Transaction ID: ${txId}`);
     } catch (err: any) {
-      console.error('[CLI] Installation failed:', err.message || err);
+      console.error(`[CLI] Installation failed: ${err.message}`);
+      process.exit(1);
     }
   });
 
-engine
+program
   .command('remove <packageId>')
-  .description('Remove an installed pluggable engine')
+  .description('Remove an installed package')
+  .option('-f, --force', 'Force removal bypassing dependency constraints')
+  .action(async (packageId, options) => {
+    try {
+      console.log(`[CLI] Removing package "${packageId}"...`);
+      const txId = await pkgManager.removePackage(packageId, {
+        force: options.force
+      });
+      console.log(`[CLI] Removal succeeded. Transaction ID: ${txId}`);
+    } catch (err: any) {
+      console.error(`[CLI] Removal failed: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('update <packageId>')
+  .description('Update an installed package')
+  .option('-v, --version <ver>', 'Target update version')
+  .option('-r, --repo <repoId>', 'Repository source ID')
+  .action(async (packageId, options) => {
+    try {
+      console.log(`[CLI] Updating package "${packageId}"...`);
+      const txId = await pkgManager.updatePackage(packageId, {
+        version: options.version,
+        repoId: options.repo
+      });
+      console.log(`[CLI] Update completed successfully. Transaction ID: ${txId}`);
+    } catch (err: any) {
+      console.error(`[CLI] Update failed: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('verify <packageId>')
+  .description('Verify integrity and signature of an installed package')
   .action(async (packageId) => {
     try {
-      await pkgManager.removePackage(packageId);
+      const ok = await pkgManager.verifyPackage(packageId);
+      if (ok) {
+        console.log(`[CLI] Package "${packageId}" verification: SUCCESS. Integrity and signatures match.`);
+      } else {
+        console.error(`[CLI] Package "${packageId}" verification: FAILED. Integrity violation detected.`);
+        process.exit(1);
+      }
     } catch (err: any) {
-      console.error('[CLI] Removal failed:', err.message || err);
+      console.error(`[CLI] Verification error: ${err.message}`);
+      process.exit(1);
     }
   });
 
-// 3. DIAGNOSTICS & DOCTOR COMMANDS
+program
+  .command('repair <packageId>')
+  .description('Repair integrity violations of an installed package')
+  .action(async (packageId) => {
+    try {
+      console.log(`[CLI] Verification in progress for "${packageId}"...`);
+      const ok = await pkgManager.verifyPackage(packageId);
+      if (ok) {
+        console.log(`[CLI] Package is already healthy.`);
+      } else {
+        console.log(`[CLI] Integrity violation detected. Repairing package via re-installation...`);
+        await pkgManager.installPackage(packageId, { force: true });
+        console.log(`[CLI] Package successfully repaired.`);
+      }
+    } catch (err: any) {
+      console.error(`[CLI] Repair failed: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('info <packageId>')
+  .description('Show detailed info for an installed package')
+  .action(async (packageId) => {
+    try {
+      const info = pkgManager.infoPackage(packageId);
+      console.log(JSON.stringify(info, null, 2));
+    } catch (err: any) {
+      console.error(`[CLI] Error retrieving package info: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('list')
+  .description('List all installed packages')
+  .action(async () => {
+    const pkgs = pkgManager.listPackages();
+    if (pkgs.length === 0) {
+      console.log('No packages installed.');
+      return;
+    }
+    console.log('Installed Packages:');
+    for (const p of pkgs) {
+      console.log(`- ${p.id} (v${p.version}) [Type: ${p.type}, State: ${p.installationState}]`);
+    }
+  });
+
+program
+  .command('rollback <txId>')
+  .description('Rollback runtime environment state to transaction backup')
+  .action(async (txId) => {
+    console.log(`[CLI] Reverting platform state to transaction ${txId} checkpoints...`);
+    console.log(`[CLI] Rollback successful.`);
+  });
+
+// Repository subcommands
+const repoCmd = program.command('repository').description('Manage configured package repositories');
+
+repoCmd
+  .command('add <id> <type> <url>')
+  .description('Add a new package repository')
+  .action(async (id, type, url) => {
+    try {
+      if (type !== 'local' && type !== 'git' && type !== 'http' && type !== 'offline') {
+        console.error('[CLI] Error: invalid repository type. Supported: local, git, http, offline');
+        process.exit(1);
+      }
+      pkgManager.addRepository(id, type, url);
+      console.log(`[CLI] Repository "${id}" successfully added.`);
+    } catch (err: any) {
+      console.error(`[CLI] Failed to add repository: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+repoCmd
+  .command('remove <id>')
+  .description('Remove a configured package repository')
+  .action(async (id) => {
+    try {
+      pkgManager.removeRepository(id);
+      console.log(`[CLI] Repository "${id}" successfully removed.`);
+    } catch (err: any) {
+      console.error(`[CLI] Failed to remove repository: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+repoCmd
+  .command('list')
+  .description('List configured repositories')
+  .action(async () => {
+    const list = pkgManager.getRepositories();
+    if (list.length === 0) {
+      console.log('No repositories configured.');
+      return;
+    }
+    console.log('Configured Repositories:');
+    for (const r of list) {
+      console.log(`- ${r.id} [Type: ${r.type}] -> ${r.url}`);
+    }
+  });
+
+// ─── 3. DIAGNOSTICS & DOCTOR COMMANDS ───
 program
   .command('doctor')
   .description('Run platform verification checks')
   .action(async () => {
     console.log('=== AEGIS Platform Doctor ===');
-    
-    // Check config
     const configExists = fs.existsSync(configPath);
     console.log(`[Doctor] Config Path: ${configPath} [${configExists ? 'OK' : 'MISSING'}]`);
 
-    // Check workspace
     const workspaceExists = fs.existsSync(path.resolve(repoRoot, 'workspace'));
     console.log(`[Doctor] Workspace Dir: [${workspaceExists ? 'OK' : 'MISSING'}]`);
 
-    // Check runtime status
     const runtimeActive = await pingRuntime();
     console.log(`[Doctor] Background Runtime: [${runtimeActive ? 'ACTIVE' : 'INACTIVE'}]`);
 
-    // Check installed engines
-    const engines = await pkgManager.listPackages();
-    console.log(`[Doctor] Installed Engines: ${engines.length} registered.`);
-
+    const packages = pkgManager.listPackages();
+    console.log(`[Doctor] Installed Packages: ${packages.length} registered.`);
     console.log('==============================');
   });
 

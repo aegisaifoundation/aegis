@@ -1,0 +1,23 @@
+{
+  "txId": "dc4af89c-aa2b-4e8b-a643-4c21a33f59aa",
+  "state": "COMMITTED",
+  "timestamp": "2026-07-11T18:44:26.576Z",
+  "packageId": "engine-a",
+  "action": "remove",
+  "backups": [
+    {
+      "originalPath": "C:\\aegis\\test-pm-sandbox\\engines\\engine-a",
+      "backupPath": "C:\\aegis\\test-pm-sandbox\\config\\package-manager\\backups\\dc4af89c-aa2b-4e8b-a643-4c21a33f59aa\\3d0bfd16-46cb-4242-a7ad-ea4da75a44be"
+    }
+  ],
+  "addedFiles": [],
+  "addedDirs": [],
+  "originalConfig": {
+    "version": "1.0.0",
+    "requireSignature": false,
+    "autoloadEngines": [
+      "engine-a",
+      "engine-b"
+    ]
+  }
+}

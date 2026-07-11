@@ -1,0 +1,12 @@
+{
+  "id": "engine-a",
+  "name": "Mock engine-a Engine",
+  "version": "1.0.0",
+  "type": "Engine",
+  "entrypoint": "dist/index.js",
+  "dependencies": {},
+  "runtimeVersionConstraint": {
+    "min": "1.0.0"
+  },
+  "sdkVersion": "1.0.0"
+}
