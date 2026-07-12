@@ -1,314 +1,398 @@
-# AEGIS Cognitive Memory Subsystem: Architectural & Implementation Deep-Dive
+# AEGIS — Memory Subsystem Report
+**Version:** 1.0.0 | **Last Updated:** 2026-07-12
 
 ---
 
-## 1. Overview of the Cognitive Memory Subsystem
+## 1. Overview
 
-The **AEGIS Cognitive Memory Subsystem** is an event-driven, multi-tiered memory platform designed to manage AI agent state, session history, semantic retrieval, and transaction-safe database writes.
+The AEGIS Memory Subsystem is a full-featured, filesystem-backed cognitive memory platform. It provides session-scoped persistent storage with ACID-like transactions, in-memory write buffering, semantic projections, and integrity validation. All memory is stored in structured directories under `memory/`.
 
-Unlike standard LLM agents that rely on simple linear history logs, AEGIS segregates memory into separate functional layers to minimize context size, support long-term reasoning, prevent hallucinations, and ensure strict data protection compliance:
+---
+
+## 2. Package Structure
 
 ```
-                  ┌────────────────────────────────────────────────────────┐
-                  │              COGNITIVE AGENT RUNTIME KERNEL            │
-                  └───────────────────────────┬────────────────────────────┘
-                                              │
-                    ┌─────────────────────────┴─────────────────────────┐
-                    ▼                                                   ▼
-         [Active Short-Term Layer]                           [Semantic Memory Layer]
-   ┌───────────────────────────────────┐               ┌───────────────────────────────────┐
-   │ - working-memory.md (Objectives)  │               │ - Vector Database Index (JSON)    │
-   │ - task.md (Active/Pending lists)  │               │ - BM25 Keyword Indexing           │
-   │ - history.json (Raw chronological)│               │ - Local Ollama Embeddings         │
-   └────────────────┬──────────────────┘               └────────────────┬──────────────────┘
-                    │                                                   │
-                    │               ┌──────────────────┐                │
-                    ├──────────────►│ MEMORY EVENT BUS │◄───────────────┤
-                    │               └────────┬─────────┘                │
-                    ▼                        │                          ▼
-         [Episodic Memory Layer]             │               [Relational Memory Layer]
-   ┌───────────────────────────────────┐     │         ┌───────────────────────────────────┐
-   │ - reflections.json (Audit traces) │◄────┼────────►│ - entities.json (Knowledge Graph) │
-   │ - whatWorked / whatFailed traces  │     │         │ - Patients, Doctors, LoRA nodes   │
-   └────────────────┬──────────────────┘     │         └────────────────┬──────────────────┘
-                    │                        ▼                          │
-                    │             ┌─────────────────────┐               │
-                    └────────────►│  Reflection Engine  │◄──────────────┘
-                                  └──────────┬──────────┘
-                                             ▼
-                                  ┌─────────────────────┐
-                                  │ Transaction Gateway │
-                                  │ (Mutex locks/ACID)  │
-                                  └──────────┬──────────┘
-                                             ▼
-                                  ┌─────────────────────┐
-                                  │  Local Disk Storage │
-                                  └─────────────────────┘
+packages/aegis-memory/src/
+├── MemoryGateway.ts                  # Primary I/O interface — all memory reads/writes
+├── MemoryManager.ts                  # High-level orchestration + projection lifecycle
+├── MemoryEngine.ts                   # IEngine — registers all memory services to ServiceRegistry
+├── MemoryWriteBuffer.ts              # Write coalescing with 5s auto-flush
+├── ProjectionGenerator.ts           # Generates working-memory.md & session-memory.md
+├── ProjectionConsistencyValidator.ts # Validates projection integrity & checksums
+├── SessionMemory.ts                  # Session memory data model
+├── Memory.ts                         # Core memory entity model
+├── MemoryLoader.ts                   # Memory deserialization & loading
+├── MemoryRegistry.ts                 # In-memory entity registry
+├── MemoryContext.ts                  # Memory context container
+├── index.ts                          # Public exports
+│
+├── contracts/
+│   ├── MemoryPermissions.ts          # Access control rules
+│   ├── MetadataContract.ts           # Metadata validation rules
+│   ├── SessionContract.ts            # Session validity contract
+│   └── WorkingMemoryContract.ts      # Working memory constraints
+│
+├── embedding/                        # Vector embedding subsystem
+├── eventbus/
+│   └── MemoryEventBus.ts             # Memory-scoped event bus
+├── indexing/                         # Full-text & semantic search indexes
+├── interfaces/
+│   ├── IMemoryGateway.ts             # Gateway interface contract
+│   └── MemoryTypes.ts                # Re-exports from @aegis/sdk
+├── locking/                          # Distributed lock management
+├── migration/                        # Schema migration tooling
+├── recovery/                         # Corruption detection & recovery
+├── refinement/                       # Memory compression & pruning
+├── registry/                         # Memory object registry
+├── scheduler/                        # Async background memory tasks
+├── search/                           # Search query engine
+├── transactions/
+│   └── MemoryTransactionManager.ts   # ACID-like transaction support
+└── utils/
+    ├── MemoryFileHelpers.ts           # File read/write + checksums
+    └── MemoryObservability.ts         # Metrics + observability hooks
 ```
 
 ---
 
-## 2. Memory Subsystem File & Folder Layout
+## 3. Session Filesystem Layout
 
-Memory storage and implementation files are distributed across the monorepo:
-
-### 2.1. Codebase Components (`aegis-core/src/memory/`)
-*   [MemoryManager.ts](file:///c:/aegis/aegis-core/src/memory/MemoryManager.ts) — Main coordinate facade managing session initialization, state swappings, snapshots, and compactions.
-*   [MemoryGateway.ts](file:///c:/aegis/aegis-core/src/memory/MemoryGateway.ts) — Data Access Object (DAO) implementing transaction wrappers, checksum calculations, and dirty-aware cache buffers.
-*   [ProjectionGenerator.ts](file:///c:/aegis/aegis-core/src/memory/ProjectionGenerator.ts) — Serializes structured JSON session states into Markdown files (`working-memory.md`, `session-memory.md`, `task.md`) for prompt injection.
-*   **`transactions/`**
-    *   [MemoryTransactionManager.ts](file:///c:/aegis/aegis-core/src/memory/transactions/MemoryTransactionManager.ts) — ACID scope controller backing up original content in memory and rolling back mutations if write operations fail.
-*   **`locking/`**
-    *   `MemoryLockManager.ts` — Mutex implementation blocking concurrent processes from writing to the same session files simultaneously.
-*   **`recovery/`**
-    *   `MemoryRecoveryManager.ts` — Scans `.snap` backup files chronologically to restore corrupted text or JSON records and repairs metadata checksum hashes.
-*   **`refinement/`**
-    *   [MemoryRefiner.ts](file:///c:/aegis/aegis-core/src/memory/refinement/MemoryRefiner.ts) — Prunes completed tasks, parses headers, and consolidates facts under a 1000-word limit constraint.
-    *   [MemoryRankingManager.ts](file:///c:/aegis/aegis-core/src/memory/refinement/MemoryRankingManager.ts) — Implements dynamic importance ranking and scores items against exponential decay curves.
-    *   [MemoryReflectionManager.ts](file:///c:/aegis/aegis-core/src/memory/refinement/MemoryReflectionManager.ts) — Evaluates history for failure mode retries and logs heuristics.
-    *   [MemoryCompressionManager.ts](file:///c:/aegis/aegis-core/src/memory/refinement/MemoryCompressionManager.ts) — Calls the model provider to compress dialogue logs into compact JSON objects.
-*   **`search/`**
-    *   [MemorySearchManager.ts](file:///c:/aegis/aegis-core/src/memory/search/MemorySearchManager.ts) — Performs hybrid ranking searches merging vector cosine metrics and keyword matching scores.
-    *   [VectorSearchProvider.ts](file:///c:/aegis/aegis-core/src/memory/search/VectorSearchProvider.ts) — Flat JSON vector index manager offering cosine distance evaluations.
-*   **`embedding/`**
-    *   [MemoryEmbeddingManager.ts](file:///c:/aegis/aegis-core/src/memory/embedding/MemoryEmbeddingManager.ts) — Interfaces with local Ollama APIs and features a fallback deterministic token-hashing mapping algorithm.
-*   **`eventbus/`**
-    *   [MemoryEventBus.ts](file:///c:/aegis/aegis-core/src/memory/eventbus/MemoryEventBus.ts) — Pub-Sub hub supporting namespace wildcards.
-    *   `handlers/EmbeddingHandler.ts` — Microtask handler vectorizing document modifications in the background.
-    *   `handlers/ReflectionHandler.ts` — Automatically triggers heuristic analysis upon session archival.
-    *   `handlers/AuditLogger.ts` — Creates cryptographically signed access logs.
-
-### 2.2. Workspace Storage Structure (`workspace/memory/`)
-```text
-workspace/memory/
+```
+memory/
 ├── sessions/
-│   └── [sessionId]/                      # Folder containing active session state
-│       ├── metadata.json                 # Lifecycle tags, quotas, and integrity checksums
-│       ├── session-state.json            # JSON structure storing goals, tasks, and variables
-│       ├── history.json                  # Message logs (User, Assistant, Tool, System roles)
-│       ├── entities.json                 # Knowledge graph records mapping medical entities
-│       ├── working-memory.md             # Markdown context projection for prompts
-│       ├── session-memory.md             # Markdown projections for facts and preferences
-│       └── task.md                       # Markdown projection tracking tasks
+│   ├── default/                       # Default session (always exists)
+│   │   ├── metadata.json
+│   │   ├── history.json
+│   │   ├── session-state.json
+│   │   ├── session-memory.md
+│   │   ├── working-memory.md
+│   │   └── task.md
+│   │
+│   └── session_<timestamp>/           # Named sessions
+│       ├── metadata.json
+│       ├── history.json
+│       ├── session-state.json
+│       ├── session-memory.md
+│       ├── working-memory.md
+│       └── task.md
 │
-├── snapshots/
-│   └── [sessionId]/                      # Point-in-time backup snapshots (.snap files)
+├── trash/                             # Soft-deleted sessions
+│   └── session_<timestamp>/           # Full session dir preserved
 │
-├── embeddings/
-│   └── vectors.json                      # Vector database document chunks and Float32 vectors
+├── quarantine/                        # Corrupted sessions pending recovery
+│   └── session_<timestamp>/
 │
-├── indexes/
-│   └── ranking.json                      # Database tracking access logs and decay scores
+├── snapshots/                         # Point-in-time session snapshots
+│   └── session_<timestamp>_snap_<ts>/
 │
-├── reflections/
-│   └── reflections.json                  # Historical reflections database (whatWorked / whatFailed)
-│
-├── archives/
-│   └── [archive_record].json             # Cold storage zipped records for aged memories
-│
-└── trash/
-    └── [sessionId]/                      # Temporarily deleted session folders awaiting deletion
+├── episodic/                          # Cross-session episodic memory
+├── indexes/                           # Search index files
+├── persistence/                       # Persistence layer files
+└── profile/                           # User profile memory
 ```
 
 ---
 
-## 3. Database Implementations & Algorithmic Design
+## 4. Data Models
 
-### 3.1. Caching & Dirty-Aware Operations (`MemoryGateway.ts`)
-To prevent disk write bottlenecks, `MemoryGateway` implements a double-caching and flushing system:
-*   **`metadataCache` & `historyCache`**: Raw session meta and message logs are loaded once and stored in memory. Reads query these caches directly.
-*   **`accessedSessions` Timestamp Debounce**: Reads update `meta.lastAccessedAt` inside the cached metadata. Instead of rewriting `metadata.json` immediately, the session ID is added to a debounce list. Timestamps are written to disk at the end of the conversation turn.
-*   **`historyDirty` Buffering**: Appending messages writes to `historyCache` and flags the session as "dirty". The file `history.json` is only written when `flushHistory(sessionId)` is called by the `RuntimeExecutor` at the turn boundary.
+### 4.1 Session Metadata (`metadata.json`)
 
----
-
-### 3.2. Dynamic Importance Ranking & Exponential Aging Decay (`MemoryRankingManager.ts`)
-AEGIS implements an automated aging cleanup system. Every memory item is evaluated using a dynamic weight decay score:
-
-$$\text{Rank Score} = (\text{Importance} \times \text{Confidence}) \times e^{-\lambda \times \Delta t} \times (1 + \ln(F))$$
-
-*   **$\text{Importance}$ & $\text{Confidence}$**: Configured on creation ($0.0 \text{ to } 1.0$).
-*   **$\lambda$ (decayRate)**: Configured decay speed coefficient.
-*   **$\Delta t$ (ageDays)**: Time elapsed since the item was last accessed:
-    $$\Delta t = \frac{t_{\text{current}} - t_{\text{lastAccessed}}}{1000 \times 60 \times 60 \times 24}$$
-*   **$F$ (accessFrequency)**: Counter incremented on every read query.
-
-#### Implementation (`MemoryRankingManager.ts`):
-```typescript
-public calculateScore(item: RankedMemoryItem, virtualTimeOffsetMs = 0): number {
-  const lastAccessTime = new Date(item.lastAccessedAt).getTime();
-  const futureTime = Date.now() + virtualTimeOffsetMs;
-  const ageMs = Math.max(0, futureTime - lastAccessTime);
-  const ageDays = ageMs / (1000 * 60 * 60 * 24);
-
-  const baseScore = item.importance * item.confidence;
-  const decay = Math.exp(-item.decayRate * ageDays);
-  const frequencyMultiplier = 1 + Math.log(item.accessFrequency);
-
-  return baseScore * decay * frequencyMultiplier;
+```json
+{
+  "sessionId": "session_1783876795565",
+  "createdAt": "2026-07-12T17:19:55.594Z",
+  "updatedAt": "2026-07-12T17:20:42.498Z",
+  "lastAccessedAt": "2026-07-12T17:23:40.500Z",
+  "memoryVersion": "1.0.0",
+  "lifecycleState": "ACTIVE",
+  "checksums": {
+    "history": "<sha256>",
+    "workingMemory": "<sha256>",
+    "sessionMemory": "<sha256>",
+    "task": "<sha256>"
+  },
+  "confidence": {},
+  "tags": [],
+  "quotas": {
+    "maxSessions": 100,
+    "maxHistorySize": 10485760,
+    "maxWorkingMemorySize": 1500,
+    "maxSessionMemorySize": 1000,
+    "maxSnapshots": 10
+  },
+  "lastMountedAt": "2026-07-12T17:23:40.500Z"
 }
 ```
-During database sweeps, if an item's score falls below the `archiveThreshold` (default: `0.3`), the manager:
-1. Deletes the item from `ranking.json`.
-2. Packages it into an `ArchiveRecord` object.
-3. Appends it to a cold storage archive file inside `memory/archives/`.
 
----
+### 4.2 Session State (`session-state.json`)
 
-### 3.3. Hybrid Retrieval Architecture (`MemorySearchManager.ts`)
-The search manager executes a hybrid query merging semantic vectors and lexical text matches:
-
-```
-                            [Search Text Query]
-                                     │
-                 ┌───────────────────┴───────────────────┐
-                 ▼                                       ▼
-        [Vector Embeddings]                     [Lexical Tokens]
-    - local nomic-embed-text                - whitespace tokenization
-    - Cosine Similarity match               - Term match ratio (BM25 style)
-                 │                                       │
-                 ▼                                       ▼
-           (Semantic Score)                       (Keyword Score)
-                 │                                       │
-                 └───────────────────┬───────────────────┘
-                                     ▼
-                     [Weighted Score Combination]
-                Score = 0.7 * Semantic + 0.3 * Keyword
-                                     │
-                                     ▼
-                            [Sorted Top K Results]
+```json
+{
+  "sessionId": "session_1783876795565",
+  "status": "ACTIVE",
+  "currentObjective": "",
+  "activeTasks": [],
+  "lastUpdatedAt": "2026-07-12T17:20:42.490Z",
+  "checkpointVersion": 1,
+  "temporaryExecutionContext": {},
+  "preferences": {},
+  "stableFacts": [],
+  "implementedDetails": ""
+}
 ```
 
-#### Lexical Keyword Math:
-$$\text{Keyword Score} = \frac{\text{matching\_tokens}}{\text{query\_tokens}}$$
+### 4.3 History (`history.json`)
 
-#### Semantic Vector Cosine Distance Math:
-$$\text{Cosine Similarity} = \frac{\vec{A} \cdot \vec{B}}{\|\vec{A}\| \|\vec{B}\|} = \frac{\sum_{i=1}^{n} A_i B_i}{\sqrt{\sum_{i=1}^{n} A_i^2} \sqrt{\sum_{i=1}^{n} B_i^2}}$$
+```json
+{
+  "messages": [
+    {
+      "id": "<uuid>",
+      "role": "user",
+      "content": "User message text",
+      "metadata": {},
+      "createdAt": "2026-07-12T17:20:00.000Z"
+    },
+    {
+      "id": "<uuid>",
+      "role": "assistant",
+      "content": "Agent response text",
+      "metadata": {},
+      "createdAt": "2026-07-12T17:20:05.000Z"
+    }
+  ],
+  "memoryVersion": "1.0.0"
+}
+```
 
-#### Hybrid Combination:
-$$\text{Score}_{\text{hybrid}} = 0.7 \times \text{Score}_{\text{semantic}} + 0.3 \times \text{Score}_{\text{keyword}}$$
+### 4.4 Working Memory (`working-memory.md`)
 
----
+```markdown
+- goal: None
+- current objective: None
 
-### 3.4. Local GGUF & Fallback Token-Hashing Embeddings (`MemoryEmbeddingManager.ts`)
-For offline or local deployments, `MemoryEmbeddingManager` attempts to call local Ollama instances to run the `nomic-embed-text` model. If Ollama is offline or times out, it falls back to a deterministic, high-performance mock embedding algorithm:
-1. Tokenizes input text into lowercase string arrays.
-2. For each token, computes a character polynomial hash value:
-   $$\text{hash} = \sum_{i=0}^{\text{len}-1} \text{char}[i] \times 31^{\text{len}-1-i}$$
-3. Assigns coordinates in a 768-dimensional float array by selecting three pseudo-random indices per token:
-   $$\text{index}_j = |(\text{hash} + j \times 31)| \pmod{768} \quad \text{for } j \in [0, 1, 2]$$
-4. Norm-normalizes the array to create a unit vector:
-   $$\vec{V}_{\text{normalized}} = \frac{\vec{V}}{\sqrt{\sum_{k=1}^{768} V_k^2}}$$
-This guarantees that matching lexical terms produce high cosine similarity results even when offline.
+available tools:
+- FileTool
+- MemoryTool
 
----
+available skills:
+- summarize
+- extract
+```
 
-### 3.5. Safe Writing with Transaction Rollbacks (`MemoryTransactionManager.ts`)
-To prevent partial file write corruption during sudden process restarts, the transaction manager implements transaction rollbacks:
-*   **Write Registration**: Before editing a file, `registerWrite()` reads the file's current state and backs it up in-memory inside the transaction's active operations block.
-*   **Commit Phase**: Attempts to rewrite all files. If an exception occurs, it intercepts the error and calls `rollbackTransaction()`.
-*   **Rollback Phase**: Iterates through the transaction backup queue in **reverse order**, restoring original file states and deleting any new files created during the transaction.
+### 4.5 Session Memory (`session-memory.md`)
 
----
+Long-form contextual memory generated by `ProjectionGenerator`:
+```markdown
+## Goals
+- None
 
-## 4. Subsystem Interaction Flows
+## Preferences
+- None
 
-### Trace A: Update Session State and Project Markdown
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Exec as RuntimeExecutor
-    participant Manager as MemoryManager
-    participant Gateway as MemoryGateway
-    participant Tx as MemoryTransactionManager
-    participant Gen as ProjectionGenerator
-
-    Exec->>Manager: updateSessionState(sessionId, state)
-    Manager->>Gateway: updateSessionState(sessionId, state)
-    Note over Gateway: Initialize transaction tx_state
-    Gateway->>Tx: beginTransaction(tx_state)
-    Gateway->>Tx: registerWrite(tx_state, session-state.json, content)
-    Tx->>Gateway: Read session-state.json (Back up original state)
-    Gateway->>Tx: commitTransaction(tx_state)
-    Tx->>Gateway: Write new content to session-state.json
-    Note over Gateway: Transaction committed. Publish event.
-
-    Exec->>Gen: projectSessionState(sessionId, state)
-    Note over Gen: Generate projections: working, session, task
-    Gen->>Gen: Calculate content checksum hashes
-    Note over Gen: Compare hashes against last-written cache
-    
-    rect rgb(220, 240, 220)
-        Note over Gen: If hashes do not match, write changes
-        Gen->>Gateway: updateWorkingMemory(workingProj)
-        Gateway-->>Gen: Commit file & write new checksum hash
-    end
+## Stable Facts
+- None
 ```
 
 ---
 
-### Trace B: Asynchronous Embedding & Semantic Vector Indexing
+## 5. MemoryGateway — Core API
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant Gateway as MemoryGateway
-    participant Bus as MemoryEventBus
-    participant Handler as EmbeddingHandler
-    participant Embed as MemoryEmbeddingManager
-    participant Vec as VectorSearchProvider
+```typescript
+class MemoryGateway implements IMemoryGateway {
+  // Session lifecycle
+  createSession(sessionId, metadata): Promise<void>
+  loadSession(sessionId, caller): Promise<SessionMetadata>
+  deleteSession(sessionId): Promise<void>
 
-    Gateway->>Gateway: Write working-memory.md inside transaction
-    Gateway->>Bus: publish(MemoryEvent: workingMemory.updated)
-    
-    rect rgb(240, 240, 240)
-        Note over Bus: Event handled asynchronously
-        Bus->>Handler: handleEvent(event)
-        Handler->>Handler: Split markdown content into header chunks
-        loop For each chunk
-            Handler->>Embed: generate(chunkText)
-            Embed-->>Handler: Float32 Vector[]
-            Handler->>Vec: insert(chunkId, sessionId, text, Vector)
-            Vec->>Vec: Save vectors to vectors.json
-        end
-    end
+  // State management
+  getSessionState(sessionId, caller): Promise<SessionState>
+  updateSessionState(sessionId, state): Promise<void>
+
+  // History
+  getHistory(sessionId, caller): Promise<Message[]>
+  appendHistory(sessionId, message): Promise<void>
+  flushHistory(sessionId): Promise<void>
+
+  // File I/O
+  readMemoryFile(sessionId, filename): Promise<string>
+  writeMemoryFile(sessionId, filename, content): Promise<void>
+
+  // Cache management
+  invalidateMetadataCache(sessionId): void
+  flushAccessTimestamps(): Promise<void>
+}
 ```
 
 ---
 
-### Trace C: Integrity Check & Automated Recovery
+## 6. Write Buffer (MemoryWriteBuffer)
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Boot as BootstrapManager
-    participant Manager as MemoryManager
-    participant Gateway as MemoryGateway
-    participant Recovery as MemoryRecoveryManager
+All file writes are coalesced through the write buffer to prevent I/O storms during streaming responses:
 
-    Boot->>Manager: loadSession(sessionId)
-    Manager->>Gateway: loadSession(sessionId)
-    Gateway-->>Manager: Return metadata.json (Stored checksums)
-    
-    Manager->>Manager: verifySessionIntegrity(sessionId)
-    Note over Manager: Calculate current checksums of history, working, session, and task files
-    
-    alt Checksums Match
-        Manager-->>Boot: Return loaded SessionMetadata
-    else Checksum Mismatch Detected!
-        Manager->>Gateway: Emit MEMORY_CORRUPTED event
-        Manager->>Recovery: recoverCorruptedMemory(sessionId)
-        
-        rect rgb(240, 210, 210)
-            Note over Recovery: Restore files from snapshots
-            Recovery->>Recovery: Scan memory/snapshots/ for latest snaps
-            Recovery->>Gateway: Overwrite corrupted files with backup contents
-            Recovery->>Recovery: Recompute fresh file checksums
-            Recovery->>Gateway: Repair metadata.json with fresh checksums
-        end
-        
-        Recovery-->>Manager: Recovery success (true)
-        Manager-->>Boot: Return repaired metadata
-    end
 ```
+appendHistory(sessionId, message)
+    │
+    ▼ in-memory
+historyCache.get(sessionId).messages.push(message)
+historyDirty.add(sessionId)
+    │
+    ▼ on turn boundary / explicit flush
+flushHistory(sessionId)
+    │
+    ▼ writeMemoryFile() → disk
+    │
+    ▼ markDirty(metadata.json) → MemoryWriteBuffer
+    │
+    ▼ 5s debounce timer
+MemoryWriteBuffer.flush() → fs.writeFile(metadata.json)
+```
+
+**Auto-flush interval:** 5,000ms (5 seconds)
+
+---
+
+## 7. Projection System
+
+The `ProjectionGenerator` creates markdown projections of session state for injection into agent prompts:
+
+### 7.1 Working Memory Projection
+
+Generated every turn before agent thinks. Includes:
+- Current goal and objective
+- Available tools (from ToolRegistry)
+- Available skills (from SkillRegistry)
+- Active tasks and recent context
+
+Injected into agent system prompt as:
+```
+# WORKING MEMORY PROJECTION
+<content>
+```
+
+### 7.2 Session Memory Projection
+
+Generated from `session-memory.md`. Includes:
+- Long-term goals
+- User preferences
+- Stable facts
+- Implemented details
+
+Injected into agent system prompt as:
+```
+# SESSION MEMORY PROJECTION
+<content>
+```
+
+### 7.3 GGUF Provider Cleanup
+
+The `GGUFProvider` applies specialized cleanup to working/session memory projections before sending to the small local model:
+- Removes tool/skill listings (not needed for GGUF)
+- Removes empty goal/objective fields
+- Formats as concise medical context
+
+---
+
+## 8. Transaction System
+
+`MemoryTransactionManager` provides rollback capability for memory operations:
+
+```typescript
+const txId = await transactionManager.begin(sessionId);
+try {
+  await memoryGateway.appendHistory(sessionId, message);
+  await memoryGateway.updateSessionState(sessionId, state);
+  await transactionManager.commit(txId);
+} catch (err) {
+  await transactionManager.rollback(txId);  // restore previous state
+}
+```
+
+---
+
+## 9. Integrity & Checksums
+
+Every session file has a corresponding SHA-256 checksum stored in `metadata.json`:
+
+| File | Checksum Field |
+|------|---------------|
+| `history.json` | `checksums.history` |
+| `working-memory.md` | `checksums.workingMemory` |
+| `session-memory.md` | `checksums.sessionMemory` |
+| `task.md` | `checksums.task` |
+
+On every read, checksums are validated. Mismatch → `memory.corrupted` event → `SESSION_QUARANTINED` → recovery attempt.
+
+---
+
+## 10. Session Lifecycle Events
+
+| Event | Trigger |
+|-------|---------|
+| `session.created` | New session created |
+| `session.loaded` | Session metadata loaded |
+| `session.mounted` | Session fully mounted (history + state in cache) |
+| `session.unmounted` | Previous session flushed and evicted |
+| `session.deleted` | Session moved to trash |
+| `session.restored` | Session recovered from trash |
+| `session.renamed` | displayName updated |
+| `session.forked` | Session snapshot + new checkout |
+| `memory.corrupted` | Checksum mismatch detected |
+| `memory.restored` | Corruption recovered |
+| `memory.snapshot.created` | Snapshot written |
+| `memory.refined` | Memory compressed/pruned |
+| `memory.updated` | Memory entity written |
+| `working-memory.expired` | Working memory TTL exceeded |
+
+---
+
+## 11. Memory Quotas
+
+| Quota | Default | Enforcement |
+|-------|---------|-------------|
+| `maxSessions` | 100 | Prevents unbounded session creation |
+| `maxHistorySize` | 10 MB | Limits history.json file size |
+| `maxWorkingMemorySize` | 1,500 chars | Working memory projection size cap |
+| `maxSessionMemorySize` | 1,000 chars | Session memory projection size cap |
+| `maxSnapshots` | 10 | Per-session snapshot limit |
+
+---
+
+## 12. Recovery System
+
+When corruption is detected:
+
+```
+memory.corrupted event emitted
+    │
+    ▼
+SessionRecoveryManager.recover(sessionId)
+    ├─ Copy corrupted session to memory/quarantine/
+    ├─ Attempt checksum re-validation
+    ├─ If recoverable: restore from last good snapshot
+    │   └─ emit: memory.restored
+    └─ If unrecoverable: create new session
+        └─ emit: session.created
+```
+
+---
+
+## 13. MemoryEngine Registration
+
+On `MemoryEngine.initialize()`, the following services are registered in `ServiceRegistry`:
+
+| Token | Service |
+|-------|---------|
+| `memoryGateway` | MemoryGateway singleton |
+| `memoryManager` | MemoryManager singleton |
+| `MemoryIndexManager` | MemoryIndexManager |
+| `memoryTransactionManager` | MemoryTransactionManager |
+| `projectionGenerator` | ProjectionGenerator |
+| `memoryWriteBuffer` | MemoryWriteBuffer |
+| `MemoryObservability` | MemoryObservability |
+
+Then `RuntimeSessionManager.initialize()` is called to:
+1. Create required directories (`runtime/`, `runtime/checkpoints/`, `memory/trash/`, `memory/quarantine/`)
+2. Start write buffer auto-flush (5s)
+3. Run startup health validation
+4. Mount the active session

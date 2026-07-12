@@ -10,3 +10,10 @@
 {"timestamp":"2026-07-12T14:50:18.276Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
 {"timestamp":"2026-07-12T14:55:24.610Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
 {"timestamp":"2026-07-12T14:55:27.755Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-12T17:19:55.711Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-12T17:20:02.863Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-07-12T17:23:15.107Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-12T17:23:33.065Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-12T17:23:34.868Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-12T17:23:37.057Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-12T17:23:40.421Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}

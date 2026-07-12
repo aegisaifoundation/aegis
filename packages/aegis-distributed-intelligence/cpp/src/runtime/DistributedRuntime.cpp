@@ -12,6 +12,7 @@
 #include "aegis/die/logging/StructuredLogger.hpp"
 #include "aegis/die/lifecycle/ServiceManager.hpp"
 #include "ai-runtime/runtime/AIRuntime.hpp"
+#include "distributed-inference/runtime/DistributedInferenceService.hpp"
 
 namespace aegis::die::runtime {
 
@@ -102,6 +103,9 @@ void DistributedRuntime::boot() {
 
   auto aiRuntime = std::make_shared<aegis::air::AIRuntime>(m_context);
   serviceManager->registerService("AIRuntime", aiRuntime);
+
+  auto disService = std::make_shared<aegis::dis::DistributedInferenceService>(m_context);
+  serviceManager->registerService("DistributedInferenceService", disService);
   
   m_context->log("INFO", "Runtime", "Initializing native services...");
   serviceManager->initializeAll();

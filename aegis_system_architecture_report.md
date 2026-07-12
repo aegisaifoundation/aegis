@@ -1,502 +1,948 @@
-# AEGIS: Decentralized Federated Medical AI System Architecture & Implementation Report
+# AEGIS — System Architecture Report
+**Version:** 1.0.0 | **Last Updated:** 2026-07-12 | **Status:** Active Development
 
 ---
 
-## 1. Executive Summary & Vision
+## 1. Executive Summary
 
-**AEGIS** is a next-generation, decentralized, privacy-preserving medical AI ecosystem. In traditional healthcare systems, collaborative training of AI models is bottlenecked by regulatory and privacy constraints (e.g., HIPAA, GDPR). Transporting patient electronic health records (EHRs) to a centralized server presents severe security risks and single-point-of-failure vulnerabilities. 
+**AEGIS** (Advanced Enterprise General Intelligence System) is a full-stack, privacy-preserving AI platform engineered as an enterprise operating system for distributed AI workloads. It is domain-applied to clinical/medical use cases via its local GGUF model integration and medical tooling, but the architecture is entirely domain-agnostic and extensible.
 
-AEGIS solves these core issues by bringing the AI training to the data instead of the data to the AI. Using a multi-agent hierarchical framework combined with blockchain consensus and selective parameter fine-tuning, hospitals, edge devices, and research institutions can collaboratively train global models while keeping patient records strictly localized.
+The system is structured in three clear layers:
 
-### Core Security & Privacy Pillars
-1. **Federated Learning & Selective LoRA**: Rather than transmitting complete weights, client nodes fine-tune specific Low-Rank Adaptation (LoRA) layers locally. Only these low-rank matrices are shared, drastically reducing communication bandwidth and preventing data leakage.
-2. **Trust-Aware Aggregation**: AEGIS weights local updates based not just on data size, but on a dynamic client *Trust Score* calculated from heartbeat consistency, tensor verification, and historical behavior.
-3. **Byzantine-Resistant Validation**: Updates are cross-validated by randomized validation servers before being written to an immutable blockchain ledger audit trail.
-4. **DP-RAG (Differentially Private Retrieval-Augmented Generation)**: Client-side vector search databases inject controlled noise (Differential Privacy) into retrieved contexts to prevent membership inference attacks.
-5. **HL7 FHIR Interoperability**: Built-in support for standardized healthcare exchange ensuring portability across hospital systems.
+```
+┌─────────────────────────────────────────────────────┐
+│              User Interfaces (Apps Layer)            │
+│   Desktop UI · CLI Terminal · REST API · Dashboard  │
+├─────────────────────────────────────────────────────┤
+│     TypeScript Runtime Kernel (Orchestration Layer) │
+│  Bootloader · Engines · Memory · Sessions · Events  │
+├─────────────────────────────────────────────────────┤
+│    C++20 Distributed Intelligence Runtime (DIE)     │
+│  Node · Discovery · Transport · AIR · DIS · Resources│
+└─────────────────────────────────────────────────────┘
+```
 
 ---
 
-## 2. Monorepo Directory Layout
+## 2. Monorepo Directory Structure
 
-The Aegis codebase is structured as an NPM Monorepo using workspace workspaces. Below is the comprehensive tree diagram of the project:
+AEGIS is a **Node.js + C++20 monorepo** organized under npm workspaces.
 
 ```text
-aegis/
-├── LICENSE                               # MIT License details
-├── package.json                          # Monorepo workspaces config (aegis-core, packages/*, terminal UI)
-├── package-lock.json                     # Monorepo dependency lockfile
-├── install.ps1                           # Automated PowerShell setup script for Windows
-├── README.md                             # Global overview documentation
-├── aegis_cognitive_memory_redesign.md   # Architectural blueprint for the cognitive memory platform
+aegis/                                        # Root monorepo
+├── package.json                              # npm workspaces: apps/* + packages/*
+├── package-lock.json
+├── install.ps1                               # Windows automated install script
+├── install-die.mjs                           # DIE (C++ binary) install helper
+├── register-default-engines.mjs             # Engine registry bootstrapper
+├── ipc-status.mjs                           # IPC control channel status checker
+├── ipc-engine-info.mjs                      # IPC engine info query tool
+├── ipc-reload.mjs                           # IPC hot-reload trigger
+├── scratch_boot_runtime.ts                  # Boot test scratch file
+├── testBoot.ts                              # Boot integration test entry
 │
-├── aegis-core/                           # Core Agent Runtime Kernel (Node.js/TypeScript)
-│   ├── package.json                      # Core dependencies (ollama, commander, react, inquirer, chalk)
-│   ├── tsconfig.json                     # TypeScript compilation settings
-│   ├── src/
-│   │   ├── index.ts                      # Boot entrypoint: initializes BootstrapManager and ApiServer
-│   │   ├── agent/                        # AI Reasoning & Planning Loop
-│   │   │   ├── Agent.ts                  # Orchestrates chat stream with LLM providers
-│   │   │   ├── PromptBuilder.ts          # Assembles instructions, constraints, and memory context
-│   │   │   └── MessageFormatter.ts       # Parses message roles and normalizes history
-│   │   │
-│   │   ├── runtime/                      # Kernel Orchestration Services
-│   │   │   ├── BootstrapManager.ts       # Sequential & parallel setup of subsystems on boot
-│   │   │   ├── CapabilityManager.ts      # Dynamically adds/removes tools, skills, and plugins
-│   │   │   ├── RuntimeExecutor.ts        # The main ReAct (Reason-Act-Observe) loop and post-turn analysis
-│   │   │   ├── RuntimeSessionManager.ts  # Session lifecycle controller (checkout, delete, rename, restore)
-│   │   │   ├── SessionStateManager.ts    # Tracks goals, objectives, active tasks, and stable facts
-│   │   │   └── WorkspaceManager.ts       # Normalizes paths and validates sandbox boundaries
-│   │   │
-│   │   ├── memory/                       # Cognitive Memory Platform
-│   │   │   ├── MemoryManager.ts          # Coordinates tiered memory, compaction, and rollbacks
-│   │   │   ├── MemoryGateway.ts          # Thread-safe read/write operations with JSON file locks
-│   │   │   ├── MemoryWriteBuffer.ts      # Temporary transaction buffer for writes
-│   │   │   ├── ProjectionGenerator.ts    # Compiles JSON state into clean Markdown text for prompts
-│   │   │   ├── ProjectionConsistencyValidator.ts # Ensures projections align with actual state
-│   │   │   ├── eventbus/                 # Internal pub-sub event bus for memory changes
-│   │   │   └── [indexing/search/embedding/locking/transactions/recovery/refinement/etc.]
-│   │   │
-│   │   ├── api/
-│   │   │   └── ApiServer.ts              # REST API on Port 3005; exposes SSE chat stream
-│   │   │
-│   │   └── [commands/context/events/plugins/providers/skills/tools/transports/types/utils/]
-│   │
-│   └── bin/
-│       └── aegis.js                      # CLI script link for aegis binary execution
+├── apps/                                    # User-facing application layer
+│   ├── desktop/                             # Primary desktop UI (HTML/CSS/JS + Python server)
+│   │   ├── index.html                       # Main SPA shell (3-column layout)
+│   │   ├── app.js                           # All UI logic, event handling, API calls
+│   │   ├── style.css                        # Full UI design system & animations
+│   │   └── main.py                          # Python HTTP server + GGUF model bridge
+│   ├── aegis-boot/                          # Boot application (launcher)
+│   ├── aegis-builder/                       # Build tooling app
+│   ├── aegis-cli/                           # Command-line interface app
+│   ├── aegis-installer/                     # Installer application
+│   ├── dashboard/                           # Admin/analytics dashboard
+│   └── terminal/                           # Terminal UI (React/CLI)
 │
-├── packages/                             # Shared Library Packages
-│   ├── aegis-runtime/                    # Common runtime types, structured logger, and performance monitors
-│   ├── aegis-skills/                     # Context and loading abstractions for LLM behavioral flows
-│   └── aegis-tools/                      # Dynamic loaders, action routers, and schema checkers for system tools
+├── packages/                               # Core packages (npm workspaces)
+│   ├── aegis-sdk/                          # Shared interfaces & type contracts
+│   ├── aegis-runtime/                      # TypeScript Runtime Kernel
+│   ├── aegis-agent/                        # AI Agent Engine
+│   ├── aegis-memory/                       # Cognitive Memory System
+│   ├── aegis-distributed-intelligence/     # DIE: C++20 native engine + TypeScript adapter
+│   ├── aegis-api/                          # REST API connector engine
+│   ├── aegis-providers/                    # AI model provider abstraction
+│   ├── aegis-tools/                        # Tool registry & loader
+│   ├── aegis-skills/                       # Skill registry & loader
+│   ├── aegis-plugins/                      # Plugin registry & loader
+│   └── aegis-package-manager/              # Capability package manager
 │
-├── UI/                                   # Frontend Desktop Dashboard Interface
-│   ├── index.html                        # 3-column dashboard (Sessions list, Chat, Inspector, Console pages)
-│   ├── style.css                         # Dark-mode styling, glassmorphism UI, transitions, and palettes
-│   ├── app.js                            # Connects UI buttons/events to ApiServer (3005) & Python backend (5001)
-│   ├── main.py                           # Python Server (Port 5001) - launches UI, GGUF/LoRA inference model, Node.js process
-│   └── aegis-logo.jpeg                   # Graphic asset for application branding
+├── engines/                                # Engine registry entries (engine.json descriptors)
+│   ├── aegis-memory/engine.json            # Memory Engine descriptor
+│   ├── aegis-agent/engine.json             # AI Agent Engine descriptor
+│   └── aegis-api/engine.json              # REST API Engine descriptor
 │
-├── skills/                               # LLM-Backed Higher-Level Behaviors
-│   ├── shared/
-│   │   ├── extract/                      # Structured JSON data extraction with custom templates
-│   │   ├── format/                       # Normalization and styling formatter skill
-│   │   ├── generate/                     # Automated content and code generation skill
-│   │   └── summarize/                    # Dense text compaction and key-fact abstraction skill
-│   └── README.md
+├── providers/                              # AI model providers
+│   ├── local/
+│   │   ├── gguf/index.ts                   # Local GGUF model provider (via Python server)
+│   │   └── ollama/                         # Ollama local provider
+│   ├── api/                                # Remote API providers (OpenAI, etc.)
+│   └── mock/                               # Mock provider for testing
 │
-├── tools/                                # Sandboxed OS & Memory Interaction Capabilities
-│   ├── shared/
-│   │   ├── FileTool/                     # System actions: create, read, write, append, and delete files
-│   │   ├── FolderTool/                   # System actions: create, delete, and list folders
-│   │   ├── TerminalTool/                 # System actions: execute command-line shell commands
-│   │   ├── MemoryTool/                   # System actions: clear, save, and retrieve key-value memory blocks
-│   │   ├── SystemTool/                   # System actions: return hardware statistics (RAM, CPU, locks)
-│   │   └── [memory-read/memory-write/memory-delete]
-│   └── README.md
+├── tools/shared/                           # Built-in tools
+│   ├── FileTool/                           # File read/write operations
+│   ├── FolderTool/                         # Directory management
+│   ├── MemoryTool/                         # Direct memory access tool
+│   ├── PatientDataTool/                    # Clinical data extraction tool
+│   ├── SystemTool/                         # OS/system info tool
+│   ├── TerminalTool/                       # Shell command execution tool
+│   ├── memory-read/                        # Structured memory read
+│   ├── memory-write/                       # Structured memory write
+│   └── memory-delete/                      # Memory entry deletion
 │
-├── plugins/                              # Middleware Extensions
-│   ├── shared/
-│   │   ├── encryption/                   # AES-GCM-256 local state encryption hooks
-│   │   ├── cache/                        # Memory cache provider
-│   │   ├── synchronization/              # Decentralized state syncing adapter
-│   │   └── [logging/analytics/monitoring/notifications/persistence/telemetry/auth]
-│   └── README.md
+├── skills/shared/                          # Built-in skills (higher-order workflows)
+│   ├── extract/                            # Data extraction skill
+│   ├── format/                             # Output formatting skill
+│   ├── generate/                           # Content generation skill
+│   ├── summarize/                          # Summarization skill
+│   ├── follow-up-recommendation/           # Clinical follow-up skill
+│   ├── lifestyle-recommendation/           # Lifestyle advice skill
+│   ├── patient-history-summarizer/         # Patient history skill
+│   └── patient-timeline-builder/           # Clinical timeline skill
 │
-├── providers/                            # Model Backend Connectors
-│   ├── local/ollama/                     # Ollama model interface
-│   ├── local/gguf/                       # Direct LlamaCpp-Python GGUF runtime
-│   ├── api/openai-compatible/            # Commercial API standard endpoint wrapper
-│   └── mock/                             # Mock provider for testing and offline debugging
+├── plugins/shared/                         # System plugins
+│   ├── analytics/                          # Usage analytics plugin
+│   ├── auth/                               # Authentication plugin
+│   ├── cache/                              # Caching plugin
+│   ├── encryption/                         # Encryption plugin
+│   ├── logging/                            # Extended logging plugin
+│   ├── monitoring/                         # Health monitoring plugin
+│   ├── notifications/                      # Notification plugin
+│   ├── persistence/                        # Persistence plugin
+│   ├── synchronization/                    # Data sync plugin
+│   └── telemetry/                          # Telemetry plugin
 │
-├── templates/                            # Scaffolding Templates for New Capabilities
-│   └── [command/plugin/provider/skill/tool]
+├── memory/                                 # Runtime memory store (filesystem)
+│   ├── sessions/                           # Session memory directories
+│   │   ├── default/
+│   │   └── session_<timestamp>/
+│   │       ├── metadata.json              # Session metadata & checksums
+│   │       ├── history.json              # Conversation history
+│   │       ├── session-state.json        # Objective, tasks, facts
+│   │       ├── session-memory.md         # Long-term session memory
+│   │       ├── working-memory.md         # Current turn working memory
+│   │       └── task.md                   # Active task tracking
+│   ├── trash/                             # Soft-deleted sessions
+│   ├── quarantine/                        # Corrupted session recovery zone
+│   ├── snapshots/                         # Session snapshots
+│   ├── episodic/                          # Episodic memory store
+│   ├── indexes/                           # Memory search indexes
+│   ├── persistence/                       # Persistence layer
+│   └── profile/                           # User profile memory
 │
-├── workspace/                            # Local sandbox directories for execution
-│   ├── shared/                           # Sandbox execution root
-│   ├── memory/                           # DB files (history, session state, graph nodes, caches)
-│   │   ├── sessions/                     # Active session workspaces
-│   │   └── trash/                        # Quarantined deleted sessions
-│   └── reports/                          # Generated documents and analysis reports
+├── runtime/                               # Runtime state persistence
+│   └── checkpoints/                       # Recovery checkpoint files
 │
-└── tests/                                # System Validation Suite
-    ├── unit/                             # Test cases for EventBus, MemoryManager, CheckpointManager, etc.
-    ├── integration/                      # Live session-switching and concurrent execution tests
-    ├── stress/                           # Stress-testing execution hooks under high loads
-    └── recovery/                         # Crash simulation and automatic rollback tests
+├── workspace/                             # Active workspace root (agent sandbox)
+│   └── engines/                           # Workspace-scoped engine configs
+│
+├── logs/                                  # Structured runtime logs
+├── sessions/                              # Active session pointers
+├── schemas/                               # JSON schemas for validation
+├── generated/                             # Code generation outputs
+├── reports/                               # Runtime reports
+└── tests/                                 # Integration & unit tests
 ```
 
 ---
 
-## 3. Subsystem Deep-Dive
+## 3. System Architecture Layers
 
-### 3.1. Core Orchestration Engine (`aegis-core/src/runtime`)
+### 3.1 Layer Overview
 
-The Core Engine coordinates the boot sequence, handles capability mounting, tracks session states, and runs the main reasoning execution loop.
-
-```mermaid
-graph TD
-    A[System Entry: index.ts] --> B[BootstrapManager]
-    B -->|1. Load Env| C[loadEnvironment]
-    B -->|2. Workspace Init| D[workspaceManager.initialize]
-    B -->|3. Memory Init| E[memoryManager.init]
-    B -->|4. Sessions Init| F[runtimeSessionManager.initialize]
-    B -->|5. Autoload Modules| G[Parallel Autoload]
-    G -->|Commands| H[CommandLoader]
-    G -->|Plugins| I[CapabilityManager]
-    G -->|Skills| J[SkillLoader]
-    G -->|Tools| K[CapabilityManager]
-    B -->|6. Initialize Providers| L[providerManager.initialize]
-    B -->|7. Bind Server| M[startApiServer]
 ```
-
-#### BootstrapManager (`BootstrapManager.ts`)
-The `BootstrapManager` is the boot kernel of AEGIS. It performs startup procedures in a precise sequence:
-1. Registers services (EventBus, Config, Memory managers, Workspace managers) in the global `ServiceRegistry`.
-2. Establishes core system-level event triggers (such as graceful shutdown signals).
-3. Evaluates workspace directories, creating standard folders if missing.
-4. Initializes the `MemoryManager` and `RuntimeSessionManager`.
-5. Spawns parallel autoload loaders for:
-   * **Memory modules** (discovering and compiling indexing engines).
-   * **Commands** (mounting slash commands).
-   * **Plugins** (activating telemetry, encryption, and sync adapters).
-   * **Skills** (loading prompts and code).
-   * **Tools** (mounting sandboxed system functions).
-6. Tests network connections to model providers and triggers warning alarms if models are unreachable.
-
-#### CapabilityManager (`CapabilityManager.ts`)
-The `CapabilityManager` allows hot-swapping agent features at runtime. It monitors active capabilities and interfaces with the `ToolRegistry`, `SkillRegistry`, and `PluginRegistry` to add or remove capabilities dynamically when commanded by the API.
-
-#### RuntimeExecutor (`RuntimeExecutor.ts`)
-The `RuntimeExecutor` runs the **ReAct (Reasoning and Action)** execution loop. 
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as User Input
-    participant Exec as RuntimeExecutor
-    participant LLM as Active Model Provider
-    participant Parser as ToolParser
-    participant Reg as ToolRegistry
-    participant Tool as Target Tool
-
-    User->>Exec: execute(userInput)
-    Exec->>Exec: Detect Task Assignment
-    Note over Exec: If isTask: Ask LLM for Goal & Plan. Update Session State.
-    
-    loop ReAct Loop (Up to maxSteps)
-        Exec->>LLM: streamChat(messages)
-        LLM-->>Exec: Return thoughts and <tool>XML tags</tool>
-        Exec->>Parser: parse(assistantResponse)
-        Parser-->>Exec: Array of tool calls (Name, Input)
-        
-        break No Tool Calls
-            Note over Exec: Reason-Act Loop Completed
-        end
-
-        rect rgb(240, 240, 240)
-            Note over Exec: Execute Tool Safely
-            Exec->>Reg: getTool(toolCall.name)
-            Reg-->>Exec: Tool Object
-            Exec->>Tool: execute(input, context)
-            Tool-->>Exec: Observation result
-        end
-        Exec->>Exec: Add Observation to Messages Context
-    end
-
-    rect rgb(220, 240, 220)
-        Note over Exec: Post-Turn Parallel Analysis (LLM Calls)
-        par Extract Facts
-            Exec->>LLM: Extract new facts and preferences
-        and Summarize Details
-            Exec->>LLM: Summarize modified files and completed tasks
-        and Update Task List
-            Exec->>LLM: Assess activeTasks status symbols & next Objective
-        end
-    end
-    Exec->>Exec: Update Session State & Flush History to disk
-    Exec-->>User: Loop Completed (Status: Success)
+╔═══════════════════════════════════════════════════════════════════╗
+║                    LAYER 4: USER INTERFACES                       ║
+║  ┌──────────────┐  ┌────────────┐  ┌──────────────┐  ┌────────┐ ║
+║  │  Desktop UI  │  │  REST API  │  │  CLI Terminal │  │ Dash.  │ ║
+║  │ (HTML/JS/Py) │  │ (Port 3005)│  │  (Node.js)   │  │ (Web)  │ ║
+║  └──────┬───────┘  └─────┬──────┘  └──────┬───────┘  └───┬────┘ ║
+╠═════════╪════════════════╪═════════════════╪═══════════════╪══════╣
+║         │                │                 │               │      ║
+║                    LAYER 3: ENGINE LAYER                          ║
+║  ┌────────────────┐  ┌───────────────┐  ┌──────────────────┐     ║
+║  │  Memory Engine │  │ AI Agent Eng. │  │  REST API Engine  │     ║
+║  │  (priority: 5) │  │ (priority: 10)│  │  (priority: 20)  │     ║
+║  └────────┬───────┘  └───────┬───────┘  └────────┬─────────┘     ║
+╠═══════════╪══════════════════╪════════════════════╪═══════════════╣
+║           │                  │                    │               ║
+║                    LAYER 2: RUNTIME KERNEL                        ║
+║  ┌────────────────────────────────────────────────────────────┐   ║
+║  │ Bootloader → EngineManager → EventBus → ServiceRegistry   │   ║
+║  │ RuntimeExecutor → SessionManager → CapabilityManager      │   ║
+║  │ MemoryGateway → IPC Server → DI Container                 │   ║
+║  └──────────────────────────┬─────────────────────────────────┘   ║
+╠════════════════════════════╪═══════════════════════════════════════╣
+║                            │                                       ║
+║                    LAYER 1: NATIVE C++20 RUNTIME (DIE)            ║
+║  ┌─────────────────────────────────────────────────────────────┐   ║
+║  │ DistributedRuntime → NodeRuntime → Discovery → Heartbeat   │   ║
+║  │ Membership → Transport → AIRuntime (AIR) → DIS (Inference) │   ║
+║  │ ResourceManager → MessageBus → EventDispatcher             │   ║
+║  └─────────────────────────────────────────────────────────────┘   ║
+╚════════════════════════════════════════════════════════════════════╝
 ```
-
-1. **Task Assignment Check**: Evaluates if the query is a command/task request (e.g., "create file", "modify database", "delete folder").
-2. **Goal & Planning**: If it is a task, it issues an LLM pre-prompt to formulate:
-   * A **Goal** (e.g., "Delete target directory").
-   * A **Current Objective** (e.g., "Locate containing folder and execute recursive delete").
-   * An **Active Tasks List** (e.g., `["[!] Locate target folder", "[ ] Check child items", "[ ] Run deleteFile tool"]`).
-   * An **Implementation Plan** (e.g., detailed steps to modify directories).
-3. **ReAct Loop Execution**:
-   * Assembles conversation history, system instructions, and active goals.
-   * Feeds the context to the active LLM provider.
-   * Parses the streamed response for `<tool>{"name": "...", "input": {...}}</tool>` tags using the `ToolParser`.
-   * Invokes the tool via the registry, executes the sandbox action, collects the result, and appends it as a `tool` role message in the context.
-   * Continues until the LLM yields no more tool calls.
-4. **Post-Turn Analysis**: When the loop concludes, the executor schedules three LLM analysis tasks *in parallel* to keep memory clean:
-   * **Fact Extraction**: Captures key constraints or user preferences.
-   * **Details Summary**: Captures a description of files modified or actions taken.
-   * **Task Status Evaluator**: Updates task progress symbols:
-     * `[!]` -> Running / Next active task.
-     * `[✓]` -> Completed task.
-     * `[✗]` -> Failed task.
-     * `[ ]` -> Pending task.
-5. **Disk Commit**: Commits state updates and writes the formatted conversation history back to the session database.
-
-#### SessionStateManager (`SessionStateManager.ts`)
-Maintains metadata and task logs, and builds snapshots. When a user requests a session checkout, the `SessionStateManager` unmounts the current session, performs checksum validation, loads the target session history, and updates the local Markdown projections.
 
 ---
 
-### 3.2. Cognitive Memory Subsystem (`aegis-core/src/memory`)
+## 4. Runtime Kernel (TypeScript) — Deep Dive
 
-AEGIS implements a tiered, transaction-backed cognitive memory platform. 
+### 4.1 Boot Sequence
+
+The `Bootloader` in `packages/aegis-runtime/src/boot/Bootloader.ts` implements a **5-phase** startup sequence:
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        COGNITIVE MEMORY PIPELINE                       │
-├────────────────────────────────────────────────────────────────────────┤
-│ 1. Active Short-Term Context                                           │
-│    - working-memory.md (Current goals, plans, extracted details)       │
-│    - history.json (Raw chronological message logs)                     │
-├────────────────────────────────────────────────────────────────────────┤
-│ 2. Semantic Search Layer                                               │
-│    - Local HNSW Vector database index + BM25 keyword search index      │
-│    - Automatically updates via Background Embedding generators         │
-├────────────────────────────────────────────────────────────────────────┤
-│ 3. Relational Knowledge Graph                                          │
-│    - entities.json (Maps Patients, Doctors, Hospitals, and LoRA nodes) │
-├────────────────────────────────────────────────────────────────────────┤
-│ 4. Transactional File Gateway                                          │
-│    - Writes protected by Mutex locks and rollback journals             │
-└────────────────────────────────────────────────────────────────────────┘
+Phase 1: Environment & Platform Detection
+  └─ Hardware detection (CPU/RAM/CUDA)
+  └─ OS & architecture detection
+  └─ Workspace path resolution
+
+Phase 2: Configuration & Logging
+  └─ ConfigurationManager loads runtime.json
+  └─ Secret loading (OPENAI_API_KEY, etc.)
+  └─ StructuredLogger initialized
+  └─ EventBus initialized
+
+Phase 3: Dependency Injection Services
+  └─ Container created
+  └─ KernelAPI bound
+  └─ EventBus, Logger, WorkspaceManager bound
+  └─ EngineManager bound
+  └─ ConversationContext wired to MemoryGateway
+  └─ ServiceRegistry populated
+
+Phase 4: Session & Storage Recovery
+  └─ Runtime state validated
+  └─ Session recovery checks
+  └─ Memory directories created
+
+Phase 5: Ready State & Engine Loading
+  └─ EngineManager.discoverAndLoad() scans engines/ directory
+  └─ initializeAll() in dependency order
+  └─ startAll() for autoStart engines
+  └─ IPC Server started for control channel
+  └─ KernelAPI.status → 'ACTIVE'
 ```
 
-#### MemoryGateway (`MemoryGateway.ts`)
-Ensures file system integrity.
-* **Concurrent Lock Manager**: Uses file locks to queue read/write operations and prevent race conditions.
-* **Transaction Rollback Journals**: Writes state changes to a temporary write buffer (`MemoryWriteBuffer`). If a write fails mid-operation, the gateway recovers the original state using rollback journals.
-* **Point-in-Time Snapshots**: Periodically saves complete memory states as `.snap` files. If a file checksum fails on boot, the `MemoryRecoveryManager` automatically rolls back to the latest valid snapshot.
+### 4.2 Engine Manager
 
-#### ProjectionGenerator (`ProjectionGenerator.ts`)
-LLMs parse raw JSON files inefficiently. The `ProjectionGenerator` translates structured data (e.g., task lists, facts, active variables) into a clean, human-readable Markdown projection file (`working-memory.md`) which is injected directly into prompt templates, saving context tokens.
+`EngineManager` implements a **topological sort** for dependency-ordered loading:
 
-#### EventBus & Handlers (`aegis-core/src/memory/eventbus`)
-Changes to memory files publish events (e.g., `workingMemory.updated`, `session.archived`). Subscribed background handlers process these events asynchronously:
-* **EmbeddingHandler**: Extracts text updates, generates vector representations using Ollama/GGUF, and inserts them into the vector database.
-* **AuditLogger**: Creates signed audit records of data access for clinical compliance verification.
+```typescript
+// Dependency resolution uses DFS with cycle detection
+getLoadOrder(): string[]
+  → ENGN-4001: Missing dependency
+  → ENGN-4002: Circular dependency detected
+
+// Lifecycle operations
+discoverAndLoad(context)  → scans engines/ via RegistryLoader
+initializeAll(context)   → calls engine.initialize() in order
+startAll()              → calls engine.start() for autoStart=true engines
+shutdownAll()          → reverse order shutdown
+reload()               → hot-reload all engines (stop → clear → rediscover → start)
+reloadEngine(id)       → hot-reload single engine by ID
+```
+
+**Engine Registry** (`engines/` directory):
+
+| Engine ID | Display Name | Priority | Dependencies |
+|-----------|-------------|----------|-------------|
+| `aegis-memory` | Cognitive Memory Engine | 5 | none |
+| `aegis-agent` | AI Agent Engine | 10 | aegis-memory |
+| `aegis-api` | REST API Connector Engine | 20 | aegis-agent, aegis-memory |
+
+### 4.3 Service Registry
+
+A lightweight singleton map (`ServiceRegistry`) that acts as the system's IoC locator:
+
+```
+ServiceRegistry
+├── eventBus          → EventBus singleton
+├── workspaceManager  → WorkspaceManager singleton
+├── config            → ConfigurationManager singleton
+├── kernelAPI         → KernelAPI instance
+├── engineManager     → EngineManager singleton
+├── memoryGateway     → MemoryGateway singleton (registered by MemoryEngine)
+├── memoryManager     → MemoryManager singleton
+├── conversationContext → ConversationContext wrapper
+├── providerManager   → ProviderManager (registered by AgentEngine)
+├── agent             → Agent instance
+├── toolRegistry      → ToolRegistry singleton
+├── skillRegistry     → SkillRegistry singleton
+└── pluginRegistry    → PluginRegistry singleton
+```
 
 ---
 
-### 3.3. Interface and Communication Layer (`aegis-core/src/api`)
+## 5. AI Agent Engine
 
-The api server provides a REST interface for frontend dashboards:
+### 5.1 Agent Engine Structure
+
+Located in `packages/aegis-agent/src/`:
+
+```
+packages/aegis-agent/src/
+├── AgentEngine.ts    # IEngine implementation — registers agent, tools, skills, providers
+├── Agent.ts          # Agent singleton — orchestrates chat generation
+├── PromptBuilder.ts  # Assembles system prompt with memory projections
+├── MessageFormatter.ts # Normalizes message history & working memory
+└── index.ts          # Package exports
+```
+
+### 5.2 RuntimeExecutor — The ReAct Loop
+
+`packages/aegis-runtime/src/services/RuntimeExecutor.ts` implements the main agent execution loop:
+
+```
+User Input
+    │
+    ▼
+[ Provider Check ] → local/gguf? → Direct GGUF streaming (bypasses ReAct)
+    │
+    ▼
+[ Task Classification ] → isTaskAssignment() detects action keywords
+    │
+    ▼
+[ Session ID Cache ]
+    │
+    ▼
+[ ReAct Loop ] (max 5 reasoning steps, max 5 tool executions)
+    │
+    ├─ emit: execution_started
+    ├─ emit: message_received
+    ├─ emit: thinking_started
+    │
+    ├─ Agent.think() → builds prompt with memory context
+    ├─ Provider.streamChat() → streams tokens
+    ├─ emit: response_chunk (each token)
+    │
+    ├─ ToolParser.parse() → detects tool call in response
+    ├─ Tool.execute() → runs tool
+    ├─ emit: tool_started / tool_finished
+    │
+    └─ Repeat until no tool call OR maxSteps reached
+    │
+    ▼
+[ Post-Turn ]
+    ├─ SessionStateManager.updateFromTurn() → update goals/tasks/facts
+    ├─ ConversationContext.addMessage() → persist to history
+    ├─ MemoryGateway.flushHistory() → write to disk
+    └─ emit: execution_completed
+```
+
+---
+
+## 6. Cognitive Memory System
+
+### 6.1 Memory Architecture
+
+Located in `packages/aegis-memory/src/`:
+
+```
+packages/aegis-memory/src/
+├── MemoryGateway.ts          # Primary I/O interface — session CRUD + history + state
+├── MemoryManager.ts          # High-level memory orchestration
+├── MemoryEngine.ts           # IEngine implementation — registers all memory services
+├── MemoryWriteBuffer.ts      # Write coalescing / debounced flush buffer
+├── ProjectionGenerator.ts    # Generates working/session memory markdown projections
+├── ProjectionConsistencyValidator.ts # Validates projection integrity
+├── SessionMemory.ts          # Session memory data model
+├── Memory.ts                 # Core memory entity
+├── MemoryLoader.ts           # Memory deserialization
+├── MemoryRegistry.ts         # In-memory entity registry
+├── contracts/                # Permission & validation contracts
+├── embedding/                # Vector embedding subsystem
+├── eventbus/                 # Memory-domain event bus
+├── indexing/                 # Full-text & semantic search indexes
+├── interfaces/               # TypeScript interfaces (MemoryTypes, IMemoryGateway)
+├── locking/                  # Distributed lock management
+├── migration/                # Schema migration tooling
+├── recovery/                 # Corruption recovery procedures
+├── refinement/               # Memory refinement & compression
+├── registry/                 # Memory object registry
+├── scheduler/                # Async memory task scheduler
+├── search/                   # Search query engine
+├── transactions/             # ACID-like memory transaction manager
+└── utils/                    # File helpers, observability, checksums
+```
+
+### 6.2 Session Filesystem Layout
+
+Each session is stored as a directory under `memory/sessions/<sessionId>/`:
+
+```
+session_1783876795565/
+├── metadata.json        # { sessionId, createdAt, updatedAt, lifecycleState, checksums, quotas }
+├── history.json         # { messages: [{ id, role, content, metadata, createdAt }], memoryVersion }
+├── session-state.json   # { currentObjective, activeTasks, stableFacts, preferences }
+├── session-memory.md    # Long-form semantic memory (goals, preferences, stable facts)
+├── working-memory.md    # Current-turn short-term memory (tools, objectives, context)
+└── task.md              # Active task checklist
+```
+
+### 6.3 Memory Lifecycle State Machine
+
+```
+CREATING → ACTIVE → ARCHIVED → TRASH → (permanently deleted)
+                ↓
+           QUARANTINED (corruption detected)
+                ↓
+           RECOVERED → ACTIVE
+```
+
+### 6.4 MemoryGateway Caching Strategy
+
+```
+MemoryGateway (Singleton)
+├── metadataCache: Map<sessionId, SessionMetadata>   ← LRU in-memory cache
+├── historyCache:  Map<sessionId, History>           ← Buffered write cache
+├── historyDirty:  Set<sessionId>                   ← Dirty flag tracker
+└── accessedSessions: Set<sessionId>                ← Debounced timestamp flush
+
+Write Path:
+  appendHistory() → historyCache + historyDirty
+  flushHistory()  → write to disk (called at turn boundary)
+  MemoryWriteBuffer.markDirty() → coalesced write with 5s auto-flush
+```
+
+### 6.5 Session Quotas
+
+| Quota | Default Value |
+|-------|--------------|
+| maxSessions | 100 |
+| maxHistorySize | 10 MB |
+| maxWorkingMemorySize | 1,500 chars |
+| maxSessionMemorySize | 1,000 chars |
+| maxSnapshots | 10 |
+
+---
+
+## 7. Event Bus
+
+### 7.1 EventBus Architecture
+
+The `EventBus` (`packages/aegis-runtime/src/eventbus/EventBus.ts`) is a typed Node.js `EventEmitter` wrapper. All system events are defined in `EventTypes.ts`.
+
+### 7.2 Event Taxonomy
+
+| Category | Key Events |
+|----------|-----------|
+| **Execution** | `execution_started`, `execution_completed`, `thinking_started`, `thinking_finished`, `response_chunk`, `tool_started`, `tool_finished`, `runtime_error` |
+| **Session** | `session.created`, `session.loaded`, `session.mounted`, `session.unmounted`, `session.deleted`, `session.renamed`, `session.restored`, `session.forked` |
+| **Memory** | `memory.read`, `memory.updated`, `memory.deleted`, `memory.snapshot.created`, `memory.corrupted`, `memory.restored`, `memory.refined` |
+| **Runtime Health** | `runtime.health.changed`, `runtime.crash.detected`, `runtime.safe_mode.entered`, `runtime.heartbeat.updated`, `runtime.heartbeat.stale` |
+| **Capabilities** | `capability_added`, `capability_removed`, `capability_updated`, `capability_failed`, `capability_initialized` |
+| **Packages** | `package.installing`, `package.installed`, `package.removed`, `package.transaction.started`, `package.transaction.committed` |
+
+---
+
+## 8. Distributed Intelligence Engine (DIE) — C++20 Native Runtime
+
+### 8.1 Architecture
+
+The DIE is a **standalone C++20 binary** (`die-service.exe`) managed by the TypeScript adapter (`DistributedIntelligenceEngine.ts`). It is launched as a child process.
+
+```
+TypeScript Adapter (DistributedIntelligenceEngine.ts)
+    │ spawns
+    ▼
+die-service.exe / die-service
+    │
+    └─ DistributedRuntime (C++)
+         ├─ NodeRuntime
+         ├─ Discovery Manager
+         ├─ Heartbeat Manager
+         ├─ Membership Manager
+         ├─ Message Bus
+         ├─ TCP Transport
+         ├─ Event Dispatcher
+         ├─ Registry (Node/Service/Plugin/Topic)
+         ├─ Resource Manager
+         │   ├─ ResourceCollector (hardware telemetry)
+         │   ├─ ResourcePublisher (broadcast metrics)
+         │   ├─ ResourceCache (in-memory snapshot)
+         │   ├─ ResourceMonitor (threshold alerts)
+         │   ├─ ResourceSnapshot
+         │   ├─ ResourceHistory
+         │   └─ ResourceStatistics
+         │
+         ├─ AI Runtime (AIR) ← aegis::air namespace
+         │   ├─ AgentRegistry
+         │   ├─ AgentLifecycleManager
+         │   ├─ AgentOrchestrator
+         │   ├─ WorkflowEngine
+         │   ├─ TaskSchedulerAdapter (bridges to DIR Scheduler)
+         │   ├─ MemoryManager
+         │   ├─ KnowledgeManager
+         │   ├─ PromptManager
+         │   ├─ ContextManager
+         │   ├─ ToolRuntime
+         │   ├─ AIServiceManager
+         │   ├─ PolicyManager
+         │   ├─ TrustManager
+         │   ├─ ModelManager
+         │   └─ AIRuntimeMetrics
+         │
+         └─ Distributed Inference Service (DIS) ← aegis::dis namespace
+             ├─ InferenceSession
+             ├─ SessionPool
+             ├─ PromptBuilder
+             ├─ ContextBuilder
+             ├─ TokenStreamer
+             └─ ResponseAssembler
+```
+
+### 8.2 C++ Module Build Graph (CMake)
+
+```
+die-common (INTERFACE)
+    ├─ die-kernel (INTERFACE)
+    ├─ die-identity (INTERFACE)
+    ├─ die-capabilities (INTERFACE)
+    ├─ die-resources (INTERFACE)
+    ├─ die-roles (INTERFACE)
+    ├─ die-state (INTERFACE)
+    └─ die-lifecycle (STATIC: StateTransition.cpp, LifecycleManager.cpp)
+         └─ used by → die-node (STATIC: Node.cpp)
+                        └─ used by → die-runtime (STATIC: DistributedRuntime.cpp, NodeRuntime.cpp)
+
+die-discovery (STATIC: DiscoveryManagerImpl.cpp)
+die-heartbeat (STATIC: HeartbeatManagerImpl.cpp)
+die-membership (STATIC: MembershipManagerImpl.cpp)
+die-transport (STATIC: TcpTransport.cpp) → ws2_32 on Windows
+die-events (STATIC: EventDispatcher.cpp)
+die-messaging (STATIC: MessageBus.cpp)
+die-registry (STATIC: RegistryImpls.cpp)
+die-resource-manager (STATIC: ResourceManager.cpp + 7 sub-components)
+
+die-runtime links: die-node, die-kernel, die-registry, die-messaging, die-transport, die-events
+
+Executables:
+  die-service → die-runtime + die-resource-manager
+  die-tests   → die-runtime + all modules + test suites
+```
+
+### 8.3 TypeScript ↔ C++ Communication
+
+The TypeScript adapter manages the C++ process lifecycle:
+
+| Responsibility | TS Adapter |
+|---------------|------------|
+| Process spawn/kill | `EngineLifecycle.ts` |
+| Health monitoring | `HealthMonitor` via `getHealthReport()` |
+| State machine | `EngineState` FSM (INITIALIZING → ONLINE → PAUSED → OFFLINE) |
+| Event forwarding | `runtimeEvent` → global `eventBus` |
+| Restart policy | Supervisor with configurable restart count |
+| Config delivery | `lifecycle.configure(config)` |
+
+---
+
+## 9. AI Provider System
+
+### 9.1 Provider Architecture
+
+```
+ProviderManager
+    │ manages
+    ├─ local/gguf     → GGUFProvider (Python server bridge, Port 5001)
+    ├─ local/ollama   → OllamaProvider (Ollama API)
+    ├─ api/*          → Remote API providers
+    └─ mock/*         → Mock providers for testing
+
+Provider Interface:
+  name: string
+  category: string
+  version: string
+  initialize(context): Promise<void>
+  shutdown(): Promise<void>
+  checkAvailability(): Promise<boolean>
+  streamChat(messages): AsyncGenerator<string>
+  generate(prompt): Promise<string>
+```
+
+### 9.2 GGUF Provider (Local Inference)
+
+The `GGUFProvider` bridges Node.js to a Python HTTP server running `llama-cpp-python`:
+
+```
+Node.js RuntimeExecutor
+    │ HTTP POST /api/gguf/chat
+    ▼
+Python main.py (Port 5001)
+    │
+    ├─ GGUFModelManager
+    │   ├─ Llama(model_path, lora_path, n_ctx=2048, n_threads=8)
+    │   └─ create_chat_completion(messages, stream=True)
+    │
+    └─ Streaming response → token-by-token text/plain
+```
+
+**LoRA Management:**
+- `GET /api/gguf/lora/status` → returns attached LoRA & available LoRA files
+- `POST /api/gguf/lora/config` → attach/detach LoRA adapter at runtime
+
+---
+
+## 10. REST API Server
+
+The `ApiServer.ts` in `workspace/engines/aegis-api/src/` exposes a full HTTP API on **Port 3005**:
 
 | Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| **GET** | `/api/sessions` | Lists all active and inactive sessions on disk. |
-| **POST** | `/api/sessions` | Creates a new isolated session folder and registers its metadata. |
-| **POST** | `/api/sessions/checkout` | Switches the active session, loading its history and objectives. |
-| **POST** | `/api/sessions/rename` | Updates session display names and descriptions. |
-| **POST** | `/api/sessions/delete` | Moves a session folder to the quarantine trash directory. |
-| **GET** | `/api/trash` | Lists sessions located in the trash folder. |
-| **POST** | `/api/trash/restore` | Moves a session back from trash to active status. |
-| **POST** | `/api/trash/empty` | Permanently deletes all folders in the trash directory. |
-| **GET** | `/api/capabilities` | Returns active and inactive Tools, Skills, and Plugins. |
-| **POST** | `/api/capabilities/add` | Mounts and registers a capability. |
-| **POST** | `/api/capabilities/remove` | Unmounts and deactivates a capability. |
-| **GET** | `/api/providers` | Lists model connection backends and indicates which is active. |
-| **POST** | `/api/providers/switch` | Switches the active model provider. |
-| **POST** | `/api/chat` | Receives client messages and returns streamed agent outputs using SSE. |
+|--------|----------|-------------|
+| GET | `/api/health` | System health check |
+| POST | `/api/shutdown` | Graceful shutdown |
+| GET | `/api/sessions` | List all sessions |
+| POST | `/api/sessions` | Create new session |
+| POST | `/api/sessions/checkout` | Switch active session |
+| POST | `/api/sessions/rename` | Rename session |
+| POST | `/api/sessions/delete` | Soft-delete session |
+| GET | `/api/sessions/active` | Get active session details (metadata, state, history) |
+| GET | `/api/trash` | List trashed sessions |
+| POST | `/api/trash/restore` | Restore trashed session |
+| POST | `/api/trash/delete` | Permanently delete from trash |
+| POST | `/api/trash/empty` | Empty trash |
+| GET | `/api/capabilities` | List tools, skills, plugins |
+| POST | `/api/capabilities/add` | Add capability |
+| POST | `/api/capabilities/remove` | Remove capability |
+| GET | `/api/providers` | List providers |
+| POST | `/api/providers/switch` | Switch active provider |
+| POST | `/api/chat` | Chat (SSE streaming) |
 
-#### Server-Sent Events (SSE) Stream Protocol
-The `/api/chat` endpoint handles client connections using Server-Sent Events (`text/event-stream`). As the ReAct loop runs, the API server transmits real-time event updates:
-1. `event: execution_started` — indicates that the agent has started processing the query.
-2. `event: thinking_started` — indicates that the LLM is generating reasoning steps.
-3. `event: response_chunk` — streams chat output content chunks.
-4. `event: tool_started` — indicates that a tool has been invoked (includes arguments).
-5. `event: tool_finished` — indicates that tool execution has finished (includes output observations).
-6. `event: execution_completed` — closes the connection.
-
----
-
-### 3.4. Shared Monorepo Packages (`packages/`)
-
-To keep code modular, core functionality is separated into packages:
-
-1. **`aegis-runtime`**:
-   * Declares interfaces and type definitions (e.g., `Command`, `Message`, `Tool`).
-   * Configures environmental variables and structured loggers.
-   * `PerformanceMonitor`: Tracks system speed (e.g., tool execution time, model latency) and exports telemetry logs.
-   * `pathSandbox`: Validates path inputs, ensuring that tools can only access files within the designated workspace directory.
-
-2. **`aegis-skills`**:
-   * Registers skill sets and injects dependencies.
-   * `SkillLoader`: Dynamically loads skill folders, validates their `skill.json` files, and runs their execution scripts.
-   * `SkillContext`: Provides executing skills with access to system logging, model providers, and configuration scopes.
-
-3. **`aegis-tools`**:
-   * Orchestrates lower-level tools.
-   * `ToolLoader`: Reads `tool.json` and imports action functions.
-   * `ToolRegistry`: Manages active tool instances. If a tool contains multiple actions, `ToolRegistry` routes incoming inputs to the appropriate function.
-
----
-
-### 3.5. Sandbox Capabilities & Middleware Registry
-
-AEGIS provides custom extensions to adapt the agent's capabilities.
-
-#### Skills (`skills/`)
-Skills are high-level behaviors that utilize LLMs. A skill directory contains:
-* `skill.json` (metadata, entrypoint path).
-* `permissions.json` (access definitions).
-* `execute.ts` (execution script).
-* `prompts/` (LLM prompt templates).
-
-*Example (Extract Skill)*: The `extract` skill accepts text and a JSON schema. It reformats the schema, instructs the LLM to extract matching fields, validates the output, and returns structured data.
-
-#### Tools (`tools/`)
-Tools are low-level sandboxed actions.
-* **FileTool**: Actions: `read`, `write`, `append`, `deleteFile`. Restricts operations to files within the workspace path using `pathSandbox`.
-* **FolderTool**: Actions: `create`, `delete`, `list`. Returns directory listings and size statistics.
-* **TerminalTool**: Action: `exec`. Runs shell commands using Node's `child_process`.
-* **MemoryTool**: Actions: `save`, `retrieve`, `clear`. Directly writes key-value pairs to the local memory cache.
-* **SystemTool**: Action: `stats`. Returns memory usage, CPU load, active sessions count, and mutex file lock statuses.
-
-#### Plugins (`plugins/`)
-Plugins act as middleware. They register initialization and shutdown hooks that run during system boot and shutdown:
-* `encryption`: Encrypts local session folders at rest.
-* `telemetry`: Monitors and logs token counts, query times, and tool calls.
-* `synchronization`: Pushes encrypted session updates (diff logs) to remote validation nodes.
-
----
-
-### 3.6. Model Providers (`providers/`)
-
-Providers connect the agent to inference backends:
-* **`local/ollama`**: Interfaces with local Ollama APIs.
-* **`local/gguf`**: Bypasses external servers to execute models locally using LlamaCpp-Python. It supports attaching or detaching LoRA adapters dynamically.
-* **`api/openai-compatible`**: Connects to commercial model endpoints.
-* **`mock`**: Returns pre-configured mock answers and simulates tool calling for testing.
-
----
-
-### 3.7. Desktop Dashboard Frontend (`UI/`)
-
-The front-end user interface is launched using a Python server and displays real-time agent telemetry.
-
+**Chat SSE Events:**
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        AEGIS ENTERPRISE DASHBOARD                      │
-├──────────────────────┬──────────────────────────┬──────────────────────┤
-│ Left Sidebar         │ Main Workspace           │ Right Inspector      │
-│                      │                          │                      │
-│ - New Session Button │ - Objective Banner       │ - Session Details    │
-│ - Search Input       │ - Local GGUF Settings    │   (ID, Created, Node)│
-│                      │ - Chat Viewport (Stream) │ - Session Actions    │
-│ - Console Pages:     │ - Live Activity Log      │   (Rename, Delete,   │
-│   (Home, Skills,     │ - Input Textarea         │    Export)           │
-│    Tools, Plugins,   │ - Hotkeys                │ - Danger Zone        │
-│    Logs, Trash)      │                          │   (Delete All)       │
-└──────────────────────┴──────────────────────────┴──────────────────────┘
-```
-
-#### Launcher & Inference Host (`main.py`)
-`main.py` coordinates the application components:
-1. **Static UI Host**: Starts a thread-safe Python HTTP server on port 5001 to serve the dashboard's HTML, CSS, and JS files.
-2. **Local GGUF Executor**: Loads a local GGUF model (`model.gguf`) using `llama-cpp-python`. It exposes REST endpoints `/api/gguf/chat` and `/api/gguf/lora/config` to stream chat inferences and attach/detach LoRA adapter files (e.g., clinical fine-tuning weights).
-3. **Core Subprocess Coordinator**: Spawns the Node.js dev server (`npm run dev`) inside the `aegis-core/` directory as a background subprocess, capturing and routing its logs to the launcher console.
-4. **Browser Launcher**: Opens the user's default web browser to `http://127.0.0.1:5001`.
-5. **Termination Handler**: Intercepts `Ctrl+C` and termination signals to shut down the Node.js and GGUF subprocesses cleanly.
-
-#### Frontend Dashboard (`index.html`, `app.js`, `style.css`)
-* **3-Column Frame**: A dark-themed layout featuring a left navigation panel, a central chat screen, and a right inspector panel.
-* **Console Pages**: Includes pages for managing active sessions, checking out/deleting trash, and activating or deactivating skills, tools, and plugins.
-* **Live Action Log**: Displays real-time updates of tool invocations, inputs, and observation outputs as they occur in the backend.
-
----
-
-## 4. System Execution Traces
-
-### Trace A: System Boot sequence
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as Operator
-    participant Launcher as Launcher (main.py)
-    participant Core as Aegis Core (index.ts)
-    participant Boot as BootstrapManager
-    participant Api as ApiServer
-    participant UI as Browser UI (app.js)
-
-    User->>Launcher: Run python main.py
-    Launcher->>Launcher: Initialize UI Server on Port 5001
-    Launcher->>Launcher: Load base GGUF Model & LoRA manager
-    Launcher->>Core: Spawn subprocess "npm run dev"
-    Launcher->>User: Open web browser to Port 5001
-    
-    Core->>Boot: bootstrap()
-    Boot->>Boot: Register services in ServiceRegistry
-    Boot->>Boot: Initialize Workspace folders
-    Boot->>Boot: Initialize Memory & load Session Manager
-    Boot->>Boot: Autoload commands, plugins, skills, and tools in parallel
-    Boot->>Boot: Initialize model provider connection
-    Boot->>Api: startApiServer()
-    Api-->>Core: Server listening on Port 3005
-    
-    UI->>Api: GET /api/providers (Populate provider list)
-    UI->>Api: GET /api/capabilities (Populate capabilities grid)
-    UI->>Api: GET /api/sessions/active (Load active conversation)
-    Api-->>UI: Return state data
-    UI-->>User: Dashboard loaded & operational
-```
-
-### Trace B: Conversation Turn Execution
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as Operator
-    participant UI as Browser UI (app.js)
-    participant Api as ApiServer (3005)
-    participant Exec as RuntimeExecutor
-    participant LLM as Model Provider
-    participant Tool as Sandboxed Tool
-
-    User->>UI: Types message & presses Enter
-    UI->>Api: POST /api/chat { message: "query" }
-    Api->>Exec: execute("query")
-    Exec->>Exec: Set status to "THINKING"
-    Exec->>Api: Emit "thinking_started"
-    Api-->>UI: SSE (thinking_started)
-
-    loop ReAct Loop
-        Exec->>LLM: Generate response
-        LLM-->>Exec: Return text and <tool> tags
-        Exec->>Api: Emit "response_chunk"
-        Api-->>UI: SSE (response_chunk)
-        
-        Note over Exec: Parse tool calls from response
-        Exec->>Api: Emit "tool_started" { tool, input }
-        Api-->>UI: SSE (tool_started)
-        
-        Exec->>Tool: execute(input)
-        Tool-->>Exec: Observation result
-        
-        Exec->>Api: Emit "tool_finished" { tool, output }
-        Api-->>UI: SSE (tool_finished)
-    end
-
-    Exec->>Exec: Run facts, summary, and tasks analysis in parallel
-    Exec->>Exec: Commit updates to disk
-    Exec->>Api: Emit "execution_completed"
-    Api-->>UI: SSE (execution_completed)
-    UI-->>User: Update conversation and task panels
+event: execution_started    → { input }
+event: message_received     → { role, content }
+event: thinking_started     → {}
+event: thinking_finished    → {}
+event: response_chunk       → { chunk }
+event: tool_started         → { toolName, input }
+event: tool_finished        → { toolName, output }
+event: runtime_error        → { error }
+event: execution_completed  → {}
 ```
 
 ---
 
-## 5. Future Roadmap
+## 11. Desktop UI
 
-1. **Swarm Intelligence**: Connecting multiple local client nodes directly to support peer-to-peer federated learning validation without requiring intermediary coordination servers.
-2. **Lightweight Edge Consensus**: Optimizing verification algorithms to run consensus validation on mobile and edge devices with minimal battery consumption.
-3. **Adaptive Context Pruning**: Implementing dynamic context compression models that summarize old messages based on relevance to the current objective.
-4. **Enhanced FHIR Profile Mapping**: Adding support for custom HL7 healthcare profiles to automate patient data parsing.
+### 11.1 UI Architecture
+
+The desktop UI is a single-page application served by the Python HTTP server (`main.py`) on **Port 5001**:
+
+```
+Browser (Port 5001)                      Node.js Runtime (Port 3005)
+┌──────────────────────────┐             ┌──────────────────────┐
+│  index.html              │             │  ApiServer.ts        │
+│  ├─ Left Sidebar         │  REST/SSE   │  /api/sessions       │
+│  │   ├─ Session list     │◄──────────►│  /api/chat           │
+│  │   ├─ Search bar       │             │  /api/capabilities   │
+│  │   └─ System Console   │             │  /api/providers      │
+│  ├─ Center: Chat Panel   │             └──────────────────────┘
+│  │   ├─ Message history  │
+│  │   ├─ Streaming output │             Python Server (Port 5001)
+│  │   └─ Input box        │             ┌──────────────────────┐
+│  └─ Right Panel          │  REST       │  main.py             │
+│      ├─ Session metadata │◄──────────►│  /api/gguf/chat      │
+│      ├─ Tools panel      │             │  /api/gguf/lora/...  │
+│      ├─ Capabilities     │             └──────────────────────┘
+│      └─ Provider selector│
+└──────────────────────────┘
+  app.js  ← All JavaScript logic
+  style.css ← Full design system
+```
+
+### 11.2 UI Layout (3-Column)
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│ LEFT SIDEBAR (280px)  │  CENTER PANEL (flex)  │  RIGHT PANEL     │
+│                       │                       │  (320-360px)     │
+│  [AEGIS logo]         │  Active Session Title  │  Session Info    │
+│  [+ New Session]      │  "AEGIS Agent"         │  ─────────────  │
+│                       │                       │  Session State   │
+│  🔍 Search sessions   │  ┌─────────────────┐  │  ─────────────  │
+│                       │  │ Message History │  │  Tools Panel    │
+│  Sessions             │  │                 │  │  ─────────────  │
+│  ─────────────        │  │ [user message]  │  │  Skills Panel   │
+│  session_1            │  │ [agent reply]   │  │  ─────────────  │
+│  session_2            │  │                 │  │  Plugins Panel  │
+│  ...                  │  │ [streaming...]  │  │  ─────────────  │
+│                       │  └─────────────────┘  │  Provider       │
+│  System Console       │                       │  ─────────────  │
+│  ─────────────        │  ┌─────────────────┐  │  LoRA Manager   │
+│  🏠 Home              │  │ Input + Send    │  │                  │
+│  📋 Sessions          │  └─────────────────┘  │                  │
+│  🔧 Tools             │                       │                  │
+│  🎓 Skills            │                       │                  │
+│  🧩 Plugins           │                       │                  │
+│  🤖 Providers         │                       │                  │
+│  📦 Packages          │                       │                  │
+│  🧠 Memory            │                       │                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 12. IPC Control Channel
+
+The runtime exposes an IPC (Inter-Process Communication) server for management tooling:
+
+```
+IpcServer.ts → Unix socket / named pipe
+    │
+    ├─ ipc-status.mjs     → Query runtime status
+    ├─ ipc-engine-info.mjs → Query engine metadata
+    └─ ipc-reload.mjs     → Trigger hot-reload
+```
+
+---
+
+## 13. Data Flow Diagrams
+
+### 13.1 Chat Request Data Flow
+
+```
+User types message in Desktop UI
+         │
+         ▼
+app.js: POST /api/chat → { message }
+         │
+         ▼
+ApiServer.ts: validate → check IDLE → open SSE stream
+         │
+         ▼
+RuntimeExecutor.execute(message)
+         │
+         ├─ ProviderManager.getActiveProviderName()
+         │
+         ├─ if 'local/gguf':
+         │    └─ HTTP POST → Python main.py → GGUFModelManager → llama-cpp
+         │         └─ stream text chunks → SSE response_chunk events
+         │
+         └─ else (normal agent):
+              ├─ ConversationContext.addMessage(role='user', content)
+              ├─ SessionStateManager.getState()
+              ├─ MemoryGateway.getSessionState()
+              ├─ ProjectionGenerator.generateProjection() → working-memory.md
+              │
+              ├─ [REACT LOOP max 5 iterations]
+              │   ├─ PromptBuilder.build(state, memoryProjection, history)
+              │   ├─ ProviderManager.streamChat(messages) → token stream
+              │   ├─ SSE: response_chunk per token
+              │   ├─ ToolParser.parse(response) → tool call detected?
+              │   │   └─ yes → ToolRegistry.get(name).execute(input)
+              │   │             └─ SSE: tool_started / tool_finished
+              │   └─ repeat or break
+              │
+              ├─ SessionStateManager.updateFromTurn()
+              ├─ MemoryGateway.flushHistory(sessionId)
+              └─ SSE: execution_completed
+```
+
+### 13.2 Session Lifecycle Data Flow
+
+```
+POST /api/sessions                     POST /api/sessions/checkout
+       │                                          │
+       ▼                                          ▼
+RuntimeSessionManager                   RuntimeSessionManager
+  .createNewSession()                     .checkoutSession(sessionId)
+       │                                          │
+       ├─ MemoryGateway.createSession()          ├─ SessionMountManager.unmount(current)
+       │   └─ mkdir memory/sessions/<id>/         ├─ SessionMountManager.mount(target)
+       │   └─ write metadata.json                 │   ├─ RuntimeStateManager.setActiveSession()
+       │   └─ write session-state.json            │   └─ load session history/state into cache
+       └─ RuntimeStateManager.setActive()         └─ emit: runtime.session.changed
+```
+
+### 13.3 Memory Write Data Flow
+
+```
+Agent generates response with tool output
+         │
+         ▼
+RuntimeExecutor (post-turn)
+  ConversationContext.addMessage()
+         │
+         ▼
+MemoryGateway.appendHistory(sessionId, message)
+         │
+         ├─ historyCache.get(sessionId).messages.push(message)
+         └─ historyDirty.add(sessionId)
+                  │
+                  ▼ (at turn boundary)
+MemoryGateway.flushHistory(sessionId)
+         │
+         ├─ writeMemoryFile(history.json, JSON.stringify(messages))
+         └─ MemoryWriteBuffer.markDirty(metadata.json)
+                  │
+                  ▼ (5s auto-flush or explicit flush)
+MemoryWriteBuffer.flush()
+         └─ fs.writeFile(metadata.json)
+```
+
+### 13.4 Engine Load Data Flow
+
+```
+Bootloader.boot()
+    │
+    ▼
+EngineManager.discoverAndLoad(context)
+    │
+    ├─ RegistryLoader.loadRegistry()
+    │   ├─ scan engines/ directory
+    │   ├─ read engine.json for each entry
+    │   ├─ resolve entrypoint → import(dist/Engine.js)
+    │   └─ validate manifest against schema
+    │
+    ├─ for each validated engine:
+    │   └─ new engine.classRef() → register in this.engines
+    │
+    ▼
+EngineManager.initializeAll(context)
+    ├─ getLoadOrder() → topological sort (DFS)
+    │   priority: aegis-memory(5) → aegis-agent(10) → aegis-api(20)
+    │
+    ├─ MemoryEngine.initialize() → registers MemoryGateway, MemoryManager in ServiceRegistry
+    ├─ AgentEngine.initialize()  → registers ProviderManager, Agent, ToolRegistry, SkillRegistry
+    └─ ApiEngine.initialize()    → registers ApiServer, starts HTTP listener on :3005
+    │
+    ▼
+EngineManager.startAll()
+    ├─ MemoryEngine.start()
+    ├─ AgentEngine.start()
+    └─ ApiEngine.start()
+```
+
+---
+
+## 14. Capability System
+
+### 14.1 Capability Types
+
+| Type | Registry | Loader | Path |
+|------|---------|--------|------|
+| Tool | ToolRegistry | ToolLoader | `tools/shared/<name>/` |
+| Skill | SkillRegistry | SkillLoader | `skills/shared/<name>/` |
+| Plugin | PluginRegistry | PluginLoader | `plugins/shared/<name>/` |
+| Provider | ProviderRegistry | ProviderLoader | `providers/<category>/<name>/` |
+
+### 14.2 Dynamic Add/Remove
+
+```
+POST /api/capabilities/add { type: "tool", name: "FileTool" }
+         │
+         ▼
+CapabilityManager.add(CapabilityType.TOOL, "shared/FileTool")
+    ├─ emit: capability_autoload_started
+    ├─ ToolLoader.loadTool("shared/FileTool")
+    ├─ ToolRegistry.register(tool)
+    ├─ ConfigurationManager.updateAutoloadTools('add', path)
+    └─ emit: capability_added / capability_initialized
+```
+
+---
+
+## 15. Runtime Session Management
+
+### 15.1 SessionManager Responsibilities
+
+`RuntimeSessionManager.ts` is the central orchestrator for session lifecycle:
+
+```
+RuntimeSessionManager
+    ├─ initialize()           → create dirs, start heartbeat & watchdog
+    ├─ createNewSession()     → creates session dir + metadata + checkout
+    ├─ checkoutSession()      → mounts session (load state/history into cache)
+    ├─ getActiveSession()     → reads active session ID from runtime state
+    ├─ listSessions()         → reads all non-trashed session metadata
+    ├─ renameSession()        → updates displayName in metadata.json
+    ├─ deleteSession()        → moves session dir to memory/trash/
+    ├─ resumeSession()        → restores from trash
+    └─ forwardSession()       → creates snapshot + checkout new session
+```
+
+### 15.2 Health Validation
+
+```
+RuntimeHealthValidator.validateHealth()
+    ├─ Check: runtimeState.json exists
+    ├─ Check: active session dir exists
+    ├─ Check: mount lease not expired (10 min lease)
+    ├─ Check: heartbeat timestamp is fresh
+    └─ If unhealthy → auto-renew lease / safe mode
+```
+
+### 15.3 Watchdog & Heartbeat
+
+- **Heartbeat interval**: Updates `runtime.state.json` timestamp periodically
+- **Watchdog interval**: Checks for stale heartbeat → emits `runtime.heartbeat.stale`
+- **Mount lease**: 10-minute TTL ensures stale mounts are auto-released
+
+---
+
+## 16. Technology Stack Summary
+
+| Layer | Technology |
+|-------|-----------|
+| Desktop UI | HTML5 + Vanilla CSS + Vanilla JS |
+| UI Font | Inter (Google Fonts) |
+| Python Server | Python 3.x + `http.server` + `llama-cpp-python` |
+| Runtime Kernel | Node.js + TypeScript (ESM) |
+| Build Tool | `tsx` (TypeScript Execute) |
+| Native Engine | C++20 (CMake 3.15+) |
+| C++ Networking | Raw TCP sockets (ws2_32 on Windows) |
+| Package Management | npm workspaces (monorepo) |
+| AI Providers | GGUF (local), Ollama (local), API (remote) |
+| Memory Store | Filesystem (JSON + Markdown files) |
+| IPC | Node.js named pipe / Unix socket |
+
+---
+
+## 17. Development Commands
+
+```bash
+# Start the full runtime daemon
+node --import tsx --experimental-specifier-resolution=node \
+     --no-warnings packages/aegis-runtime/src/daemon.ts
+
+# Start the desktop UI
+python apps/desktop/main.py
+
+# Build C++ native engine
+cd packages/aegis-distributed-intelligence
+cmake -B build -S .
+cmake --build build --config Release
+
+# Register default engines (run once)
+node register-default-engines.mjs
+
+# Check IPC status
+node ipc-status.mjs
+
+# Query engine info
+node ipc-engine-info.mjs
+
+# Trigger hot-reload
+node ipc-reload.mjs
+```
+
+---
+
+## 18. Key Design Principles
+
+1. **Engine-First Architecture**: Every major subsystem is an `IEngine` with a defined lifecycle (initialize → start → pause → resume → health → reload → shutdown → dispose).
+
+2. **Event-Driven Communication**: All cross-component communication flows through the typed `EventBus`. No direct coupling between layers.
+
+3. **Memory Immutability Pattern**: Session history is append-only. Deletion moves to trash (soft delete). Corruption moves to quarantine.
+
+4. **Write Buffer Pattern**: All memory writes are coalesced through `MemoryWriteBuffer` to prevent excessive disk I/O during streaming.
+
+5. **Dependency Injection**: The `Container` and `ServiceRegistry` decouple all service dependencies, enabling hot-reload and testability.
+
+6. **Topological Engine Loading**: `EngineManager.getLoadOrder()` uses DFS to resolve engine dependencies, preventing circular loading.
+
+7. **AI-Agnostic Core**: The Runtime Kernel has no AI logic. All intelligence lives in the Agent Engine and Provider layer, which are hot-swappable.
+
+8. **Distributed-First Native Runtime**: The C++20 DIE is designed to run across multiple nodes. The TypeScript layer only manages its lifecycle.

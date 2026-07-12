@@ -5,7 +5,7 @@
       "tags": [],
       "createdAt": "2026-07-12T07:14:51.587Z",
       "updatedAt": "2026-07-12T14:49:31.256Z",
-      "lastAccessedAt": "2026-07-12T14:55:27.848Z",
+      "lastAccessedAt": "2026-07-12T17:23:37.179Z",
       "lifecycleState": "ACTIVE"
     },
     "default": {
@@ -16,6 +16,14 @@
       "createdAt": "2026-07-12T07:14:51.623Z",
       "updatedAt": "2026-07-12T07:14:51.623Z",
       "lastAccessedAt": "2026-07-12T07:14:51.623Z",
+      "lifecycleState": "ACTIVE"
+    },
+    "session_1783876795565": {
+      "sessionId": "session_1783876795565",
+      "tags": [],
+      "createdAt": "2026-07-12T17:19:55.594Z",
+      "updatedAt": "2026-07-12T17:20:42.498Z",
+      "lastAccessedAt": "2026-07-12T17:23:40.529Z",
       "lifecycleState": "ACTIVE"
     }
   }

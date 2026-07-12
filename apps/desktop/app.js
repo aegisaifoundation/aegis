@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initProviderSelector();
   initUnifiedActions();
   initSidebarToggles();
-  
+
   // Initial load
   loadSessions();
   loadCapabilities();
@@ -95,13 +95,13 @@ function initNavigation() {
    ========================================================================== */
 function initDropdowns() {
   const triggers = document.querySelectorAll(".dropdown-trigger");
-  
+
   triggers.forEach(trigger => {
     trigger.addEventListener("click", (e) => {
       e.stopPropagation();
       const parent = trigger.parentElement;
       const content = parent.querySelector(".dropdown-content");
-      
+
       // Close other dropdowns first
       document.querySelectorAll(".dropdown-content").forEach(c => {
         if (c !== content) c.classList.remove("show");
@@ -124,14 +124,14 @@ function initDropdowns() {
    ========================================================================== */
 function initSessions() {
   const btnNewSession = document.getElementById("btn-new-session");
-  
+
   btnNewSession.addEventListener("click", async () => {
     try {
       btnNewSession.disabled = true;
       const response = await fetch(`${API_BASE}/sessions`, { method: 'POST' });
       if (!response.ok) throw new Error("Failed to create session");
       const session = await response.json();
-      
+
       // Reload sessions and select the newly created one
       await loadSessions();
       await checkoutSession(session.sessionId);
@@ -149,10 +149,10 @@ async function loadSessions() {
     const response = await fetch(`${API_BASE}/sessions`);
     if (!response.ok) throw new Error("Failed to fetch sessions");
     const { sessions, activeSessionId: currentActive } = await response.json();
-    
+
     activeSessionId = currentActive;
     renderSessionsList(sessions);
-    
+
     if (activeSessionId) {
       loadActiveSession();
     }
@@ -184,7 +184,7 @@ function renderSessionsList(sessions) {
     const li = document.createElement("li");
     li.className = `session-item ${isCurrent ? 'active' : ''}`;
     li.setAttribute("data-id", session.sessionId);
-    
+
     li.innerHTML = `
       <div class="session-info">
         <span class="session-name">${escapeHtml(name)}</span>
@@ -259,9 +259,9 @@ async function checkoutSession(sessionId) {
       body: JSON.stringify({ sessionId })
     });
     if (!response.ok) throw new Error("Checkout failed");
-    
+
     activeSessionId = sessionId;
-    
+
     // Highlight in list
     document.querySelectorAll(".session-item").forEach(item => {
       if (item.getAttribute("data-id") === sessionId) {
@@ -297,14 +297,14 @@ async function loadActiveSession() {
     const response = await fetch(`${API_BASE}/sessions/active`);
     if (!response.ok) throw new Error("Failed to load active session");
     const sessionDetails = await response.json();
-    
+
     const { activeSessionId: id, metadata, state, history } = sessionDetails;
-    
+
     // Update headers
     const name = getStoredSessionName({ sessionId: id, displayName: metadata?.displayName });
     document.getElementById("active-session-title").innerText = name;
-    
-    let subtitleText = "Federated Health Agent";
+
+    let subtitleText = "AEGIS Agent";
     if (state?.goal) {
       subtitleText = `Goal: ${state.goal}`;
     }
@@ -352,14 +352,14 @@ async function refreshSessionDetails() {
     const response = await fetch(`${API_BASE}/sessions/active`);
     if (!response.ok) return;
     const sessionDetails = await response.json();
-    
+
     const { activeSessionId: id, metadata, state } = sessionDetails;
-    
+
     // Update headers
     const name = getStoredSessionName({ sessionId: id, displayName: metadata?.displayName });
     document.getElementById("active-session-title").innerText = name;
-    
-    let subtitleText = "Federated Health Agent";
+
+    let subtitleText = "AEGIS Agent";
     if (state?.goal) {
       subtitleText = `Goal: ${state.goal}`;
     }
@@ -436,7 +436,7 @@ function renderChatHistory(messages) {
     // We ignore raw tool output messages in main chat unless they are formatted,
     // as they will be displayed inline inside assistant bubbles.
     if (msg.role === 'tool') return;
-    
+
     appendMessageBubble(msg.role, msg.content, msg.metadata);
   });
 
@@ -454,7 +454,7 @@ function appendMessageBubble(role, content, metadata = null) {
 
   bubble.appendChild(contentDiv);
   container.appendChild(bubble);
-  
+
   scrollChatToBottom();
   return bubble;
 }
@@ -510,11 +510,11 @@ async function sendMessage() {
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
-      
+
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split("\n");
       buffer = lines.pop(); // preserve last incomplete line
-      
+
       for (const line of lines) {
         const trimmed = line.trim();
         if (trimmed.startsWith("event: ")) {
@@ -522,7 +522,7 @@ async function sendMessage() {
         } else if (trimmed.startsWith("data: ")) {
           const dataStr = trimmed.slice(5).trim();
           if (!dataStr) continue;
-          
+
           try {
             const parsed = JSON.parse(dataStr);
             handleSSEEvent(parsed);
@@ -541,7 +541,7 @@ async function sendMessage() {
   } finally {
     showThinkingIndicator(false);
     setAgentStatus("online", "Core Node Idle");
-    
+
     // Refresh session details (title, goal, status) WITHOUT re-rendering chat messages
     refreshSessionDetails();
   }
@@ -549,30 +549,30 @@ async function sendMessage() {
 
 function handleSSEEvent(eventData) {
   const contentDiv = currentBotBubble.querySelector(".message-content");
-  
+
   if (eventData.chunk) {
     // Streaming assistant tokens
     currentBotText += eventData.chunk;
     contentDiv.textContent = currentBotText;
-    
+
     // Re-append step blocks if any were added
     if (currentStepBlock && !contentDiv.contains(currentStepBlock)) {
       contentDiv.appendChild(currentStepBlock);
     }
-    
+
     scrollChatToBottom();
-  } 
+  }
   else if (eventData.name && eventData.input !== undefined) {
     // Tool execution started
     addLiveActivity(`🔧 Executing Tool: ${eventData.name}`, "blue");
-    
+
     // Create detailed steps inside assistant chat bubble
     createAgentStepBlock(eventData.name, eventData.input);
-  } 
+  }
   else if (eventData.name && eventData.output !== undefined) {
     // Tool execution finished
     addLiveActivity(`✅ Tool Finished: ${eventData.name}`, "green");
-    
+
     // Fill step block output
     if (currentStepBlock) {
       const body = currentStepBlock.querySelector(".agent-step-body");
@@ -580,7 +580,7 @@ function handleSSEEvent(eventData) {
         body.textContent = eventData.output;
       }
     }
-  } 
+  }
   else if (eventData.error) {
     // Error encountered
     addLiveActivity(`❌ Error: ${eventData.error}`, "red");
@@ -590,10 +590,10 @@ function handleSSEEvent(eventData) {
 
 function createAgentStepBlock(toolName, input) {
   const contentDiv = currentBotBubble.querySelector(".message-content");
-  
+
   const block = document.createElement("div");
   block.className = "agent-step-block";
-  
+
   block.innerHTML = `
     <div class="agent-step-header">
       <span>🛠️ Tool Execution: ${toolName}</span>
@@ -606,7 +606,7 @@ function createAgentStepBlock(toolName, input) {
   const header = block.querySelector(".agent-step-header");
   const body = block.querySelector(".agent-step-body");
   const chevron = block.querySelector(".chevron-step");
-  
+
   header.addEventListener("click", () => {
     const isHidden = body.style.display === "none";
     body.style.display = isHidden ? "block" : "none";
@@ -624,7 +624,7 @@ function createAgentStepBlock(toolName, input) {
 function initLiveActivityTracker() {
   const tracker = document.getElementById("agent-activity-tracker");
   const header = document.getElementById("activity-header");
-  
+
   header.addEventListener("click", () => {
     tracker.classList.toggle("collapsed");
   });
@@ -638,15 +638,15 @@ function clearLiveActivity() {
 function addLiveActivity(text, colorClass = "") {
   const log = document.getElementById("activity-log");
   const item = document.createElement("div");
-  item.style.color = colorClass === "green" ? "var(--accent-green)" : 
-                     colorClass === "blue" ? "var(--accent-blue)" : 
-                     colorClass === "red" ? "var(--accent-red)" : "var(--text-secondary)";
-  
+  item.style.color = colorClass === "green" ? "var(--accent-green)" :
+    colorClass === "blue" ? "var(--accent-blue)" :
+      colorClass === "red" ? "var(--accent-red)" : "var(--text-secondary)";
+
   const timestamp = new Date().toLocaleTimeString(undefined, { hour12: false });
   item.textContent = `[${timestamp}] ${text}`;
-  
+
   log.appendChild(item);
-  
+
   // Auto scroll activity logs
   const body = document.getElementById("activity-body");
   body.scrollTop = body.scrollHeight;
@@ -655,7 +655,7 @@ function addLiveActivity(text, colorClass = "") {
 function setAgentStatus(status, text) {
   const dot = document.querySelector(".status-dot");
   const statusText = document.getElementById("agent-status-text");
-  
+
   dot.className = `status-dot ${status}`;
   statusText.textContent = text;
 }
@@ -677,7 +677,7 @@ async function loadCapabilities() {
     const response = await fetch(`${API_BASE}/capabilities`);
     if (!response.ok) throw new Error("Failed to load capabilities");
     const data = await response.json();
-    
+
     renderCapabilitiesGrid(data);
     renderDropdownOptions(data);
   } catch (err) {
@@ -690,7 +690,7 @@ function renderCapabilitiesGrid(data) {
   const skillsGrid = document.getElementById("skills-grid");
   skillsGrid.innerHTML = "";
   const activeSkills = data.skills.filter(s => s.isActive);
-  
+
   if (activeSkills.length === 0) {
     skillsGrid.innerHTML = `<p class="text-secondary" style="grid-column: 1/-1; text-align: center;">No active skills. Load one using the dropdown above!</p>`;
   } else {
@@ -704,7 +704,7 @@ function renderCapabilitiesGrid(data) {
   const toolsGrid = document.getElementById("tools-grid");
   toolsGrid.innerHTML = "";
   const activeTools = data.tools.filter(t => t.isActive);
-  
+
   if (activeTools.length === 0) {
     toolsGrid.innerHTML = `<p class="text-secondary" style="grid-column: 1/-1; text-align: center;">No active tools. Load one using the dropdown above!</p>`;
   } else {
@@ -718,7 +718,7 @@ function renderCapabilitiesGrid(data) {
   const pluginsGrid = document.getElementById("plugins-grid");
   pluginsGrid.innerHTML = "";
   const activePlugins = data.plugins.filter(p => p.isActive);
-  
+
   if (activePlugins.length === 0) {
     pluginsGrid.innerHTML = `<p class="text-secondary" style="grid-column: 1/-1; text-align: center;">No active plugins. Load one using the dropdown above!</p>`;
   } else {
@@ -732,7 +732,7 @@ function renderCapabilitiesGrid(data) {
 function createCapabilityCard(type, name, subtitle, defaultDesc, path) {
   const card = document.createElement("div");
   card.className = "card";
-  
+
   card.innerHTML = `
     <div>
       <div class="card-header">
@@ -758,7 +758,7 @@ function createCapabilityCard(type, name, subtitle, defaultDesc, path) {
           body: JSON.stringify({ type, name })
         });
         if (!response.ok) throw new Error("Disable failed");
-        
+
         loadCapabilities();
       } catch (err) {
         alert(`Error disabling capability: ${err.message}`);
@@ -776,7 +776,7 @@ function renderDropdownOptions(data) {
   const skillsList = document.getElementById("dropdown-skills-list");
   skillsList.innerHTML = "";
   const inactiveSkills = data.skills.filter(s => !s.isActive);
-  
+
   if (inactiveSkills.length === 0) {
     skillsList.innerHTML = `<div class="dropdown-empty">All skills loaded</div>`;
   } else {
@@ -793,7 +793,7 @@ function renderDropdownOptions(data) {
   const toolsList = document.getElementById("dropdown-tools-list");
   toolsList.innerHTML = "";
   const inactiveTools = data.tools.filter(t => !t.isActive);
-  
+
   if (inactiveTools.length === 0) {
     toolsList.innerHTML = `<div class="dropdown-empty">All tools loaded</div>`;
   } else {
@@ -810,7 +810,7 @@ function renderDropdownOptions(data) {
   const pluginsList = document.getElementById("dropdown-plugins-list");
   pluginsList.innerHTML = "";
   const inactivePlugins = data.plugins.filter(p => !p.isActive);
-  
+
   if (inactivePlugins.length === 0) {
     pluginsList.innerHTML = `<div class="dropdown-empty">All plugins loaded</div>`;
   } else {
@@ -832,7 +832,7 @@ async function addCapability(type, name) {
       body: JSON.stringify({ type, name })
     });
     if (!response.ok) throw new Error("Load failed");
-    
+
     // Reload capabilities grid & lists
     loadCapabilities();
   } catch (err) {
@@ -939,10 +939,10 @@ async function loadProviders() {
     const response = await fetch(`${API_BASE}/providers`);
     if (!response.ok) throw new Error("Failed to fetch providers");
     const data = await response.json();
-    
+
     const providerSelect = document.getElementById("provider-select");
     if (!providerSelect) return;
-    
+
     providerSelect.innerHTML = "";
     data.list.forEach(p => {
       const opt = document.createElement("option");
@@ -1070,7 +1070,7 @@ function initUnifiedActions() {
     btnCopySessionId.addEventListener("click", () => {
       if (!activeSessionId) return;
       navigator.clipboard.writeText(activeSessionId);
-      
+
       const originalSvg = btnCopySessionId.innerHTML;
       btnCopySessionId.innerHTML = `
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -1102,7 +1102,7 @@ function initUnifiedActions() {
         const response = await fetch(`${API_BASE}/sessions/active`);
         if (!response.ok) throw new Error("Failed to load active session");
         const sessionDetails = await response.json();
-        
+
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(sessionDetails, null, 2));
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
@@ -1215,22 +1215,22 @@ async function loadSessionsIndex() {
     const response = await fetch(`${API_BASE}/sessions`);
     if (!response.ok) throw new Error("Failed to load sessions");
     const { sessions } = await response.json();
-    
+
     const tbody = document.getElementById("sessions-index-tbody");
     if (!tbody) return;
     tbody.innerHTML = "";
-    
+
     if (sessions.length === 0) {
       tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-gray-3);">No active sessions found.</td></tr>`;
       return;
     }
-    
+
     sessions.forEach(session => {
       const name = getStoredSessionName(session);
-      
+
       const formattedDate = new Date(session.updatedAt || session.createdAt).toLocaleString();
       const isCurrent = session.sessionId === activeSessionId;
-      
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td style="font-weight: 600;">${escapeHtml(name)}</td>
@@ -1257,13 +1257,13 @@ async function loadSessionsIndex() {
   }
 }
 
-window.renameSessionFromIndex = async function(sessionId) {
+window.renameSessionFromIndex = async function (sessionId) {
   const row = document.querySelector(`#sessions-index-tbody button[onclick="renameSessionFromIndex('${sessionId}')"]`)?.closest("tr");
   const currentName = row?.querySelector("td")?.textContent || `Session ${sessionId.split('_').pop()}`;
   await renameSession(sessionId, currentName);
 }
 
-window.deleteSessionFromIndex = async function(sessionId) {
+window.deleteSessionFromIndex = async function (sessionId) {
   const row = document.querySelector(`#sessions-index-tbody button[onclick="deleteSessionFromIndex('${sessionId}')"]`)?.closest("tr");
   const name = row?.querySelector("td")?.textContent || "this session";
   await deleteSession(sessionId, name);
@@ -1274,21 +1274,21 @@ async function loadTrash() {
     const response = await fetch(`${API_BASE}/trash`);
     if (!response.ok) throw new Error("Failed to load trash");
     const { sessions } = await response.json();
-    
+
     const tbody = document.getElementById("trash-tbody");
     if (!tbody) return;
     tbody.innerHTML = "";
-    
+
     if (sessions.length === 0) {
       tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-gray-3);">Trash is empty.</td></tr>`;
       return;
     }
-    
+
     sessions.forEach(session => {
       const name = getStoredSessionName(session);
-      
+
       const formattedDate = session.deletedAt ? new Date(session.deletedAt).toLocaleString() : (session.updatedAt ? new Date(session.updatedAt).toLocaleString() : '—');
-      
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td style="font-weight: 600;">${escapeHtml(name)}</td>
@@ -1308,7 +1308,7 @@ async function loadTrash() {
   }
 }
 
-window.restoreTrashSession = async function(sessionId) {
+window.restoreTrashSession = async function (sessionId) {
   try {
     const response = await fetch(`${API_BASE}/trash/restore`, {
       method: 'POST',
@@ -1322,7 +1322,7 @@ window.restoreTrashSession = async function(sessionId) {
   }
 }
 
-window.deleteTrashSessionPermanently = async function(sessionId) {
+window.deleteTrashSessionPermanently = async function (sessionId) {
   if (confirm("Are you sure you want to permanently delete this session? This action cannot be undone.")) {
     try {
       const response = await fetch(`${API_BASE}/trash/delete`, {

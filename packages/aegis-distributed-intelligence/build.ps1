@@ -58,7 +58,25 @@ $sources = @(
     "cpp/src/ai-runtime/policy/PolicyManager.cpp",
     "cpp/src/ai-runtime/trust/TrustManager.cpp",
     "cpp/src/ai-runtime/models/ModelManager.cpp",
-    "cpp/src/ai-runtime/runtime/AIRuntime.cpp"
+    "cpp/src/ai-runtime/runtime/AIRuntime.cpp",
+    "cpp/src/distributed-inference/models/ModelRegistry.cpp",
+    "cpp/src/distributed-inference/models/ModelManager.cpp",
+    "cpp/src/distributed-inference/backend/LlamaBackend.cpp",
+    "cpp/src/distributed-inference/backend/OnnxBackend.cpp",
+    "cpp/src/distributed-inference/backend/TensorRTBackend.cpp",
+    "cpp/src/distributed-inference/backend/FutureBackend.cpp",
+    "cpp/src/distributed-inference/inference/InferenceSession.cpp",
+    "cpp/src/distributed-inference/inference/SessionPool.cpp",
+    "cpp/src/distributed-inference/inference/PromptBuilder.cpp",
+    "cpp/src/distributed-inference/inference/ContextBuilder.cpp",
+    "cpp/src/distributed-inference/inference/TokenStreamer.cpp",
+    "cpp/src/distributed-inference/inference/ResponseAssembler.cpp",
+    "cpp/src/distributed-inference/execution/ExecutionAdapter.cpp",
+    "cpp/src/distributed-inference/execution/PlacementResolver.cpp",
+    "cpp/src/distributed-inference/cache/ResponseCache.cpp",
+    "cpp/src/distributed-inference/cache/KVCache.cpp",
+    "cpp/src/distributed-inference/metrics/InferenceMetrics.cpp",
+    "cpp/src/distributed-inference/runtime/DistributedInferenceService.cpp"
 )
 
 $fullSources = $sources | ForEach-Object { Join-Path $PackageRoot $_ }
@@ -66,7 +84,8 @@ $fullSources = $sources | ForEach-Object { Join-Path $PackageRoot $_ }
 $gppArgs = @(
     "-std=c++20",
     "-I", $includeDir,
-    "-I", (Join-Path $PackageRoot "cpp/src")
+    "-I", (Join-Path $PackageRoot "cpp/src"),
+    "-I", (Join-Path $PackageRoot "cpp/src/distributed-inference")
 ) + $fullSources + @(
     "-o", $outputExe,
     "-lws2_32"
