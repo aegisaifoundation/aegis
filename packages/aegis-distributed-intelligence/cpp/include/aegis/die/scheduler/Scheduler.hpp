@@ -18,13 +18,13 @@ public:
     if (nodes.empty()) return "";
 
     // Select the node with the lowest CPU usage
-    std::string bestNodeId = nodes[0].nodeId;
+    std::string bestNodeId = nodes[0].identity.id;
     double lowestCpu = 100.0;
     
     for (const auto& node : nodes) {
       if (node.resources.cpuUsage < lowestCpu) {
         lowestCpu = node.resources.cpuUsage;
-        bestNodeId = node.nodeId;
+        bestNodeId = node.identity.id;
       }
     }
     return bestNodeId;

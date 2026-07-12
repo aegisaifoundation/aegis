@@ -10,6 +10,8 @@
 #include "aegis/die/events/EventDispatcher.hpp"
 #include "aegis/die/statistics/NodeStatistics.hpp"
 #include "aegis/die/logging/StructuredLogger.hpp"
+#include "aegis/die/lifecycle/ServiceManager.hpp"
+#include "ai-runtime/runtime/AIRuntime.hpp"
 
 namespace aegis::die::runtime {
 
@@ -94,11 +96,23 @@ void DistributedRuntime::boot() {
   m_context->log("INFO", "Runtime", "Boot sequence initiated for " + m_config.node.nodeName);
 
   m_state = RuntimeState::INITIALIZING;
+
+  auto serviceManager = std::make_shared<lifecycle::ServiceManager>();
+  m_serviceManager = serviceManager;
+
+  auto aiRuntime = std::make_shared<aegis::air::AIRuntime>(m_context);
+  serviceManager->registerService("AIRuntime", aiRuntime);
+  
+  m_context->log("INFO", "Runtime", "Initializing native services...");
+  serviceManager->initializeAll();
   
   if (m_context->getTransport()) {
     m_context->log("INFO", "Runtime", "Starting TCP transport layer...");
     m_context->getTransport()->start();
   }
+
+  m_context->log("INFO", "Runtime", "Starting native services...");
+  serviceManager->startAll();
 
   m_running = true;
   m_state = RuntimeState::ONLINE;
@@ -111,6 +125,14 @@ void DistributedRuntime::shutdown() {
 
   m_state = RuntimeState::STOPPING;
   m_context->log("INFO", "Runtime", "Shutdown sequence initiated for " + m_config.node.nodeName);
+
+  if (m_serviceManager) {
+    m_context->log("INFO", "Runtime", "Stopping native services...");
+    auto serviceManager = std::static_pointer_cast<lifecycle::ServiceManager>(m_serviceManager);
+    serviceManager->stopAll();
+    serviceManager->shutdownAll();
+    m_serviceManager.reset();
+  }
 
   if (m_context->getTransport()) {
     m_context->log("INFO", "Runtime", "Stopping TCP transport layer...");

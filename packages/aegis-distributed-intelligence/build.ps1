@@ -38,14 +38,35 @@ $sources = @(
     "cpp/src/resource-manager/ResourceHistory.cpp",
     "cpp/src/resource-manager/ResourceStatistics.cpp",
     "cpp/src/scheduler/WorkerPool.cpp",
-    "cpp/src/plugins/PluginManager.cpp"
+    "cpp/src/plugins/PluginManager.cpp",
+    "cpp/src/ai-runtime/agents/AgentRegistry.cpp",
+    "cpp/src/ai-runtime/agents/AgentLifecycleManager.cpp",
+    "cpp/src/ai-runtime/agents/AgentFactory.cpp",
+    "cpp/src/ai-runtime/tasks/TaskGraph.cpp",
+    "cpp/src/ai-runtime/tasks/TaskPlanner.cpp",
+    "cpp/src/ai-runtime/tasks/TaskSchedulerAdapter.cpp",
+    "cpp/src/ai-runtime/orchestration/AgentOrchestrator.cpp",
+    "cpp/src/ai-runtime/orchestration/ResultAggregator.cpp",
+    "cpp/src/ai-runtime/orchestration/WorkflowEngine.cpp",
+    "cpp/src/ai-runtime/memory/MemoryManager.cpp",
+    "cpp/src/ai-runtime/knowledge/KnowledgeManager.cpp",
+    "cpp/src/ai-runtime/prompts/PromptManager.cpp",
+    "cpp/src/ai-runtime/context/ContextManager.cpp",
+    "cpp/src/ai-runtime/tools/ToolRuntime.cpp",
+    "cpp/src/ai-runtime/services/AIServiceManager.cpp",
+    "cpp/src/ai-runtime/metrics/AIRuntimeMetrics.cpp",
+    "cpp/src/ai-runtime/policy/PolicyManager.cpp",
+    "cpp/src/ai-runtime/trust/TrustManager.cpp",
+    "cpp/src/ai-runtime/models/ModelManager.cpp",
+    "cpp/src/ai-runtime/runtime/AIRuntime.cpp"
 )
 
 $fullSources = $sources | ForEach-Object { Join-Path $PackageRoot $_ }
 
 $gppArgs = @(
     "-std=c++20",
-    "-I", $includeDir
+    "-I", $includeDir,
+    "-I", (Join-Path $PackageRoot "cpp/src")
 ) + $fullSources + @(
     "-o", $outputExe,
     "-lws2_32"

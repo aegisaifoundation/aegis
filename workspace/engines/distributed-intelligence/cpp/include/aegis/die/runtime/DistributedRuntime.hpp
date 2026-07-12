@@ -26,6 +26,7 @@ private:
   std::atomic<RuntimeState> m_state;
   std::atomic<bool> m_running;
   mutable std::mutex m_mutex;
+  std::shared_ptr<void> m_serviceManager;
 };
 
 } // namespace aegis::die::runtime
