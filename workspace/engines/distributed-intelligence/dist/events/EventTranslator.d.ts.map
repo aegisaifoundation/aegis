@@ -1,0 +1,1 @@
+{"version":3,"file":"EventTranslator.d.ts","sourceRoot":"","sources":["../../src/events/EventTranslator.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,MAAM,EAAE,MAAM,kBAAkB,CAAC;AAE1C,qBAAa,eAAe;IAC1B,MAAM,CAAC,SAAS,CAAC,MAAM,EAAE,MAAM,GAAG;QAAE,SAAS,EAAE,MAAM,CAAC;QAAC,OAAO,EAAE,MAAM,CAAC,MAAM,EAAE,GAAG,CAAC,CAAA;KAAE,GAAG,IAAI;CAyB7F;AACD,eAAe,eAAe,CAAC"}

@@ -1,0 +1,51 @@
+{
+  "version": "1.0.0",
+  "generatedBy": "@aegis/package-manager",
+  "generatedAt": "2026-07-12T14:09:40.405Z",
+  "engines": [
+    {
+      "id": "distributed-intelligence",
+      "displayName": "Distributed Intelligence Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "workspace/engines/distributed-intelligence/dist/index.js",
+      "manifest": "workspace/engines/distributed-intelligence/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-12T06:59:46.714Z"
+    },
+    {
+      "id": "aegis-memory",
+      "displayName": "Cognitive Memory Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "workspace/engines/aegis-memory/dist/MemoryEngine.js",
+      "manifest": "workspace/engines/aegis-memory/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-12T14:01:25.164Z"
+    },
+    {
+      "id": "aegis-agent",
+      "displayName": "AI Agent Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "workspace/engines/aegis-agent/dist/AgentEngine.js",
+      "manifest": "workspace/engines/aegis-agent/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-12T14:01:25.268Z"
+    },
+    {
+      "id": "aegis-api",
+      "displayName": "REST API Connector Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "workspace/engines/aegis-api/dist/ApiEngine.js",
+      "manifest": "workspace/engines/aegis-api/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-12T14:01:25.336Z"
+    }
+  ]
+}

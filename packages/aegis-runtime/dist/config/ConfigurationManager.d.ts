@@ -1,5 +1,5 @@
 export declare class ConfigurationManager {
-    private getAegisCoreRoot;
+    private getRepositoryRoot;
     private getConfigPath;
     getRuntimeConfig(): any;
     updateAutoloadTools(action: 'add' | 'remove', toolPath: string): Promise<void>;

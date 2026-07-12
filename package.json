@@ -2,8 +2,7 @@
   "name": "aegis-monorepo",
   "type": "module",
   "workspaces": [
-    "aegis-core",
-    "interfaces/terminal",
+    "apps/*",
     "packages/*"
   ]
 }

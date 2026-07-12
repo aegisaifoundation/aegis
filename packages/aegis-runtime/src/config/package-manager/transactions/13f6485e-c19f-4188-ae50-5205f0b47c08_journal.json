@@ -1,0 +1,28 @@
+{
+  "txId": "13f6485e-c19f-4188-ae50-5205f0b47c08",
+  "state": "COMMITTED",
+  "timestamp": "2026-07-12T14:44:19.090Z",
+  "packageId": "aegis-api",
+  "action": "install",
+  "backups": [
+    {
+      "originalPath": "C:\\aegis\\workspace\\engines\\aegis-api",
+      "backupPath": "C:\\aegis\\packages\\aegis-runtime\\src\\config\\package-manager\\backups\\13f6485e-c19f-4188-ae50-5205f0b47c08\\0d69d7ff-6efb-4806-ae5b-b961cb2b5e73"
+    }
+  ],
+  "addedFiles": [
+    "C:\\aegis\\workspace\\engines\\aegis-api\\engine.json"
+  ],
+  "addedDirs": [],
+  "originalConfig": {
+    "version": "1.0.0",
+    "requireSignature": false,
+    "autoloadEngines": [
+      "distributed-intelligence",
+      "aegis-memory",
+      "aegis-agent",
+      "aegis-api"
+    ],
+    "defaultProvider": "local/ollama"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "engine info",
+  "description": "Show detailed information about a specific engine.",
+  "version": "1.0.0",
+  "category": "shared"
+}

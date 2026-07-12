@@ -1,0 +1,1 @@
+{"version":3,"file":"CapabilityManager.d.ts","sourceRoot":"","sources":["../../src/capabilities/CapabilityManager.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,UAAU,EAAE,MAAM,yBAAyB,CAAC;AAErD,qBAAa,iBAAiB;IAC5B,OAAO,CAAC,YAAY,CAWlB;;IAIF,oBAAoB,CAAC,QAAQ,EAAE,OAAO,CAAC,UAAU,CAAC,GAAG,IAAI;IAOzD,eAAe,IAAI,UAAU;IAI7B,UAAU,CAAC,OAAO,EAAE,MAAM,GAAG,OAAO;CAIrC;AACD,eAAe,iBAAiB,CAAC"}

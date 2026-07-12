@@ -1,0 +1,22 @@
+{
+  "name": "aegis-builder",
+  "version": "1.0.0",
+  "description": "AEGIS Software Distribution Builder & Release Pipeline",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "aegis-builder": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node dist/test/DistributionBuilder.test.js"
+  },
+  "dependencies": {
+    "@aegis/package-manager": "*",
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "typescript": "^5.4.5"
+  }
+}

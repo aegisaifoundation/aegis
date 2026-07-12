@@ -1,0 +1,17 @@
+{
+  "messages": [
+    {
+      "id": "d9ec14be-0e28-482d-b2e3-1f3b41040d46",
+      "role": "user",
+      "content": "who are you",
+      "createdAt": "2026-07-12T17:20:02.880Z"
+    },
+    {
+      "id": "f86f0946-f4cb-4af6-8b6c-bfc0cfc51123",
+      "role": "assistant",
+      "content": "I am Aegis Core Agent, an advanced modular AI orchestrator. My function is to process complex requests, manage tasks, and utilize available tools—like specialized APIs or file systems—to provide clear, structured, and actionable outputs for you.\n\nYou can rely on me to organize information and execute processes based on the instructions you provide. How may I assist you today?",
+      "createdAt": "2026-07-12T17:20:42.474Z"
+    }
+  ],
+  "memoryVersion": "1.0.0"
+}

@@ -9,7 +9,7 @@ export class ToolLoader {
             if (fs.existsSync(packageJson) && !current.includes('node_modules')) {
                 try {
                     const pkg = JSON.parse(fs.readFileSync(packageJson, 'utf8'));
-                    if (pkg.name === 'aegis-core') {
+                    if (pkg.name === '@aegis/tools') {
                         return current;
                     }
                 }
@@ -28,8 +28,8 @@ export class ToolLoader {
         if (nmIndex !== -1) {
             cwd = cwd.substring(0, nmIndex);
         }
-        if (fs.existsSync(path.resolve(cwd, 'aegis-core/package.json'))) {
-            return path.resolve(cwd, 'aegis-core');
+        if (fs.existsSync(path.resolve(cwd, 'aegis/tools/package.json'))) {
+            return path.resolve(cwd, '@aegis/tools');
         }
         return cwd;
     }

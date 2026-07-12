@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AEGIS Enterprise OS</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=1.0.2">
+</head>
+<body>
+
+  <!-- main app frame (3-column layout) -->
+  <div id="app-container">
+
+    <!-- COLUMN 1: LEFT SIDEBAR (Width: 280px) -->
+    <aside id="left-sidebar" class="sidebar-col">
+      <div class="sidebar-wrapper">
+        
+        <!-- Logo Block -->
+        <div class="sidebar-brand">
+          <div class="logo-text">AEGIS</div>
+          <div class="logo-sub">Enterprise AI Operating System</div>
+        </div>
+
+        <!-- Action Button -->
+        <div class="sidebar-action">
+          <button id="btn-new-session" class="btn-primary-action">
+            <span>+ New Session</span>
+            <span class="kb-hint">⌘N</span>
+          </button>
+        </div>
+
+        <!-- Search Section -->
+        <div class="sidebar-search">
+          <div class="search-field">
+            <svg class="search-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="session-search" placeholder="Search sessions...">
+          </div>
+        </div>
+
+        <!-- Sessions List (Scrollable) -->
+        <div class="sidebar-scroll-area">
+          <div class="sidebar-sec-label">Sessions</div>
+          <ul id="session-list">
+            <!-- Dynamically populated via app.js -->
+          </ul>
+        </div>
+
+        <!-- Navigation Section -->
+        <div class="sidebar-nav-sec">
+          <div class="sidebar-sec-label">System Console</div>
+          <nav class="sidebar-nav">
+            <button class="nav-btn active" data-target="page-home">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              </svg>
+              <span>Home</span>
+            </button>
+            
+            <button class="nav-btn" data-target="page-sessions-stub">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span>Sessions</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-tools">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+              </svg>
+              <span>Tools</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-skills">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path>
+              </svg>
+              <span>Skills</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-plugins">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+              </svg>
+              <span>Plugins</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-models-stub">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+              </svg>
+              <span>Models</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-providers-stub">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+              </svg>
+              <span>Providers</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-logs-stub">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              </svg>
+              <span>Logs</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-alerts-stub">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              </svg>
+              <span>Alerts</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-trash-stub">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>Trash</span>
+            </button>
+
+            <button class="nav-btn" data-target="page-settings-stub">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+              <span>Settings</span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Bottom User Panel -->
+        <div class="sidebar-user-panel">
+          <div class="user-avatar-circle">OP</div>
+          <div class="user-meta">
+            <div class="user-fullname">AEGIS Operator</div>
+            <div class="user-role-label">System Administrator</div>
+          </div>
+          <button class="user-settings-shortcut" title="Quick Settings">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- COLUMN 2: MAIN WORKSPACE (Flex: 1) -->
+    <main id="main-content" class="workspace-col">
+      
+      <!-- Top Header -->
+      <header class="workspace-header">
+        <div class="header-left">
+          <button id="btn-toggle-left-sidebar" class="btn-header-icon" title="Toggle Left Sidebar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="9" y1="3" x2="9" y2="21"></line>
+            </svg>
+          </button>
+          <div class="breadcrumb">
+            <span class="bc-item">Home</span>
+            <span class="bc-separator">/</span>
+            <span class="bc-item">Sessions</span>
+            <span class="bc-separator">/</span>
+            <span id="active-session-title" class="bc-item active">Aegis Agent Node</span>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <!-- Dropdowns & Telemetry -->
+          <div class="header-controls">
+            <div class="header-select-wrapper">
+              <span class="select-label">Provider</span>
+              <select id="provider-select" class="mono-dropdown">
+                <!-- Dynamically populated via app.js -->
+              </select>
+            </div>
+            
+            <div class="header-select-wrapper">
+              <span class="select-label">Core Status</span>
+              <div class="status-chip">
+                <span class="status-indicator-dot"></span>
+                <span id="agent-status-text">Idle</span>
+              </div>
+            </div>
+
+            <button id="btn-toggle-right-sidebar" class="btn-header-icon" title="Toggle Inspector Panel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="15" y1="3" x2="15" y2="21"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Workspace Area Container -->
+      <div class="workspace-body">
+        
+        <!-- Page Section: Home (Chatbot Interface) -->
+        <section id="page-home" class="page-section active">
+          
+          <!-- Goal Display Banner -->
+          <div class="goal-banner">
+            <div class="goal-banner-label">Active Session Objective</div>
+            <div id="active-session-subtitle" class="goal-banner-text">Goal: Delete a specific folder and all its contained files.</div>
+          </div>
+
+          <!-- GGUF Controls Panel (Hidden by default unless active provider is local/gguf) -->
+          <div id="gguf-controls" class="hidden">
+            <div class="gguf-control-header">
+              <div class="gguf-title-group">
+                <span class="gguf-icon">🤖</span>
+                <div>
+                  <h3>GGUF Local Model Settings</h3>
+                  <p>Local inference runtime and LoRA adapter control</p>
+                </div>
+              </div>
+              <div class="gguf-status-badge">
+                <span id="gguf-status-dot" class="status-dot offline"></span>
+                <span id="gguf-status-text">Base Model Loaded</span>
+              </div>
+            </div>
+            <div class="gguf-control-body">
+              <div class="lora-select-group">
+                <label for="lora-select">Active LoRA Adapter</label>
+                <div class="select-btn-group">
+                  <select id="lora-select" class="lora-dropdown">
+                    <option value="" disabled selected>Select LoRA...</option>
+                  </select>
+                  <button id="btn-lora-attach" class="btn btn-primary btn-sm">Attach</button>
+                  <button id="btn-lora-detach" class="btn btn-danger btn-sm">Detach</button>
+                </div>
+              </div>
+              <div class="lora-current-info">
+                <span>Current Status</span>
+                <span id="lora-current-status" class="lora-badge">No Adapter Attached</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat Conversation Scroll Area -->
+          <div id="chat-messages" class="chat-viewport">
+            <!-- Messages inserted dynamically via app.js -->
+            <div class="message-bubble bot system-message">
+              <div class="message-content">
+                <strong>System Booted.</strong> Welcome to Aegis. Start a conversation or select a session on the left.
+              </div>
+            </div>
+          </div>
+
+          <!-- Real-Time Activity Log Accordion -->
+          <div id="agent-activity-tracker" class="collapsed">
+            <div id="activity-header">
+              <span class="activity-bullet"></span>
+              <span>Agent Live Actions</span>
+              <span id="activity-chevron" class="chevron-arrow">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </span>
+            </div>
+            <div id="activity-body">
+              <div id="activity-log"></div>
+            </div>
+          </div>
+
+          <!-- Thinking Spinner Overlay -->
+          <div id="thinking-indicator" class="hidden">
+            <div class="thinking-loader-chips">
+              <span class="thinking-chip-item anim-pulse">Planning...</span>
+              <span class="thinking-chip-item anim-pulse delay-1">Executing Tool...</span>
+              <span class="thinking-chip-item anim-pulse delay-2">Reading Files...</span>
+            </div>
+          </div>
+
+          <!-- Quick Actions Panel -->
+          <div class="quick-actions-bar">
+            <button class="quick-action-chip" onclick="document.getElementById('chat-input').value = '/status'; document.getElementById('chat-input').focus();">/status</button>
+            <button class="quick-action-chip" onclick="document.getElementById('chat-input').value = '/tools'; document.getElementById('chat-input').focus();">/tools</button>
+            <button class="quick-action-chip" onclick="document.getElementById('chat-input').value = '/sessions'; document.getElementById('chat-input').focus();">/sessions</button>
+          </div>
+
+          <!-- Sticky Chat Input Section -->
+          <div class="chat-input-container">
+            <div class="input-form-wrapper">
+              <div class="input-tool-tray">
+                <button class="btn-input-icon" title="Attachments">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                  </svg>
+                </button>
+                <button class="btn-input-icon" title="Image Upload">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                  </svg>
+                </button>
+                <button class="btn-input-icon" title="Voice Input">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                  </svg>
+                </button>
+              </div>
+              
+              <textarea id="chat-input" placeholder="Enter instructions, medical queries, or commands..." rows="1"></textarea>
+              
+              <button id="btn-send" class="btn-send-mono" title="Run Command">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
+            </div>
+            <div class="input-hotkey-hint">Press Enter to Run. Shift+Enter for new line.</div>
+          </div>
+        </section>
+
+        <!-- PAGE 2: SKILLS PAGE -->
+        <section id="page-skills" class="page-section">
+          <div class="section-heading">
+            <h1>Skills Management</h1>
+            <p>Agent's modular behavioral execution flows.</p>
+          </div>
+          <div class="skills-header-bar">
+            <div class="dropdown-container">
+              <button id="dropdown-skills-btn" class="btn-secondary-action dropdown-trigger">
+                Add Skill
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div id="dropdown-skills-list" class="dropdown-content">
+                <!-- Populated dynamically via app.js -->
+              </div>
+            </div>
+          </div>
+          <div class="monochrome-grid" id="skills-grid">
+            <!-- Active skills list -->
+          </div>
+        </section>
+
+        <!-- PAGE 3: TOOLS PAGE -->
+        <section id="page-tools" class="page-section">
+          <div class="section-heading">
+            <h1>Tools Sandbox</h1>
+            <p>Functional system and memory interaction APIs.</p>
+          </div>
+          <div class="tools-header-bar">
+            <div class="dropdown-container">
+              <button id="dropdown-tools-btn" class="btn-secondary-action dropdown-trigger">
+                Add Tool
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div id="dropdown-tools-list" class="dropdown-content">
+                <!-- Populated dynamically via app.js -->
+              </div>
+            </div>
+          </div>
+          <div class="monochrome-grid" id="tools-grid">
+            <!-- Active tools list -->
+          </div>
+        </section>
+
+        <!-- PAGE 4: PLUGINS PAGE -->
+        <section id="page-plugins" class="page-section">
+          <div class="section-heading">
+            <h1>Security & Core Plugins</h1>
+            <p>Middleware layers for blockchain audit, encryption, and sync.</p>
+          </div>
+          <div class="plugins-header-bar">
+            <div class="dropdown-container">
+              <button id="dropdown-plugins-btn" class="btn-secondary-action dropdown-trigger">
+                Add Plugin
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div id="dropdown-plugins-list" class="dropdown-content">
+                <!-- Populated dynamically via app.js -->
+              </div>
+            </div>
+          </div>
+          <div class="monochrome-grid" id="plugins-grid">
+            <!-- Active plugins list -->
+          </div>
+        </section>
+
+        <!-- SESSIONS INDEX PAGE -->
+        <section id="page-sessions-stub" class="page-section">
+          <div class="section-heading">
+            <h1>Sessions Index</h1>
+            <p>Active session folders available for checkout, rename, export, or deletion.</p>
+          </div>
+          <div class="sessions-index-container">
+            <table class="sessions-index-table">
+              <thead>
+                <tr>
+                  <th>Session Name</th>
+                  <th>Session ID</th>
+                  <th>Last Updated</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="sessions-index-tbody">
+                <!-- Dynamically populated via app.js -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="page-models-stub" class="page-section stub-section">
+          <div class="section-heading">
+            <h1>Neural Models</h1>
+            <p>Select, optimize, and evaluate medical domain fine-tuned LoRA models and GGUF parameters.</p>
+          </div>
+          <div class="monochrome-stub-card">Coming Soon (Feature Planned in Next Phase)</div>
+        </section>
+
+        <section id="page-providers-stub" class="page-section stub-section">
+          <div class="section-heading">
+            <h1>Inference Providers</h1>
+            <p>Manage model deployment endpoints, remote API keys, and local model server hooks.</p>
+          </div>
+          <div class="monochrome-stub-card">Coming Soon (Feature Planned in Next Phase)</div>
+        </section>
+
+        <section id="page-logs-stub" class="page-section stub-section">
+          <div class="section-heading">
+            <h1>Clinical Audit Trails</h1>
+            <p>Real-time telemetry records, transaction IDs, and cryptographic compliance proofs.</p>
+          </div>
+          <div class="monochrome-stub-card">Coming Soon (Feature Planned in Next Phase)</div>
+        </section>
+
+        <section id="page-alerts-stub" class="page-section stub-section">
+          <div class="section-heading">
+            <h1>System Health Monitors</h1>
+            <p>Monitor RAM consumption, network latency, vector search indexing errors, and connection health.</p>
+          </div>
+          <div class="monochrome-stub-card">Coming Soon (Feature Planned in Next Phase)</div>
+        </section>
+
+        <!-- TRASH PAGE -->
+        <section id="page-trash-stub" class="page-section">
+          <div class="section-heading-row">
+            <div class="section-heading">
+              <h1>Trash</h1>
+              <p>Restore or permanently purge deleted sessions and logs.</p>
+            </div>
+            <button id="btn-empty-trash" class="btn-danger-solid" style="width: auto; height: 32px; padding: 0 16px;">Empty Trash</button>
+          </div>
+          <div class="trash-container">
+            <table class="trash-table">
+              <thead>
+                <tr>
+                  <th>Session Name</th>
+                  <th>Session ID</th>
+                  <th>Deleted At</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="trash-tbody">
+                <!-- Dynamically populated via app.js -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- COLUMN 3: INSPECTOR PANEL (Width: 320px) -->
+    <aside id="right-sidebar" class="inspector-col">
+      <div class="inspector-wrapper">
+        <div class="inspector-scroll-area">
+          
+          <!-- Accordion Section: Session Details -->
+          <div class="inspector-group active">
+            <div class="inspector-group-header">
+              <span>Session Details</span>
+              <svg class="inspector-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+            <div class="inspector-group-body">
+              <div class="meta-field-list">
+                <div class="meta-field">
+                  <span class="meta-label">Session ID</span>
+                  <div class="meta-value-row">
+                    <span id="session-details-id" class="meta-val-trunc">1783093594642</span>
+                    <button class="btn-copy-tiny" id="btn-copy-session-id" title="Copy Session ID">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="meta-field">
+                  <span class="meta-label">Created</span>
+                  <span class="meta-value" id="session-details-created">Jul 3, 2025, 09:27 PM</span>
+                </div>
+                
+                <div class="meta-field">
+                  <span class="meta-label">Status</span>
+                  <div class="meta-status-row">
+                    <span class="status-indicator-dot active-color"></span>
+                    <span class="meta-value" id="session-details-status">Active</span>
+                  </div>
+                </div>
+                
+                <div class="meta-field">
+                  <span class="meta-label">Provider</span>
+                  <span class="meta-value" id="session-details-provider">local/ollama</span>
+                </div>
+                
+                <div class="meta-field">
+                  <span class="meta-label">Core Node</span>
+                  <div class="meta-status-row">
+                    <span class="status-indicator-dot active-color" id="session-details-node-dot"></span>
+                    <span class="meta-value" id="session-details-node">Idle</span>
+                  </div>
+                </div>
+                
+                <div class="meta-field">
+                  <span class="meta-label">Model</span>
+                  <span class="meta-value" id="session-details-model">Not Selected</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Actions -->
+          <div class="inspector-group active">
+            <div class="inspector-group-header">
+              <span>Session Actions</span>
+            </div>
+            <div class="inspector-group-body">
+              <div class="actions-stack">
+                <button class="btn-inspector-action" id="btn-rename-session">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                  </svg>
+                  <span>Rename Session</span>
+                </button>
+                
+                <button class="btn-inspector-action" id="btn-export-session">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>Export Session</span>
+                </button>
+                
+                <button class="btn-inspector-action" id="btn-clear-messages">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  <span>Clear Messages</span>
+                </button>
+                
+                <button class="btn-inspector-action danger-border" id="btn-delete-session-right">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  <span>Delete Session</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Danger Zone -->
+          <div class="inspector-group active">
+            <div class="inspector-group-header red-header">
+              <span>Danger Zone</span>
+            </div>
+            <div class="inspector-group-body">
+              <button class="btn-danger-solid" id="btn-delete-all-sessions">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                <span>Delete All Sessions</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- STATUS TELEMETRY BAR (Bottom) -->
+  <footer id="system-status-bar">
+    <div class="status-left">
+      <span class="stat-item">v1.0.0</span>
+      <span class="stat-divider">|</span>
+      <span class="stat-item">main</span>
+      <span class="stat-divider">|</span>
+      <span class="stat-item" id="footer-active-provider">local/ollama</span>
+    </div>
+
+    <div class="status-center">
+      <div class="secure-indicator">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <span>Secure Connection</span>
+      </div>
+    </div>
+    
+    <div class="status-right">
+      <span class="stat-status-chip">
+        <span class="stat-indicator-dot ok"></span>
+        <span>All Systems Operational</span>
+      </span>
+    </div>
+  </footer>
+
+  <!-- Main JavaScript File -->
+  <script src="app.js?v=1.0.4"></script>
+</body>
+</html>

@@ -1,322 +1,264 @@
-# AEGIS Monorepo Event Bus: Architectural & Implementation Deep-Dive
+# AEGIS — Event Bus Report
+**Version:** 1.0.0 | **Last Updated:** 2026-07-12
 
 ---
 
-## 1. Overview of the Event Bus Architecture
+## 1. Overview
 
-AEGIS employs two decoupled event bus systems to coordinate the system execution lifecycle and data storage modifications. This separation keeps the primary AI execution loop fast, ensures modularity, and facilitates asynchronous background processing without resource contention:
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                          AEGIS RUNTIME KERNEL                          │
-└──────────────┬──────────────────────────────────────────┬──────────────┘
-               │                                          │
-               ▼                                          ▼
-     [System Runtime EventBus]                 [Memory Subsystem EventBus]
-   - EventBus.ts (Synchronous)                 - MemoryEventBus.ts (Asynchronous)
-   - Exposes: execution_started,               - Exposes: workingMemory.updated,
-     thinking_started, response_chunk,           sessionMemory.updated, entity.updated,
-     tool_started, command_executed, etc.        history.appended, snapshot.created, etc.
-               │                                          │
-        ┌──────┴──────┐                            ┌──────┴──────┐
-        ▼             ▼                            ▼             ▼
-  [API Server]  [Terminal UI]             [EmbeddingHandler] [ReflectionHandler]
-  - streams SSE - renders logs            - Nomical vectors  - Extracts rules
-    responses     to operator               generation         from history
-```
-
-1.  **System Runtime EventBus (`EventBus.ts`)**: Coordinates kernel runtime lifecycle events, slash commands, dynamic capability configurations, and execution turns. It executes listeners synchronously to ensure immediate UI and API state updates.
-2.  **Memory Subsystem EventBus (`MemoryEventBus.ts`)**: Propagates data modification events. It executes listeners asynchronously using microtask scheduling to prevent disk operations (like generating vector embeddings or compiling graph traversals) from blocking the reasoning loops.
+The AEGIS Event Bus is a **typed, domain-organized** publish-subscribe system built on Node.js `EventEmitter`. It serves as the backbone of decoupled communication across all system layers — from the boot sequence to the agent loop to memory operations.
 
 ---
 
-## 2. System Runtime EventBus (`aegis-runtime`)
+## 2. Location & Files
 
-The Runtime EventBus is implemented in `@aegis/runtime` and shared across monorepo packages to orchestrate system state.
-
-### 2.1. Event Envelope Schema (`EventPayloads.ts`)
-All emitted events are wrapped inside an `EventEnvelope` structure:
-```typescript
-export interface EventEnvelope<T = any> {
-  event: string;      // The event name (topic)
-  timestamp: number;  // Epoch millisecond timestamp
-  source: string;     // The emitting subsystem (e.g. 'runtime-executor')
-  payload: T;         // Associated data payload
-}
+```
+packages/aegis-runtime/src/eventbus/
+├── EventBus.ts        # EventEmitter wrapper (singleton)
+├── EventTypes.ts      # 100+ typed event name constants
+├── EventRegistry.ts   # Event metadata & handler registry
+├── EventPayloads.ts   # Payload type definitions
+└── index.ts           # Public exports
 ```
 
-### 2.2. Event Registry (`EventRegistry.ts`)
-On startup, standardized events are registered inside the `EventRegistry` database containing descriptive metadata and validation hook callbacks:
-*   `runtime_started` — Fired when the microkernel bootstraps successfully.
-*   `runtime_shutdown` — Fired when shutdown is requested.
-*   `provider_initialized` / `provider_failed` — Fired during LLM connection tests.
-*   `plugin_loaded` / `plugin_failed` — Fired when plugins are activated/deactivated.
-*   `skill_executed` / `skill_failed` — Fired during skill execution.
-*   `message_received` — Fired when a message is added to the active conversation history.
-*   `execution_started` / `execution_completed` — Fired around execution turns.
-*   `command_executed` / `command_failed` — Fired around slash command runs.
-*   `memory.updated` / `memory.deleted` — Fired on cache updates.
-
----
-
-### 2.3. EventBus Engine Implementation (`EventBus.ts`)
-The `EventBus` class registers listeners using unique Map references:
-```typescript
-export type EventListener<T = any> = (envelope: EventEnvelope<T>) => void | Promise<void>;
-
-export class EventBus {
-  private listeners = new Map<string, Set<EventListener>>();
-
-  public on<T = any>(event: string, listener: EventListener<T>): void {
-    if (!this.listeners.has(event)) {
-      this.listeners.set(event, new Set());
-    }
-    this.listeners.get(event)!.add(listener);
-  }
-
-  public off<T = any>(event: string, listener: EventListener<T>): void {
-    const set = this.listeners.get(event);
-    if (set) {
-      set.delete(listener);
-      if (set.size === 0) {
-        this.listeners.delete(event);
-      }
-    }
-  }
-
-  public once<T = any>(event: string, listener: EventListener<T>): void {
-    const wrapper: EventListener<T> = (envelope: EventEnvelope<T>) => {
-      this.off(event, wrapper);
-      return listener(envelope);
-    };
-    this.on(event, wrapper);
-  }
-
-  public emit<T = any>(event: string, payloadOrEnvelope?: T | EventEnvelope<T>, source?: string): void {
-    let envelope: EventEnvelope<T>;
-
-    if (payloadOrEnvelope && typeof payloadOrEnvelope === 'object' && 'event' in payloadOrEnvelope && 'timestamp' in payloadOrEnvelope && 'source' in payloadOrEnvelope && 'payload' in payloadOrEnvelope) {
-      envelope = payloadOrEnvelope as EventEnvelope<T>;
-    } else {
-      envelope = {
-        event,
-        timestamp: Date.now(),
-        source: source || 'system',
-        payload: payloadOrEnvelope as T,
-      };
-    }
-
-    const set = this.listeners.get(event);
-    if (set) {
-      const targets = Array.from(set);
-      for (const listener of targets) {
-        try {
-          const result = listener(envelope);
-          if (result instanceof Promise) {
-            result.catch(err => {
-              console.error(`[EventBus] Async listener error on event '${event}':`, err);
-            });
-          }
-        } catch (err) {
-          console.error(`[EventBus] Sync listener error on event '${event}':`, err);
-        }
-      }
-    }
-  }
-}
+Also:
+```
+packages/aegis-memory/src/eventbus/
+└── MemoryEventBus.ts  # Memory-domain scoped event bus
 ```
 
 ---
 
-## 3. Cognitive Memory EventBus (`aegis-core/src/memory/eventbus`)
-
-The memory subsystem implements a dedicated `MemoryEventBus` to handle storage modifications.
-
-### 3.1. Memory Event Schema (`MemoryEvent.ts`)
-```typescript
-export interface MemoryEvent<T = any> {
-  eventId: string;     // Unique UUID event identifier
-  topic: string;       // The database topic (e.g. 'workingMemory.updated')
-  timestamp: string;   // ISO string timestamp
-  sessionId: string;   // Active session identifier context
-  actor: string;       // Issuer authorization name ('user', 'system')
-  payload: T;          // Associated payload
-}
-```
-
----
-
-### 3.2. Asynchronous Namespace Routing (`MemoryEventBus.ts`)
-The `MemoryEventBus` class supports namespace routing. Listeners can subscribe to specific topics, global wildcards (`*`), or namespace wildcards (`session.*` matches `session.created` and `session.deleted`):
+## 3. EventBus API
 
 ```typescript
-export type MemoryEventHandler = (event: MemoryEvent) => void | Promise<void>;
-
-export class MemoryEventBus {
-  private static instance = new MemoryEventBus();
-  private subscribers = new Map<string, Map<string, MemoryEventHandler>>();
-
-  public static getInstance(): MemoryEventBus {
-    return this.instance;
-  }
-
-  public subscribe(topic: string, handler: MemoryEventHandler): string {
-    const subId = `sub_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
-    if (!this.subscribers.has(topic)) {
-      this.subscribers.set(topic, new Map());
-    }
-    this.subscribers.get(topic)!.set(subId, handler);
-    return subId;
-  }
-
-  public unsubscribe(subscriptionId: string): void {
-    for (const [topic, handlersMap] of this.subscribers.entries()) {
-      if (handlersMap.has(subscriptionId)) {
-        handlersMap.delete(subscriptionId);
-        if (handlersMap.size === 0) {
-          this.subscribers.delete(topic);
-        }
-        break;
-      }
-    }
-  }
-
-  public publish(event: MemoryEvent): void {
-    // Exact match topic execution
-    this.dispatch(event.topic, event);
-
-    // Global wildcard match topic execution
-    this.dispatch('*', event);
-
-    // Namespace wildcard match (e.g. 'session.*' matches 'session.created')
-    if (event.topic.includes('.')) {
-      const parts = event.topic.split('.');
-      if (parts.length > 0) {
-        this.dispatch(`${parts[0]}.*`, event);
-      }
-    }
-  }
-
-  private dispatch(topicPattern: string, event: MemoryEvent): void {
-    const handlersMap = this.subscribers.get(topicPattern);
-    if (handlersMap) {
-      for (const handler of handlersMap.values()) {
-        // Schedule execution asynchronously via microtask queue to avoid blocking
-        Promise.resolve().then(async () => {
-          try {
-            await handler(event);
-          } catch (err) {
-            console.error(`[MemoryEventBus] Error in handler for topic ${topicPattern}:`, err);
-          }
-        });
-      }
-    }
-  }
+class EventBus extends EventEmitter {
+  emit(event: string, payload?: any, source?: string): void
+  on(event: string, handler: (payload: any) => void): void
+  off(event: string, handler: (payload: any) => void): void
+  once(event: string, handler: (payload: any) => void): void
 }
+
+export const eventBus = new EventBus();  // Global singleton
 ```
 
 ---
 
-### 3.3. Memory Event Handlers
-The EventBus routes memory events to three primary background handlers:
+## 4. Complete Event Type Reference
 
-#### A. EmbeddingHandler (`EmbeddingHandler.ts`)
-Subscribes to: `workingMemory.updated`, `sessionMemory.updated`
-1. Receives modified Markdown contents.
-2. Chunk-splits the text dynamically based on Markdown header tags (`#` and `##`).
-3. Calls `MemoryEmbeddingManager` to generate Float32 vectors.
-4. Updates the local vector database (`vectors.json`).
+All event names are defined as constants in `EventTypes.ts`.
 
-#### B. ReflectionHandler (`ReflectionHandler.ts`)
-Subscribes to: `session.archived`
-1. Triggered when a session is completed or archived.
-2. Extracts failed tool calls (errors, timeouts) and successful completions.
-3. Generates future execution guidelines.
-4. Appends them to the session state preferences.
+### 4.1 Execution Events (Agent Runtime)
 
-#### C. AuditLogger (`AuditLogger.ts`)
-Subscribes to: `*`
-1. Intercepts all database reads, writes, and deletions.
-2. Compiles access metrics and transaction details.
-3. Writes signed audit records to disk for compliance logs.
+| Constant | Event String | Payload |
+|----------|-------------|---------|
+| `EXECUTION_STARTED` | `execution_started` | `{ input: string }` |
+| `MESSAGE_RECEIVED` | `message_received` | `{ role, content }` |
+| `THINKING_STARTED` | — | `{}` |
+| `THINKING_FINISHED` | — | `{}` |
+| — | `response_chunk` | `{ chunk: string }` |
+| — | `tool_started` | `{ toolName, input }` |
+| — | `tool_finished` | `{ toolName, output }` |
+| `EXECUTION_COMPLETED` | `execution_completed` | `{}` |
+| — | `runtime_error` | `{ error: string }` |
+
+### 4.2 Session Lifecycle Events
+
+| Constant | Event String | Trigger |
+|----------|-------------|---------|
+| `SESSION_CREATED` | `session.created` | New session created |
+| `SESSION_LOADED` | `session.loaded` | Session metadata loaded |
+| `SESSION_MOUNTED` | `session.mounted` | Active session fully loaded into cache |
+| `SESSION_UNMOUNTED` | `session.unmounted` | Session evicted from active cache |
+| `SESSION_MOUNT_FAILED` | `session.mount.failed` | Mount operation failed |
+| `SESSION_CHECKOUT_STARTED` | `session.checkout.started` | Checkout operation beginning |
+| `SESSION_CHECKOUT_COMPLETED` | `session.checkout.completed` | Checkout operation complete |
+| `SESSION_DELETED` | `session.deleted` | Session soft-deleted (moved to trash) |
+| `SESSION_ARCHIVED` | `session.archived` | Session archived |
+| `SESSION_FORKED` | `session.forked` | Session forked to new branch |
+| `SESSION_RENAMED` | `session.renamed` | Session displayName changed |
+| `SESSION_RESTORED` | `session.restored` | Session recovered from trash |
+| `SESSION_QUARANTINED` | `session.quarantined` | Session moved to quarantine (corruption) |
+
+### 4.3 Memory Events
+
+| Constant | Event String | Trigger |
+|----------|-------------|---------|
+| `MEMORY_READ` | `memory.read` | Memory entity read |
+| `MEMORY_UPDATED` | `memory.updated` | Memory entity written |
+| `MEMORY_DELETED` | `memory.deleted` | Memory entity deleted |
+| `MEMORY_FAILED` | `memory.failed` | Memory I/O operation failed |
+| `MEMORY_INITIALIZED` | `memory.initialized` | Memory subsystem ready |
+| `MEMORY_LOADED` | `memory.loaded` | Memory snapshot loaded |
+| `MEMORY_REFINED` | `memory.refined` | Memory compressed/pruned |
+| `MEMORY_COMPRESSED` | `memory.compressed` | Memory compressed |
+| `MEMORY_PRUNED` | `memory.pruned` | Memory pruned |
+| `MEMORY_CORRUPTED` | `memory.corrupted` | Checksum mismatch detected |
+| `MEMORY_RESTORED` | `memory.restored` | Corruption recovered |
+| `MEMORY_LOCKED` | `memory.locked` | Memory lock acquired |
+| `MEMORY_SNAPSHOT_CREATED` | `memory.snapshot.created` | Snapshot created |
+| `MEMORY_VALIDATION_FAILED` | `memory.validation.failed` | Validation error |
+| `WORKING_MEMORY_EXPIRED` | `working-memory.expired` | Working memory TTL exceeded |
+
+### 4.4 Runtime State Events
+
+| Constant | Event String | Trigger |
+|----------|-------------|---------|
+| `RUNTIME_STARTED` | `runtime_started` | Runtime fully initialized |
+| `RUNTIME_SHUTDOWN` | `runtime_shutdown` | Shutdown initiated |
+| `RUNTIME_STATE_LOADED` | `runtime.state.loaded` | Runtime state file read |
+| `RUNTIME_STATE_PERSISTED` | `runtime.state.persisted` | Runtime state written to disk |
+| `RUNTIME_SESSION_CHANGED` | `runtime.session.changed` | Active session switched |
+| `RUNTIME_MODE_CHANGED` | `runtime.mode.changed` | Runtime mode changed |
+| `RUNTIME_CLUSTER_CHANGED` | `runtime.cluster.changed` | Cluster topology changed |
+
+### 4.5 Runtime Health & Hardening Events
+
+| Constant | Event String | Trigger |
+|----------|-------------|---------|
+| `RUNTIME_HEALTH_CHANGED` | `runtime.health.changed` | Health status changed |
+| `RUNTIME_CRASH_DETECTED` | `runtime.crash.detected` | Abnormal termination detected |
+| `RUNTIME_SAFE_MODE_ENTERED` | `runtime.safe_mode.entered` | Boot entered safe mode |
+| `RUNTIME_HEARTBEAT_UPDATED` | `runtime.heartbeat.updated` | Heartbeat timestamp refreshed |
+| `RUNTIME_HEARTBEAT_STALE` | `runtime.heartbeat.stale` | Watchdog detected stale heartbeat |
+| `RUNTIME_LOCK_ACQUIRED` | `runtime.lock.acquired` | Distributed lock taken |
+| `RUNTIME_LOCK_RELEASED` | `runtime.lock.released` | Distributed lock released |
+| `RUNTIME_TIMEOUT_TRIGGERED` | `runtime.timeout.triggered` | Operation timed out |
+| `RUNTIME_MOUNT_GENERATION_CHANGED` | `runtime.mount.generation.changed` | Mount generation incremented |
+| `RUNTIME_IDENTITY_INITIALIZED` | `runtime.identity.initialized` | Runtime ID assigned |
+| `RUNTIME_STALE_CONTEXT_INVALIDATED` | `runtime.stale.context.invalidated` | Old context evicted |
+| `RUNTIME_CAPABILITY_SNAPSHOT_UPDATED` | `runtime.capability.snapshot.updated` | Tool/skill/plugin snapshot refreshed |
+
+### 4.6 Advanced Recovery & Checkpoint Events
+
+| Constant | Event String | Trigger |
+|----------|-------------|---------|
+| `RUNTIME_RECOVERY_STARTED` | `runtime.recovery.started` | Recovery procedure initiated |
+| `RUNTIME_RECOVERY_COMPLETED` | `runtime.recovery.completed` | Recovery procedure complete |
+| `SESSION_RECOVERY_STARTED` | `session.recovery.started` | Session recovery initiated |
+| `SESSION_RECOVERY_COMPLETED` | `session.recovery.completed` | Session recovery complete |
+| `RUNTIME_RECOVERY_THRESHOLD_EXCEEDED` | `runtime.recovery.threshold.exceeded` | Too many recovery attempts |
+| `RUNTIME_CHECKPOINT_ROLLBACK_STARTED` | `runtime.checkpoint.rollback.started` | Checkpoint rollback initiated |
+| `RUNTIME_CHECKPOINT_ROLLBACK_COMPLETED` | `runtime.checkpoint.rollback.completed` | Rollback complete |
+| `RUNTIME_RECOVERY_CHECKPOINT_CREATED` | `runtime.recovery.checkpoint.created` | Recovery checkpoint saved |
+| `RUNTIME_RECOVERY_CHECKPOINT_RESTORED` | `runtime.recovery.checkpoint.restored` | Recovery checkpoint restored |
+
+### 4.7 Mount Lease Events
+
+| Constant | Event String | Trigger |
+|----------|-------------|---------|
+| `RUNTIME_MOUNT_LEASE_ACQUIRED` | `runtime.mount.lease.acquired` | 10-min mount lease granted |
+| `RUNTIME_MOUNT_LEASE_EXPIRED` | `runtime.mount.lease.expired` | Mount lease expired |
+| `RUNTIME_MOUNT_INTENT_CHANGED` | `runtime.mount.intent.changed` | Mount intent updated |
+| `RUNTIME_MOUNT_INVARIANT_VIOLATED` | `runtime.mount.invariant.violated` | Invariant check failed |
+| `SESSION_MOUNT_TIMEOUT` | `session.mount.timeout` | Mount operation timed out |
+
+### 4.8 Session Validation Events
+
+| Constant | Event String | Trigger |
+|----------|-------------|---------|
+| `SESSION_VALIDATION_STARTED` | `session.validation.started` | Validation begins |
+| `SESSION_VALIDATION_COMPLETED` | `session.validation.completed` | Validation complete |
+| `SESSION_VALIDATION_CACHE_HIT` | `session.validation.cache.hit` | Cached validation result used |
+| `SESSION_VALIDATION_CACHE_MISS` | `session.validation.cache.miss` | Cache miss, full validation run |
+| `SESSION_COMPATIBILITY_FAILED` | `session.compatibility.failed` | Schema mismatch detected |
+
+### 4.9 Session Quality Events
+
+| Constant | Event String | Trigger |
+|----------|-------------|---------|
+| `SESSION_ENTROPY_CHANGED` | `session.entropy.changed` | Content entropy metrics changed |
+| `SESSION_SEMANTIC_DRIFT_CHANGED` | `session.semantic.drift.changed` | Semantic drift detected |
+| `SESSION_COGNITIVE_LOAD_CHANGED` | `session.cognitive.load.changed` | Cognitive load metric changed |
+| `SESSION_SEMANTIC_FINGERPRINT_UPDATED` | `session.semantic.fingerprint.updated` | Fingerprint recalculated |
+| `SESSION_QUARANTINE_REASON_UPDATED` | `session.quarantine.reason.updated` | Quarantine reason logged |
+| `SESSION_CORRUPTION_SCORE_CHANGED` | `session.corruption.score.changed` | Corruption score changed |
+| `SESSION_RESTORE_MODE_CHANGED` | `session.restore.mode.changed` | Restore strategy changed |
+
+### 4.10 Provider & Capability Events
+
+| Constant | Event String | Trigger |
+|----------|-------------|---------|
+| `PROVIDER_INITIALIZED` | `provider_initialized` | Provider ready |
+| `PROVIDER_FAILED` | `provider_failed` | Provider initialization failed |
+| — | `capability_autoload_started` | Capability load beginning |
+| — | `capability_added` | Capability registered |
+| — | `capability_removed` | Capability unregistered |
+| — | `capability_updated` | Capability hot-swapped |
+| — | `capability_failed` | Capability operation failed |
+| — | `capability_initialized` | Capability fully ready |
+
+### 4.11 Plugin & Skill Events
+
+| Constant | Event String | Trigger |
+|----------|-------------|---------|
+| `PLUGIN_LOADED` | `plugin_loaded` | Plugin initialized |
+| `PLUGIN_FAILED` | `plugin_failed` | Plugin load failure |
+| `SKILL_EXECUTED` | `skill_executed` | Skill completed |
+| `SKILL_FAILED` | `skill_failed` | Skill execution failed |
+
+### 4.12 Command Events
+
+| Constant | Event String | Trigger |
+|----------|-------------|---------|
+| `COMMAND_EXECUTED` | `command_executed` | CLI command completed |
+| `COMMAND_FAILED` | `command_failed` | CLI command failed |
+
+### 4.13 Package Manager Events
+
+| Constant | Event String | Trigger |
+|----------|-------------|---------|
+| `PACKAGE_INSTALLING` | `package.installing` | Package install in progress |
+| `PACKAGE_INSTALLED` | `package.installed` | Package successfully installed |
+| `PACKAGE_REMOVED` | `package.removed` | Package uninstalled |
+| `PACKAGE_UPDATED` | `package.updated` | Package version updated |
+| `PACKAGE_VERIFIED` | `package.verified` | Package signature verified |
+| `PACKAGE_TRANSACTION_STARTED` | `package.transaction.started` | Atomic install transaction begins |
+| `PACKAGE_TRANSACTION_COMMITTED` | `package.transaction.committed` | Transaction committed |
+| `PACKAGE_TRANSACTION_ROLLED_BACK` | `package.transaction.rolled_back` | Transaction rolled back |
+| `PACKAGE_REPOSITORY_UPDATED` | `package.repository.updated` | Package repo refreshed |
 
 ---
 
-## 4. Subsystem Interaction Flows
+## 5. Chat Execution Event Flow (SSE-facing)
 
-### Trace A: Streamed UI Inference via System EventBus
+These events are forwarded directly as SSE events to connected clients via `ApiServer.ts`:
 
-This trace shows how the API server uses the synchronous EventBus to stream real-time tokens and tool lifecycle updates to the browser using Server-Sent Events (SSE):
+```
+User sends message
+       │
+       ▼ emit
+execution_started   → SSE: event: execution_started
+message_received    → SSE: event: message_received
+thinking_started    → SSE: event: thinking_started
+[per token]
+response_chunk      → SSE: event: response_chunk { chunk }
+thinking_finished   → SSE: event: thinking_finished
+[per tool use]
+tool_started        → SSE: event: tool_started { toolName, input }
+tool_finished       → SSE: event: tool_finished { toolName, output }
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Operator as Operator Panel
-    participant Server as ApiServer (ApiServer.ts)
-    participant Bus as System EventBus (EventBus.ts)
-    participant Exec as RuntimeExecutor (RuntimeExecutor.ts)
-    participant Provider as Model Provider
-
-    Operator->>Server: Send Chat Message Request
-    Server->>Bus: Subscribe to execution, thinking, chunk, and tool events
-    Server->>Exec: execute(message)
-    
-    Exec->>Bus: emit("execution_started")
-    Bus-->>Server: Dispatch envelope
-    Server-->>Operator: SSE: event: execution_started
-    
-    Exec->>Bus: emit("thinking_started")
-    Bus-->>Server: Dispatch envelope
-    Server-->>Operator: SSE: event: thinking_started
-
-    loop Chunk Stream
-        Provider-->>Exec: yield content chunk
-        Exec->>Bus: emit("response_chunk", chunk)
-        Bus-->>Server: Dispatch envelope
-        Server-->>Operator: SSE: event: response_chunk
-    end
-
-    Exec->>Bus: emit("tool_started", { name, input })
-    Bus-->>Server: Dispatch envelope
-    Server-->>Operator: SSE: event: tool_started
-
-    Exec->>Bus: emit("execution_completed")
-    Bus-->>Server: Dispatch envelope
-    Server-->>Operator: SSE: event: execution_completed
-    Server->>Bus: Unsubscribe all listeners
+execution_completed → SSE: event: execution_completed → SSE stream closes
+runtime_error       → SSE: event: runtime_error { error } → SSE stream closes
 ```
 
 ---
 
-### Trace B: Asynchronous Memory Operations via Memory EventBus
+## 6. Engine Registry Change Event
 
-This trace demonstrates how the memory event bus processes time-consuming operations (like generating vector embeddings) on background microtasks, keeping the primary agent thread responsive:
+The `EngineManager` subscribes to:
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Exec as RuntimeExecutor
-    participant Gateway as MemoryGateway (MemoryGateway.ts)
-    participant Bus as Memory EventBus (MemoryEventBus.ts)
-    participant Handler as EmbeddingHandler (EmbeddingHandler.ts)
-    participant Embed as EmbeddingManager (MemoryEmbeddingManager.ts)
-    participant Vec as VectorStore (VectorSearchProvider.ts)
-
-    Exec->>Gateway: updateWorkingMemory(sessionId, newMarkdown)
-    Gateway->>Gateway: Write markdown content to disk
-    Gateway->>Bus: publish(MemoryEvent: workingMemory.updated)
-    Gateway-->>Exec: Return immediately (Main thread released)
-
-    rect rgb(220, 240, 220)
-        Note over Bus, Handler: Asynchronous Microtask scheduled via Promise.resolve()
-        Bus->>Handler: handleEvent(MemoryEvent)
-        Handler->>Handler: Split markdown into header text chunks
-        
-        loop For each chunk
-            Handler->>Embed: generate(chunkText)
-            Embed-->>Handler: Return Float32 Vector[]
-            Handler->>Vec: insert(chunkId, sessionId, text, Vector)
-            Vec->>Vec: Write vector indices to vectors.json
-        end
-    end
 ```
+RuntimeRegistryUpdated
+```
+
+When received, it triggers a full `reload()` of all engines — enabling live plugin addition without restart.
+
+---
+
+## 7. Event Bus Design Principles
+
+1. **Singleton pattern**: One global `eventBus` instance shared across all modules via import.
+2. **Typed event names**: All event strings come from the `EventTypes` constant map — no magic strings in business logic.
+3. **No payload validation at bus level**: Payload structure is contract-enforced via `EventPayloads.ts` types and `EventRegistry.ts` metadata.
+4. **Cleanup on SSE disconnect**: The `ApiServer.ts` chat handler unsubscribes all listeners when the client closes the connection.
+5. **Memory event bus**: `MemoryEventBus` in the memory package is a separate scoped bus — prevents event cross-contamination between domains.

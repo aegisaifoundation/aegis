@@ -1,0 +1,11 @@
+{
+  "txId": "b40d62ba-193f-4e9b-9da2-0639568f5b89",
+  "state": "ROLLED_BACK",
+  "timestamp": "2026-07-12T14:01:12.245Z",
+  "packageId": "aegis-agent",
+  "action": "install",
+  "backups": [],
+  "addedFiles": [],
+  "addedDirs": [],
+  "originalConfig": null
+}

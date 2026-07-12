@@ -1,0 +1,18 @@
+{
+  "name": "@aegis/package-manager",
+  "version": "1.0.0",
+  "description": "AEGIS Native Package Manager for .aeg packages",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@aegis/sdk": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "typescript": "^5.4.5"
+  }
+}

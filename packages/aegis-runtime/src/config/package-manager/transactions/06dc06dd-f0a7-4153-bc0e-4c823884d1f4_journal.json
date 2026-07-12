@@ -1,0 +1,22 @@
+{
+  "txId": "06dc06dd-f0a7-4153-bc0e-4c823884d1f4",
+  "state": "COMMITTED",
+  "timestamp": "2026-07-12T07:12:46.956Z",
+  "packageId": "aegis-agent",
+  "action": "install",
+  "backups": [],
+  "addedFiles": [
+    "C:\\aegis\\workspace\\engines\\aegis-agent\\engine.json"
+  ],
+  "addedDirs": [
+    "C:\\aegis\\workspace\\engines\\aegis-agent"
+  ],
+  "originalConfig": {
+    "version": "1.0.0",
+    "requireSignature": false,
+    "autoloadEngines": [
+      "distributed-intelligence",
+      "aegis-memory"
+    ]
+  }
+}

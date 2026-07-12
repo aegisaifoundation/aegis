@@ -5,10 +5,19 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "start": "node --experimental-specifier-resolution=node --no-warnings dist/daemon.js",
+    "dev": "node --import tsx --experimental-specifier-resolution=node --no-warnings src/daemon.ts"
   },
   "dependencies": {
+    "@aegis/sdk": "*",
     "dotenv": "^16.4.5",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "react": "^18.3.1",
+    "ink": "^4.4.1",
+    "eventemitter3": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3"
   }
 }

@@ -1,0 +1,1 @@
+{"version":3,"file":"EngineState.d.ts","sourceRoot":"","sources":["../../src/state/EngineState.ts"],"names":[],"mappings":"AAAA,oBAAY,WAAW;IACrB,aAAa,kBAAkB;IAC/B,YAAY,iBAAiB;IAC7B,QAAQ,aAAa;IACrB,WAAW,gBAAgB;IAC3B,OAAO,YAAY;IACnB,KAAK,UAAU;IACf,MAAM,WAAW;IACjB,QAAQ,aAAa;IACrB,UAAU,eAAe;IACzB,QAAQ,aAAa;IACrB,OAAO,YAAY;IACnB,MAAM,WAAW;CAClB"}

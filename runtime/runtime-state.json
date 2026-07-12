@@ -1,0 +1,37 @@
+{
+  "runtimeId": "8688df74-8a80-4e18-8ac3-95cb3e3fe56d",
+  "runtimeClusterId": "cluster-default",
+  "runtimeEpoch": 1,
+  "activeSessionId": "session_1783876795565",
+  "mountedSessionId": "session_1783876795565",
+  "runtimeState": "ACTIVE",
+  "bootMode": "RESTORE_PREVIOUS",
+  "lastBootAt": "2026-07-12T07:14:41.554Z",
+  "lastShutdownAt": "",
+  "runtimeVersion": "1.0.0",
+  "lastSessionSwitchAt": "2026-07-12T17:23:40.501Z",
+  "recoveryRequired": false,
+  "recoveryReason": "",
+  "recoveryAttempts": 0,
+  "runtimeLockState": "IDLE",
+  "mountGeneration": 15,
+  "mountToken": "399e22ee-9458-4ca7-9582-9d091b22492f",
+  "lastShutdownClean": true,
+  "lastHeartbeatAt": "2026-07-12T07:14:41.554Z",
+  "activeCapabilities": {
+    "tools": [],
+    "plugins": [],
+    "providers": [],
+    "workflows": []
+  },
+  "runtimeHealthStatus": "HEALTHY",
+  "runtimeContextVersion": "1.0.0",
+  "runtimeMode": "NORMAL",
+  "checkoutStage": "FINALIZING",
+  "mountLease": {
+    "ownerRuntimeId": "8688df74-8a80-4e18-8ac3-95cb3e3fe56d",
+    "acquiredAt": "2026-07-12T17:23:40.501Z",
+    "expiresAt": "2026-07-12T17:33:40.501Z"
+  },
+  "lastRecoveryCheckpoint": "C:\\aegis\\runtime\\checkpoints\\pre-switch-checkpoint.json"
+}

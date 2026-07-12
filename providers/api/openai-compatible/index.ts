@@ -1,6 +1,6 @@
-import { Provider, ChatMessage } from '../../../aegis-core/src/providers/Provider.js';
-import { ProviderContext } from '../../../aegis-core/src/providers/ProviderContext.js';
-import { config } from '../../../aegis-core/src/config/index.js';
+import { Provider, ChatMessage } from '@aegis/providers';
+import { ProviderContext } from '@aegis/providers';
+import { config } from '@aegis/runtime';
 
 export class OpenAICompatibleProvider implements Provider {
   name = 'api/openai-compatible';

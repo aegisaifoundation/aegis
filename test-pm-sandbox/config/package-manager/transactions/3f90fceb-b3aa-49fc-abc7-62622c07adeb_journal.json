@@ -1,0 +1,19 @@
+{
+  "txId": "3f90fceb-b3aa-49fc-abc7-62622c07adeb",
+  "state": "COMMITTED",
+  "timestamp": "2026-07-12T04:39:25.130Z",
+  "packageId": "engine-a",
+  "action": "install",
+  "backups": [],
+  "addedFiles": [
+    "C:\\aegis\\test-pm-sandbox\\engines\\engine-a\\engine.json"
+  ],
+  "addedDirs": [
+    "C:\\aegis\\test-pm-sandbox\\engines\\engine-a"
+  ],
+  "originalConfig": {
+    "version": "1.0.0",
+    "requireSignature": false,
+    "autoloadEngines": []
+  }
+}

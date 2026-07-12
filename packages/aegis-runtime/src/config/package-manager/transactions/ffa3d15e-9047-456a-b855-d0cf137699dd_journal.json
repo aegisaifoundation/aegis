@@ -1,0 +1,21 @@
+{
+  "txId": "ffa3d15e-9047-456a-b855-d0cf137699dd",
+  "state": "COMMITTED",
+  "timestamp": "2026-07-12T07:12:46.800Z",
+  "packageId": "aegis-memory",
+  "action": "install",
+  "backups": [],
+  "addedFiles": [
+    "C:\\aegis\\workspace\\engines\\aegis-memory\\engine.json"
+  ],
+  "addedDirs": [
+    "C:\\aegis\\workspace\\engines\\aegis-memory"
+  ],
+  "originalConfig": {
+    "version": "1.0.0",
+    "requireSignature": false,
+    "autoloadEngines": [
+      "distributed-intelligence"
+    ]
+  }
+}

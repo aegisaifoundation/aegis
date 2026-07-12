@@ -87,5 +87,14 @@ export declare const EventTypes: {
     readonly RUNTIME_MOUNT_INVARIANT_VIOLATED: "runtime.mount.invariant.violated";
     readonly RUNTIME_CHECKPOINT_ROLLBACK_STARTED: "runtime.checkpoint.rollback.started";
     readonly RUNTIME_CHECKPOINT_ROLLBACK_COMPLETED: "runtime.checkpoint.rollback.completed";
+    readonly PACKAGE_INSTALLING: "package.installing";
+    readonly PACKAGE_INSTALLED: "package.installed";
+    readonly PACKAGE_REMOVED: "package.removed";
+    readonly PACKAGE_UPDATED: "package.updated";
+    readonly PACKAGE_VERIFIED: "package.verified";
+    readonly PACKAGE_TRANSACTION_STARTED: "package.transaction.started";
+    readonly PACKAGE_TRANSACTION_COMMITTED: "package.transaction.committed";
+    readonly PACKAGE_TRANSACTION_ROLLED_BACK: "package.transaction.rolled_back";
+    readonly PACKAGE_REPOSITORY_UPDATED: "package.repository.updated";
 };
 export type EventType = typeof EventTypes[keyof typeof EventTypes];

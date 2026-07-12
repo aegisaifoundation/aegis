@@ -1,0 +1,7 @@
+{
+  "id": "engine-broken",
+  "name": "Broken Engine",
+  "version": "1.0.0",
+  "type": "Engine",
+  "sdkVersion": "9.9.9"
+}

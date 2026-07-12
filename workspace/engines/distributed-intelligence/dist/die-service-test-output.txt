@@ -1,0 +1,4 @@
+[INFO] [Runtime] Boot sequence initiated for aegis-die-node
+[INFO] [Runtime] Starting TCP transport layer...
+[INFO] [Runtime] Boot sequence completed. State: ONLINE
+AEGIS_DIE_READY

@@ -1,0 +1,21 @@
+{
+  "name": "aegis-cli",
+  "version": "1.0.0",
+  "description": "AEGIS Platform CLI Management Application",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "aegis": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@aegis/package-manager": "*",
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "typescript": "^5.4.5"
+  }
+}

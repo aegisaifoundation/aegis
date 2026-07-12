@@ -8,14 +8,15 @@ import { eventBus } from '@aegis/runtime';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 export class ProviderLoader {
-    getAegisCoreRoot() {
+    getMonorepoRoot() {
+        // Walk up from __dirname to find the monorepo root (package.json with name "aegis-monorepo")
         let current = __dirname;
         while (true) {
             const packageJson = path.join(current, 'package.json');
             if (fs.existsSync(packageJson) && !current.includes('node_modules')) {
                 try {
                     const pkg = JSON.parse(fs.readFileSync(packageJson, 'utf8'));
-                    if (pkg.name === 'aegis-core') {
+                    if (pkg.name === 'aegis-monorepo') {
                         return current;
                     }
                 }
@@ -29,28 +30,20 @@ export class ProviderLoader {
             }
             current = parent;
         }
+        // Fallback: try process.cwd()
         let cwd = process.cwd();
         const nmIndex = cwd.indexOf('node_modules');
         if (nmIndex !== -1) {
             cwd = cwd.substring(0, nmIndex);
         }
-        if (fs.existsSync(path.resolve(cwd, 'aegis-core/package.json'))) {
-            return path.resolve(cwd, 'aegis-core');
-        }
         return cwd;
     }
     getWorkspaceRoot() {
-        return path.dirname(this.getAegisCoreRoot());
+        return this.getMonorepoRoot();
     }
     getProvidersDir() {
         const wsRoot = this.getWorkspaceRoot();
-        const isCompiled = import.meta.url.includes('/dist/');
-        if (isCompiled) {
-            return path.resolve(this.getAegisCoreRoot(), 'dist/providers');
-        }
-        else {
-            return path.resolve(wsRoot, 'providers');
-        }
+        return path.resolve(wsRoot, 'providers');
     }
     async discoverProviders() {
         const wsRoot = this.getWorkspaceRoot();

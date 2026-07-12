@@ -1,0 +1,17 @@
+export declare enum MessageType {
+    READY = "READY",
+    HEARTBEAT = "HEARTBEAT",
+    LOG = "LOG",
+    WARNING = "WARNING",
+    ERROR = "ERROR",
+    METRICS = "METRICS",
+    CAPABILITIES = "CAPABILITIES",
+    CONFIG = "CONFIG",
+    EVENT = "EVENT",
+    REQUEST = "REQUEST",
+    RESPONSE = "RESPONSE",
+    SHUTDOWN = "SHUTDOWN",
+    PING = "PING",
+    PONG = "PONG"
+}
+//# sourceMappingURL=MessageTypes.d.ts.map

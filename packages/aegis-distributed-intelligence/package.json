@@ -1,0 +1,19 @@
+{
+  "name": "@aegis/distributed-intelligence",
+  "version": "1.0.0",
+  "description": "AEGIS Distributed Intelligence Engine — C++20 Kernel with TypeScript Runtime Adapter",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "npm run build:ts && npm run build:cpp",
+    "build:ts": "tsc --project tsconfig.json",
+    "build:cpp": "powershell -ExecutionPolicy Bypass -File build.ps1",
+    "dev": "tsc --watch --project tsconfig.json",
+    "test": "node --experimental-vm-modules dist/test/IntegrationTest.js"
+  },
+  "dependencies": {
+    "@aegis/sdk": "*"
+  }
+}

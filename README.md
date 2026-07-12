@@ -1,573 +1,265 @@
-<!-- AEGIS Workspace Development Environment -->
-<div align="center">
-
 # AEGIS
-### Decentralized Federated Medical AI Ecosystem
+### Enterprise AI Operating System
 
-<img src="./assets/aegis-logo.png" width="240"/>
-
-![Build](https://img.shields.io/badge/BUILD-EXPERIMENTAL-blue)
+![Build](https://img.shields.io/badge/BUILD-ACTIVE-brightgreen)
 ![License](https://img.shields.io/badge/LICENSE-MIT-green)
-![Architecture](https://img.shields.io/badge/ARCHITECTURE-Federated-orange)
-![Communication](https://img.shields.io/badge/gRPC-Enabled-purple)
-![Security](https://img.shields.io/badge/SECURITY-Blockchain-red)
+![Architecture](https://img.shields.io/badge/ARCHITECTURE-Distributed-orange)
+![Runtime](https://img.shields.io/badge/Runtime-TypeScript%20%2B%20C%2B%2B20-blue)
+![UI](https://img.shields.io/badge/UI-Desktop%20SPA-purple)
 
 ---
 
-### Privacy-Preserving • Federated • Trust-Aware • Blockchain-Validated
+## What is AEGIS?
 
-</div>
+**AEGIS** is an **Enterprise AI Operating System** — a complete platform for running, managing, and orchestrating AI agents, models, tools, and distributed computing workloads.
 
----
+It is not a single AI model. It is the operating environment where:
 
-# Overview
+- AI agents run as managed **Engines** with full lifecycles
+- Memory is a durable, structured **subsystem** with integrity guarantees
+- Tools, Skills, and Plugins are **hot-swappable capabilities**
+- AI models are interchangeable **Providers** (local GGUF, Ollama, remote API)
+- Distributed computing is powered by a **native C++20 runtime**
 
-AEGIS is a next-generation decentralized medical AI ecosystem designed for privacy-preserving federated intelligence.
-
-The system enables hospitals, labs, clinics, edge devices, and research centers to collaboratively improve AI models without sharing raw patient data.
-
-Instead of centralized AI training, AEGIS uses:
-
-- Federated Learning
-- Selective LoRA Adaptation
-- Trust-Aware Aggregation
-- Blockchain Validation
-- Differential Privacy
-- DP-RAG
-- gRPC Communication
-- Tensor Risk Evaluation
-- Multi-Agent Hierarchical Intelligence
+Current domain application: **Clinical AI** — with local GGUF model inference and medical tooling.
 
 ---
 
-# Getting Started
+## System Architecture
 
-To set up and run AEGIS on a new computer, follow these steps:
+```
+┌─────────────────────────────────────────────────────────┐
+│              Desktop UI (Port 5001)                      │
+│   3-column SPA · Session management · Chat streaming    │
+├─────────────────────────────────────────────────────────┤
+│              REST API Server (Port 3005)                  │
+│   Sessions · Chat/SSE · Capabilities · Providers        │
+├─────────────────────────────────────────────────────────┤
+│             TypeScript Runtime Kernel                    │
+│   Bootloader · EngineManager · EventBus · SessionMgr    │
+├──────────────────┬──────────────────┬───────────────────┤
+│  Memory Engine   │  AI Agent Engine │  REST API Engine  │
+│  (priority: 5)   │  (priority: 10)  │  (priority: 20)   │
+├─────────────────────────────────────────────────────────┤
+│          C++20 Distributed Intelligence Engine           │
+│   Node · Discovery · Heartbeat · AIR · DIS · Resources  │
+└─────────────────────────────────────────────────────────┘
+```
 
-### 1. Prerequisites
-Ensure you have **Node.js (v18+)** and **npm** installed on your system.
+---
 
-### 2. Install Dependencies
-This project uses **NPM Workspaces** to share and deduplicate packages. Clone the repository and install all workspace dependencies from the root directory:
+## Quick Start
+
+### Prerequisites
+
+| Requirement | Version |
+|------------|---------|
+| Node.js | 20+ |
+| Python | 3.10+ |
+| npm | 8+ |
+| CMake | 3.15+ (for C++ build) |
+| llama-cpp-python | latest |
+
+### 1. Install Node.js dependencies
+
 ```bash
 npm install
 ```
 
-### 3. Build the Project
-Navigate to the `aegis-core` directory and compile the TypeScript code:
+### 2. Register default engines
+
 ```bash
-cd aegis-core
-npm run build
+node register-default-engines.mjs
 ```
 
-### 4. Running the Application
+### 3. Start the Runtime Daemon
 
-Inside the `aegis-core` directory:
-- **Development Mode** (with on-the-fly TypeScript execution):
-  ```bash
-  npm run dev
-  ```
-- **Production Mode** (running the compiled build):
-  ```bash
-  npm start
-  ```
-
----
-
-# Core Vision
-
-Traditional medical AI systems require centralized patient data collection, creating major concerns:
-
-- Privacy violations
-- Data breaches
-- Single point of failure
-- Lack of transparency
-- Expensive centralized infrastructure
-
-AEGIS solves this by creating a distributed ecosystem where:
-
-- Data stays local
-- Models learn collaboratively
-- Edge devices participate
-- Trust is continuously evaluated
-- Blockchain validates interactions
-- Medical AI becomes scalable and secure
-
----
-
-# System Architecture
-
-```text
-                ┌────────────────────────┐
-                │   Blockchain Network   │
-                │ Server Validation Mesh │
-                └──────────┬─────────────┘
-                           │
-        ┌──────────────────┼──────────────────┐
-        │                  │                  │
- ┌──────▼──────┐   ┌──────▼──────┐   ┌──────▼──────┐
- │  Server S1  │   │  Server S2  │   │  Server S3  │
- │ Aggregation │   │ Validation  │   │ Heartbeats  │
- └──────┬──────┘   └──────┬──────┘   └──────┬──────┘
-        │                  │                  │
-════════════════ gRPC Secure Mesh ════════════════
-        │                  │                  │
- ┌──────▼──────┐   ┌──────▼──────┐   ┌──────▼──────┐
- │ Client Node │   │ Client Node │   │ Client Node │
- │ Hospital A  │   │ Clinic B    │   │ Edge Device │
- └─────────────┘   └─────────────┘   └─────────────┘
+```bash
+node --import tsx --experimental-specifier-resolution=node --no-warnings packages/aegis-runtime/src/daemon.ts
 ```
 
----
+### 4. Start the Desktop UI
 
-# Key Features
+```bash
+python apps/desktop/main.py
+```
 
-## Privacy-Preserving Federated Learning
-
-- Raw medical data never leaves client devices
-- Only LoRA updates are transmitted
-- Secure distributed aggregation
+Open your browser to **http://localhost:5001**
 
 ---
 
-## Selective LoRA Training
+## Project Structure
 
-Instead of training full models:
-
-- Only selected layers are fine-tuned
-- Enables low-resource edge participation
-- Reduces communication overhead
-- Makes training possible on:
-  - mobile devices
-  - laptops
-  - edge servers
-  - IoT medical devices
-
----
-
-## Blockchain-Based Validation
-
-AEGIS introduces decentralized validation:
-
-- Multiple servers validate updates
-- Immutable audit trails
-- Byzantine-resistant verification
-- Randomized server selection
-- Transparent aggregation history
-
----
-
-## gRPC Communication Layer
-
-High-performance communication stack using:
-
-- HTTP/2
-- Protocol Buffers
-- Secure encrypted channels
-- Low-latency transmission
-
----
-
-## Tensor Risk Evaluation
-
-Incoming updates are classified as:
-
-- Safe
-- Sensitive
-- Risky
-
-Tensor evaluation considers:
-
-- Gradient magnitude
-- Directional similarity
-- Anomaly detection
-- Poisoning attack detection
-
----
-
-## Heartbeat Consistency Monitoring
-
-Clients periodically send heartbeat signals.
-
-The system evaluates:
-
-- Participation consistency
-- Timing stability
-- Reliability behavior
-- Long-term trustworthiness
-
----
-
-## Reputation & Scoring System
-
-Every client has a continuously updated trust score based on:
-
-- Heartbeat consistency
-- Tensor quality
-- Blockchain validation agreement
-- Historical reliability
-
-Low-quality participants are automatically isolated.
-
----
-
-## DP-RAG (Differentially Private RAG)
-
-Client-side Retrieval-Augmented Generation with:
-
-- Local vector databases
-- Controlled noise injection
-- Reduced hallucination
-- Privacy-aware retrieval
-
----
-
-## FHIR Medical Interoperability
-
-AEGIS supports:
-
-- HL7 FHIR
-- Secure medical data portability
-- Cross-hospital interoperability
-- Standardized healthcare exchange
-
----
-
-# Hierarchical Agent Architecture
-
-## Layered Agent Hierarchy
-
-```text
-                    ┌────────────────────┐
-                    │  AEGIS CORE AI     │
-                    │ Global Intelligence│
-                    └─────────┬──────────┘
-                              │
-              ┌───────────────┼───────────────┐
-              │               │               │
-      ┌───────▼───────┐ ┌────▼────┐ ┌────────▼────────┐
-      │ Aggregation   │ │Security │ │Validation Agent│
-      │ Agent         │ │Agent    │ │Network          │
-      └───────┬───────┘ └────┬────┘ └────────┬────────┘
-              │              │                │
-══════════════╪══════════════╪════════════════╪══════════
-              │              │                │
-      ┌───────▼──────┐ ┌────▼────┐ ┌────────▼───────┐
-      │ Hospital AI  │ │ Lab AI  │ │ Diagnostic AI │
-      │ Node         │ │ Node    │ │ Node          │
-      └───────┬──────┘ └────┬────┘ └────────┬──────┘
-              │              │                │
-      ┌───────▼──────┐ ┌────▼────┐ ┌────────▼───────┐
-      │ Doctor Agent │ │ RAG AI  │ │ Local Edge AI │
-      └──────────────┘ └─────────┘ └────────────────┘
+```
+aegis/
+├── package.json                    # npm workspaces (apps/* + packages/*)
+├── install.ps1                     # Windows automated setup
+├── register-default-engines.mjs    # Engine registry bootstrapper
+│
+├── apps/
+│   ├── desktop/                    # Desktop SPA + Python GGUF server
+│   │   ├── index.html              # Main SPA shell
+│   │   ├── app.js                  # All UI logic
+│   │   ├── style.css               # Design system
+│   │   └── main.py                 # Python server + GGUF bridge
+│   ├── aegis-cli/                  # CLI application
+│   ├── aegis-boot/                 # Boot application
+│   └── terminal/                  # Terminal UI
+│
+├── packages/
+│   ├── aegis-sdk/                  # Shared interfaces & types
+│   ├── aegis-runtime/              # Runtime Kernel (Bootloader, EngineManager, etc.)
+│   ├── aegis-agent/                # AI Agent Engine
+│   ├── aegis-memory/               # Cognitive Memory System
+│   ├── aegis-distributed-intelligence/ # C++20 native runtime (DIE)
+│   ├── aegis-providers/            # AI model provider abstraction
+│   ├── aegis-tools/                # Tool registry & loader
+│   ├── aegis-skills/               # Skill registry & loader
+│   ├── aegis-plugins/              # Plugin registry & loader
+│   └── aegis-package-manager/      # Capability package manager
+│
+├── engines/                        # Engine registry entries (engine.json)
+│   ├── aegis-memory/engine.json    # Memory Engine (priority 5)
+│   ├── aegis-agent/engine.json     # AI Agent Engine (priority 10)
+│   └── aegis-api/engine.json       # REST API Engine (priority 20)
+│
+├── providers/                      # AI model providers
+│   ├── local/gguf/                 # Local GGUF (llama-cpp-python bridge)
+│   ├── local/ollama/               # Ollama local inference
+│   └── api/                        # Remote API providers
+│
+├── tools/shared/                   # Built-in tools
+│   ├── FileTool/ FolderTool/ MemoryTool/
+│   ├── PatientDataTool/ SystemTool/ TerminalTool/
+│   └── memory-read/ memory-write/ memory-delete/
+│
+├── skills/shared/                  # Built-in skills
+│   ├── extract/ format/ generate/ summarize/
+│   ├── follow-up-recommendation/ lifestyle-recommendation/
+│   ├── patient-history-summarizer/ patient-timeline-builder/
+│
+├── plugins/shared/                 # System plugins
+│   └── analytics/ auth/ cache/ encryption/ logging/ monitoring/ ...
+│
+└── memory/                         # Runtime memory store (filesystem)
+    ├── sessions/                   # Session memory directories
+    ├── trash/                      # Soft-deleted sessions
+    └── snapshots/                  # Session snapshots
 ```
 
 ---
 
-# Agent Responsibilities
+## Components
 
-## Core Orchestrator Agent
+### Runtime Kernel (`packages/aegis-runtime`)
 
-Responsible for:
+The TypeScript orchestration layer. Manages the full system lifecycle:
 
-- Global coordination
-- System-wide intelligence
-- Aggregation supervision
-- Distributed orchestration
+- **Bootloader**: 5-phase startup sequence (hardware → config → DI → storage → engines)
+- **EngineManager**: Topological dependency-ordered engine loading with hot-reload
+- **EventBus**: 100+ typed events for decoupled inter-component communication
+- **RuntimeExecutor**: ReAct agent loop (max 5 steps, streaming)
+- **RuntimeSessionManager**: Session lifecycle (create, checkout, delete, restore, rename)
+- **CapabilityManager**: Hot-swap tools/skills/plugins/providers without restart
+- **IPC Server**: Control channel for management scripts
 
----
+### Memory System (`packages/aegis-memory`)
 
-## Aggregation Agent
+Durable session-scoped memory with integrity guarantees:
 
-Handles:
+- Sessions stored as filesystem directories with 6 structured files
+- SHA-256 checksums on all files — corruption triggers quarantine + recovery
+- Write buffer coalesces high-frequency writes during streaming
+- Projection system generates focused memory summaries for agent prompts
+- ACID-like transaction manager for multi-file atomic operations
 
-- Trust-aware aggregation
-- Weighted LoRA merging
-- Temporal weighting
-- Global LoRA generation
+### AI Agent Engine (`packages/aegis-agent`)
 
----
+The ReAct reasoning engine:
 
-## Security Agent
+- **ReAct Loop**: Reason → Act (tool use) → Observe → repeat
+- **PromptBuilder**: Assembles system prompt with memory projections
+- **Provider-agnostic**: Routes to whichever provider is active (GGUF, Ollama, API)
+- **GGUF Fast Path**: Bypasses ReAct for local small models (direct streaming)
 
-Responsible for:
+### Desktop UI (`apps/desktop`)
 
-- Hybrid encryption
-- Tensor inspection
-- Threat monitoring
-- Risk scoring
-- Secure communication
+A full enterprise desktop interface:
 
----
+- **3-column layout**: Session sidebar, chat panel, capabilities panel
+- **Streaming chat**: SSE-based real-time token display
+- **Session management**: Create, switch, rename, delete, restore, search
+- **Capability management**: Add/remove tools, skills, plugins dynamically
+- **Provider selector**: Switch AI providers in-app
+- **LoRA manager**: Attach/detach LoRA adapters at runtime
 
-## Validation Agent
+### Distributed Intelligence Engine (DIE)
 
-Handles:
+C++20 native runtime for distributed computing:
 
-- Blockchain consensus
-- Multi-server validation
-- Byzantine robustness
-- Server voting mechanism
-
----
-
-## Hospital AI Node
-
-Local institutional intelligence for:
-
-- Hospital-specific fine-tuning
-- Secure edge inference
-- Local RAG operations
-- FHIR integration
-
----
-
-## Doctor Agent
-
-Provides:
-
-- Clinical assistance
-- Diagnosis support
-- Context-aware reasoning
-- Medical summarization
+- Node identity, lifecycle, and cluster membership
+- TCP transport for node-to-node communication
+- Node discovery and heartbeat liveness monitoring
+- System resource monitoring (CPU/RAM/GPU telemetry)
+- AI Runtime (AIR): agent scheduling across cluster nodes
+- Distributed Inference Service (DIS): route inference to best node
 
 ---
 
-## Local Edge AI
+## API Reference
 
-Runs on:
+The REST API runs on **Port 3005** (localhost only):
 
-- Mobile devices
-- Wearables
-- Edge gateways
-- Embedded healthcare systems
-
----
-
-# Research Concepts Implemented
-
-## Federated Learning
-
-Collaborative model training without centralized data collection.
-
----
-
-## Selective LoRA
-
-Low-rank adaptation enabling efficient decentralized training.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/health` | Health check |
+| GET | `/api/sessions` | List sessions |
+| POST | `/api/sessions` | New session |
+| POST | `/api/sessions/checkout` | Switch session |
+| GET | `/api/sessions/active` | Active session details |
+| POST | `/api/chat` | Chat (SSE stream) |
+| GET | `/api/capabilities` | List tools/skills/plugins |
+| POST | `/api/capabilities/add` | Add capability |
+| POST | `/api/capabilities/remove` | Remove capability |
+| GET | `/api/providers` | List providers |
+| POST | `/api/providers/switch` | Switch provider |
+| POST | `/api/shutdown` | Graceful shutdown |
 
 ---
 
-## Trust-Aware Aggregation
+## Documentation
 
-Weighted aggregation based on:
-
-- reliability
-- quality
-- participation
-- blockchain validation
-
----
-
-## Tensor Tagging
-
-Risk-aware tensor classification system for poisoning detection.
-
----
-
-## Differential Privacy
-
-Controlled noise injection for privacy preservation.
+| Document | Description |
+|----------|-------------|
+| [aegis_system_architecture_report.md](./aegis_system_architecture_report.md) | Full architecture with diagrams, data flows, and folder structure |
+| [aegis_platform_specification.md](./aegis_platform_specification.md) | Platform concepts, APIs, and technology stack |
+| [aegis_core_runtime_specification.md](./aegis_core_runtime_specification.md) | Runtime Kernel deep-dive and specifications |
+| [aegis_memory_subsystem_report.md](./aegis_memory_subsystem_report.md) | Memory system design, data models, and APIs |
+| [aegis_event_bus_report.md](./aegis_event_bus_report.md) | Complete event type reference |
+| [aegis_federated_learning_report.md](./aegis_federated_learning_report.md) | Distributed Intelligence Engine (C++20) reference |
+| [aegis_cognitive_memory_redesign.md](./aegis_cognitive_memory_redesign.md) | Memory architecture design decisions |
+| [aegis_modular_refactoring_blueprint.md](./aegis_modular_refactoring_blueprint.md) | Package structure and module boundaries |
+| [aegis_architecture_review.md](./aegis_architecture_review.md) | Architectural patterns and analysis |
+| [aegis_project_status_report.md](./aegis_project_status_report.md) | Component status and development roadmap |
 
 ---
 
-## Byzantine Robustness
-
-Protection against malicious client updates.
-
----
-
-# Security Architecture
-
-## Hybrid Encryption
-
-AEGIS uses:
-
-- Symmetric encryption for payloads
-- Asymmetric encryption for keys
-
-This minimizes computational overhead while preserving security.
-
----
-
-## Blockchain Validation
-
-Every update is validated through:
-
-- decentralized consensus
-- immutable verification
-- distributed trust
-
----
-
-## Tensor Risk Detection
-
-Risk score computation:
-
-- gradient norm analysis
-- cosine similarity validation
-- anomaly detection
-
----
-
-# Trust-Aware Aggregation
-
-AEGIS introduces score-based aggregation.
-
-Instead of:
-
-```math
-Traditional Weight = Data Size
-```
-
-AEGIS uses:
-
-```math
-Weight = Data Size × Trust Score
-```
-
-This prevents malicious clients from dominating aggregation.
-
----
-
-# Experimental Findings
-
-According to the research simulation:
-
-- Mean client score: 0.453
-- Blacklist threshold: 0.274
-- 1000 simulated events
-- Multi-server validation successful
-- Reliable client detection validated
-- Malicious tensor filtering successful
-
-The system demonstrated:
-
-- Stable aggregation
-- Trust-aware filtering
-- Reduced poisoning risk
-- Distributed robustness
-
----
-
-# Real-World Applications
-
-## Healthcare
-
-- Hospital collaboration
-- Clinical AI systems
-- Medical diagnosis support
-- Federated patient analytics
-
----
-
-## Remote Healthcare
-
-- Rural telemedicine
-- Edge healthcare AI
-- Wearable medical intelligence
-
----
-
-## Research Networks
-
-- Cross-institutional AI training
-- Disease pattern analysis
-- Collaborative diagnostics
-
----
-
-# Future Roadmap
-
-- Adaptive consensus algorithms
-- Lightweight blockchain validation
-- Attention-based aggregation
-- Real-world hospital deployment
-- Advanced DP-RAG optimization
-- Edge-native AI orchestration
-- Federated autonomous agents
-- Medical swarm intelligence
-
----
-
-# Tech Stack
+## Technology Stack
 
 | Component | Technology |
-|---|---|
-| Communication | gRPC |
-| Serialization | Protocol Buffers |
-| AI Training | PyTorch |
-| Federated Learning | Custom FL Engine |
-| Vector Database | FAISS / Chroma |
-| Blockchain | Custom Validation Chain |
-| Privacy | Differential Privacy |
-| Interoperability | HL7 FHIR |
+|-----------|-----------|
+| Desktop UI | HTML5 + Vanilla CSS + Vanilla JS |
+| Python Server | Python 3.10+ + llama-cpp-python |
+| Runtime Kernel | Node.js 20+ + TypeScript (ESM) |
+| Build Tool | tsx (TypeScript Execute) |
+| Native Engine | C++20 (CMake 3.15+) |
+| C++ Networking | Raw TCP sockets |
+| Package Management | npm workspaces |
+| AI Providers | GGUF (local), Ollama (local), API (remote) |
+| Memory Store | Filesystem (JSON + Markdown) |
 
 ---
 
-# Research Foundation
+## License
 
-This project is based on the research paper:
-
-> “Decentralized Privacy-Preserving Federated Medical AI with Blockchain and Selective LoRA”
-
-Core concepts include:
-
-- Federated Learning
-- LoRA
-- Blockchain Validation
-- Differential Privacy
-- Trust-Aware Aggregation
-- DP-RAG
-- Secure Aggregation
-
----
-
-# Authors
-
-- Gokul S
-- Gautham Krishna R Nair
-- T Maheswaran
-- Sreenidhi V
-- Nisha Soman
-
-Marian Engineering College  
-Department of Artificial Intelligence & Machine Learning
-
----
-
-# License
-
-MIT License
-
----
-
-# Vision
-
-AEGIS aims to become a foundational decentralized intelligence layer for privacy-preserving medical AI infrastructure.
-
-The long-term goal is to build a scalable ecosystem where:
-
-- hospitals collaborate securely
-- edge AI learns continuously
-- patients retain ownership of data
-- AI remains transparent and trustworthy
-
----
-
-<div align="center">
-
-## AEGIS
-### Secure Distributed Intelligence for Healthcare
-
-</div>
+MIT — See [LICENSE](./LICENSE) for details.

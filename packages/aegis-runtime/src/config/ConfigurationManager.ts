@@ -6,43 +6,47 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export class ConfigurationManager {
-  private getAegisCoreRoot(): string {
+  private getRepositoryRoot(): string {
     let current = __dirname;
+    const seen = new Set<string>();
     while (true) {
-      const corePath = path.join(current, 'aegis-core');
-      const packageJson = path.join(corePath, 'package.json');
+      const packageJson = path.join(current, 'package.json');
       if (fs.existsSync(packageJson)) {
         try {
           const pkg = JSON.parse(fs.readFileSync(packageJson, 'utf8'));
-          if (pkg.name === 'aegis-core') {
-            return corePath;
-          }
-        } catch (e) {}
-      }
-      const selfPackageJson = path.join(current, 'package.json');
-      if (fs.existsSync(selfPackageJson)) {
-        try {
-          const pkg = JSON.parse(fs.readFileSync(selfPackageJson, 'utf8'));
-          if (pkg.name === 'aegis-core') {
+          if (pkg.name === 'aegis-monorepo') {
             return current;
           }
         } catch (e) {}
       }
       const parent = path.dirname(current);
-      if (parent === current) {
+      if (parent === current || seen.has(parent)) {
         break;
       }
+      seen.add(current);
       current = parent;
-    }
-    if (fs.existsSync(path.resolve(process.cwd(), 'aegis-core/package.json'))) {
-      return path.resolve(process.cwd(), 'aegis-core');
     }
     return process.cwd();
   }
 
   private getConfigPath(): string {
-    const coreRoot = this.getAegisCoreRoot();
-    return path.resolve(coreRoot, 'src/config/runtime.json');
+    if (process.env.AEGIS_CONFIG_PATH) {
+      return path.resolve(process.env.AEGIS_CONFIG_PATH);
+    }
+    const repoRoot = this.getRepositoryRoot();
+    
+    // Check distribution/production config folder
+    const productionConfig = path.resolve(repoRoot, 'config/runtime.json');
+    if (fs.existsSync(productionConfig)) {
+      return productionConfig;
+    }
+
+    const legacyConfig = path.resolve(repoRoot, 'packages/aegis-runtime/src/config/runtime.json');
+    if (fs.existsSync(legacyConfig)) {
+      return legacyConfig;
+    }
+
+    return productionConfig;
   }
 
   getRuntimeConfig(): any {

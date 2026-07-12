@@ -1,0 +1,12 @@
+{
+  "id": "aegis-memory",
+  "displayName": "Cognitive Memory Engine",
+  "version": "1.0.0",
+  "kernelApiVersion": "1.0.0",
+  "entrypoint": "dist/MemoryEngine.js",
+  "dependencies": [],
+  "priority": 5,
+  "autoStart": true,
+  "singleton": true,
+  "permissions": ["fs:read", "fs:write"]
+}

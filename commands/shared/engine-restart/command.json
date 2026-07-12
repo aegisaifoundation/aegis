@@ -1,0 +1,6 @@
+{
+  "name": "engine restart",
+  "description": "Gracefully restart a running engine by ID.",
+  "version": "1.0.0",
+  "category": "shared"
+}

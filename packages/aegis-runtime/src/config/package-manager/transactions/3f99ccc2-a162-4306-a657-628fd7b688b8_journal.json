@@ -1,0 +1,19 @@
+{
+  "txId": "3f99ccc2-a162-4306-a657-628fd7b688b8",
+  "state": "COMMITTED",
+  "timestamp": "2026-07-12T06:59:46.556Z",
+  "packageId": "distributed-intelligence",
+  "action": "install",
+  "backups": [],
+  "addedFiles": [
+    "C:\\aegis\\workspace\\engines\\distributed-intelligence\\engine.json"
+  ],
+  "addedDirs": [
+    "C:\\aegis\\workspace\\engines\\distributed-intelligence"
+  ],
+  "originalConfig": {
+    "version": "1.0.0",
+    "requireSignature": false,
+    "autoloadEngines": []
+  }
+}

@@ -1,0 +1,1 @@
+{"version":3,"file":"ConfigurationSchema.js","sourceRoot":"","sources":["../../src/configuration/ConfigurationSchema.ts"],"names":[],"mappings":"AAWA,MAAM,CAAC,MAAM,cAAc,GAAiB;IAC1C,QAAQ,EAAE,gBAAgB;IAC1B,IAAI,EAAE,IAAI;IACV,IAAI,EAAE,SAAS;IACf,cAAc,EAAE,IAAI;IACpB,gBAAgB,EAAE,KAAK;IACvB,mBAAmB,EAAE,KAAK;IAC1B,WAAW,EAAE,CAAC;CACf,CAAC"}

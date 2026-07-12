@@ -1,0 +1,6 @@
+{
+  "name": "engine stop",
+  "description": "Stop a running engine by ID.",
+  "version": "1.0.0",
+  "category": "shared"
+}

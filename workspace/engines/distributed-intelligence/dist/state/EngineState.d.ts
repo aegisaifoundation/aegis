@@ -1,0 +1,15 @@
+export declare enum EngineState {
+    UNINITIALIZED = "UNINITIALIZED",
+    INITIALIZING = "INITIALIZING",
+    STARTING = "STARTING",
+    HANDSHAKING = "HANDSHAKING",
+    LOADING = "LOADING",
+    READY = "READY",
+    ONLINE = "ONLINE",
+    DEGRADED = "DEGRADED",
+    RECOVERING = "RECOVERING",
+    STOPPING = "STOPPING",
+    STOPPED = "STOPPED",
+    FAILED = "FAILED"
+}
+//# sourceMappingURL=EngineState.d.ts.map
