@@ -22,4 +22,12 @@ export * from './services/RuntimeExecutor.js';
 export * from './services/CapabilityManager.js';
 export * from './commands/index.js';
 export * from './transports/index.js';
+export * from './registry/RegistryLoader.js';
+export * from './registry/RegistryRecovery.js';
+export * from './registry/types/EngineRegistry.js';
+export * from './transports/IpcPath.js';
+export * from './transports/IpcProtocol.js';
+export * from './transports/IpcServer.js';
+export * from './managers/EngineManager.js';
 export const RUNTIME_VERSION = "1.0.0";
+

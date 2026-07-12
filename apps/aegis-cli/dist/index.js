@@ -3,6 +3,8 @@ import { Command } from 'commander';
 import fs from 'fs';
 import path from 'path';
 import http from 'http';
+import net from 'net';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 import { PackageManager } from '@aegis/package-manager';
@@ -324,5 +326,190 @@ program
     const packages = pkgManager.listPackages();
     console.log(`[Doctor] Installed Packages: ${packages.length} registered.`);
     console.log('==============================');
+});
+// ─── 4. IPC HELPER AND ENGINE COMMANDS ───
+function getIpcPath(workspacePath) {
+    if (process.platform === 'win32') {
+        return '\\\\.\\pipe\\aegis_kernel_v1';
+    }
+    else {
+        return path.join(workspacePath, 'runtime', 'aegis_kernel_v1.sock');
+    }
+}
+function sendIpcCommand(command, payload = {}) {
+    return new Promise((resolve, reject) => {
+        const workspacePath = path.resolve(repoRoot, 'workspace');
+        const ipcPath = getIpcPath(workspacePath);
+        const req = {
+            version: '1.0.0',
+            requestId: crypto.randomUUID(),
+            command,
+            payload
+        };
+        const client = net.connect(ipcPath, () => {
+            client.write(JSON.stringify(req));
+        });
+        client.on('data', (data) => {
+            try {
+                const resp = JSON.parse(data.toString());
+                if (resp.error) {
+                    reject(new Error(resp.error));
+                }
+                else {
+                    resolve(resp.result);
+                }
+            }
+            catch (e) {
+                reject(new Error('Failed to parse IPC response: ' + e.message));
+            }
+        });
+        client.on('error', (err) => {
+            reject(new Error(`Control channel connection failed: ${err.message}. Ensure Runtime Daemon is running.`));
+        });
+    });
+}
+const engine = program.command('engine').description('Manage pluggable engines via registry and control channel');
+engine
+    .command('list')
+    .description('List all registered engines from the registry')
+    .action(() => {
+    try {
+        const engines = pkgManager.listEngines();
+        if (engines.length === 0) {
+            console.log('No engines registered in registry.');
+            return;
+        }
+        console.log('Registered Pluggable Engines:');
+        for (const e of engines) {
+            console.log(`- ${e.id} [DisplayName: "${e.displayName}", Version: ${e.version}, Enabled: ${e.enabled}]`);
+        }
+    }
+    catch (err) {
+        console.error(`[CLI] Failed to list engines: ${err.message}`);
+        process.exit(1);
+    }
+});
+engine
+    .command('enable <engineId>')
+    .description('Enable a registered engine package')
+    .action(async (engineId) => {
+    try {
+        console.log(`[CLI] Enabling engine "${engineId}"...`);
+        await pkgManager.enableEngine(engineId);
+        console.log(`[CLI] Engine "${engineId}" enabled successfully.`);
+    }
+    catch (err) {
+        console.error(`[CLI] Failed to enable engine: ${err.message}`);
+        process.exit(1);
+    }
+});
+engine
+    .command('disable <engineId>')
+    .description('Disable a registered engine package')
+    .action(async (engineId) => {
+    try {
+        console.log(`[CLI] Disabling engine "${engineId}"...`);
+        await pkgManager.disableEngine(engineId);
+        console.log(`[CLI] Engine "${engineId}" disabled successfully.`);
+    }
+    catch (err) {
+        console.error(`[CLI] Failed to disable engine: ${err.message}`);
+        process.exit(1);
+    }
+});
+engine
+    .command('info <engineId>')
+    .description('Display detailed registry metadata for an engine')
+    .action((engineId) => {
+    try {
+        const engines = pkgManager.listEngines();
+        const target = engines.find(e => e.id.toLowerCase() === engineId.toLowerCase());
+        if (!target) {
+            console.error(`[CLI] Engine "${engineId}" not found in registry.`);
+            process.exit(1);
+        }
+        console.log(JSON.stringify(target, null, 2));
+    }
+    catch (err) {
+        console.error(`[CLI] Failed to get engine info: ${err.message}`);
+        process.exit(1);
+    }
+});
+engine
+    .command('reload')
+    .description('Hot-reload all registered and enabled engines in the runtime daemon')
+    .action(async () => {
+    try {
+        console.log('[CLI] Dispatching reload command to control channel...');
+        const result = await sendIpcCommand('reload');
+        console.log(`[CLI] ${result.message}`);
+    }
+    catch (err) {
+        console.error(`[CLI] Reload failed: ${err.message}`);
+        process.exit(1);
+    }
+});
+engine
+    .command('reload-engine <engineId>')
+    .description('Hot-reload a single registered engine in the runtime daemon')
+    .action(async (engineId) => {
+    try {
+        console.log(`[CLI] Dispatching reloadEngine for "${engineId}"...`);
+        const result = await sendIpcCommand('reloadEngine', { engineId });
+        console.log(`[CLI] ${result.message}`);
+    }
+    catch (err) {
+        console.error(`[CLI] Reload engine failed: ${err.message}`);
+        process.exit(1);
+    }
+});
+engine
+    .command('start-engine <engineId>')
+    .description('Start a single registered engine in the runtime daemon')
+    .action(async (engineId) => {
+    try {
+        console.log(`[CLI] Dispatching startEngine for "${engineId}"...`);
+        const result = await sendIpcCommand('startEngine', { engineId });
+        console.log(`[CLI] ${result.message}`);
+    }
+    catch (err) {
+        console.error(`[CLI] Start engine failed: ${err.message}`);
+        process.exit(1);
+    }
+});
+engine
+    .command('stop-engine <engineId>')
+    .description('Stop a single registered engine in the runtime daemon')
+    .action(async (engineId) => {
+    try {
+        console.log(`[CLI] Dispatching stopEngine for "${engineId}"...`);
+        const result = await sendIpcCommand('stopEngine', { engineId });
+        console.log(`[CLI] ${result.message}`);
+    }
+    catch (err) {
+        console.error(`[CLI] Stop engine failed: ${err.message}`);
+        process.exit(1);
+    }
+});
+engine
+    .command('status')
+    .description('Get granular engine statuses from in-memory runtime daemon')
+    .action(async () => {
+    try {
+        console.log('[CLI] Dispatching status command to control channel...');
+        const result = await sendIpcCommand('status');
+        if (result.engines.length === 0) {
+            console.log('[CLI] No active engines running in daemon.');
+            return;
+        }
+        console.log('Active Pluggable Engines in Runtime:');
+        for (const e of result.engines) {
+            console.log(`- ${e.id} [Name: "${e.displayName}", Version: ${e.version}, AutoStart: ${e.autoStart}]`);
+        }
+    }
+    catch (err) {
+        console.error(`[CLI] Failed to fetch daemon status: ${err.message}`);
+        process.exit(1);
+    }
 });
 program.parse(process.argv);

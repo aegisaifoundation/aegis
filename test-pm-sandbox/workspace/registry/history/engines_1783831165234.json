@@ -1,0 +1,18 @@
+{
+  "version": "1.0.0",
+  "generatedBy": "@aegis/package-manager",
+  "generatedAt": "2026-07-12T04:39:25.232Z",
+  "engines": [
+    {
+      "id": "engine-b",
+      "displayName": "Mock engine-b Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "test-pm-sandbox/engines/engine-b/dist/index.js",
+      "manifest": "test-pm-sandbox/engines/engine-b/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-12T04:39:25.182Z"
+    }
+  ]
+}

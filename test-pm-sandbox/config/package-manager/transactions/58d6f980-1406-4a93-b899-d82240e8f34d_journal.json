@@ -1,0 +1,15 @@
+{
+  "txId": "58d6f980-1406-4a93-b899-d82240e8f34d",
+  "state": "ROLLED_BACK",
+  "timestamp": "2026-07-12T04:39:25.241Z",
+  "packageId": "engine-crashed",
+  "action": "install",
+  "backups": [],
+  "addedFiles": [],
+  "addedDirs": [
+    "C:\\aegis\\test-pm-sandbox\\engines\\engine-crashed"
+  ],
+  "originalConfig": {
+    "autoloadEngines": []
+  }
+}

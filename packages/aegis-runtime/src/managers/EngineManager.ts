@@ -1,11 +1,13 @@
 import fs from 'fs';
 import path from 'path';
-import { pathToFileURL } from 'url';
 import { IEngine } from '@aegis/sdk';
+import { RegistryLoader } from '../registry/RegistryLoader.js';
 
 export class EngineManager {
   private engines = new Map<string, IEngine>();
   private startedEngines: string[] = [];
+  private context: any = null;
+  private isSubscribed = false;
 
   public register(engine: IEngine): void {
     if (this.engines.has(engine.metadata.id)) {
@@ -22,117 +24,123 @@ export class EngineManager {
     return Array.from(this.engines.values());
   }
 
-  private getRepositoryRoot(startDir: string): string {
-    let current = path.resolve(startDir);
-    const seen = new Set<string>();
-    while (true) {
-      const packageJson = path.join(current, 'package.json');
-      if (fs.existsSync(packageJson)) {
-        try {
-          const pkg = JSON.parse(fs.readFileSync(packageJson, 'utf8'));
-          if (pkg.name === 'aegis-monorepo') {
-            return current;
+  public async discoverAndLoad(context: any): Promise<void> {
+    this.context = context;
+
+    // 1. Subscribe to events on EventBus
+    if (!this.isSubscribed) {
+      const bus = context.getEventBus();
+      if (bus) {
+        bus.on('RuntimeRegistryUpdated', async (payload: any) => {
+          console.log('[EngineManager] Registry change detected via EventBus payload:', payload);
+          try {
+            await this.reload();
+          } catch (err: any) {
+            console.error('[EngineManager] Auto-reload failed on RuntimeRegistryUpdated event:', err.message);
           }
-        } catch (e) {}
+        });
+        this.isSubscribed = true;
       }
-      const parent = path.dirname(current);
-      if (parent === current || seen.has(parent)) {
-        break;
-      }
-      seen.add(current);
-      current = parent;
     }
-    return process.cwd();
+
+    // 2. Load registry engines via RegistryLoader
+    const validatedEngines = await RegistryLoader.loadRegistry(context);
+
+    for (const engine of validatedEngines) {
+      try {
+        const inst = new engine.classRef();
+        this.register(inst);
+        console.log(`[EngineManager] Registered discovered engine: ${engine.entry.id}`);
+      } catch (err: any) {
+        console.error(`[EngineManager] Failed to instantiate engine ${engine.entry.id}:`, err.message || err);
+      }
+    }
   }
 
-  public async discoverAndLoad(context: any): Promise<void> {
-    const config = context.getConfig();
-    const workspacePath = context.getWorkspacePath();
-    const repoRoot = this.getRepositoryRoot(workspacePath);
-    
-    // Determine the engines directory path
-    let enginesDir = path.resolve(repoRoot, 'engines');
-    if (config && config.enginesPath) {
-      enginesDir = path.resolve(config.enginesPath);
+  // --- Granular Lifecycle Control Methods ---
+
+  public async reload(): Promise<void> {
+    if (!this.context) {
+      throw new Error('EngineManager has not been initialized with a runtime context yet.');
     }
+    console.log('[EngineManager] Hot-reloading all registered engines...');
+    await this.shutdownAll();
+    this.engines.clear();
+    this.startedEngines = [];
     
-    if (!fs.existsSync(enginesDir)) {
-      console.warn(`[EngineManager] Engines directory not found at ${enginesDir}. Skipping auto-discovery.`);
+    await this.discoverAndLoad(this.context);
+    await this.initializeAll(this.context);
+    await this.startAll();
+    console.log('[EngineManager] Hot-reload complete.');
+  }
+
+  public async reloadEngine(engineId: string): Promise<void> {
+    if (!this.context) {
+      throw new Error('EngineManager has not been initialized with a runtime context yet.');
+    }
+    console.log(`[EngineManager] Reloading single engine: ${engineId}`);
+    
+    // Stop and unregister if already loaded
+    await this.stopEngine(engineId);
+
+    // Load registry to find new entry
+    const validatedEngines = await RegistryLoader.loadRegistry(this.context);
+    const target = validatedEngines.find(e => e.entry.id.toLowerCase() === engineId.toLowerCase());
+    
+    if (!target) {
+      throw new Error(`Engine "${engineId}" not found in validated registry entries.`);
+    }
+
+    const inst = new target.classRef();
+    this.register(inst);
+    await inst.initialize(this.context);
+    
+    if (inst.metadata.autoStart) {
+      await inst.start();
+      this.startedEngines.push(inst.metadata.id);
+    }
+    console.log(`[EngineManager] Engine "${engineId}" successfully reloaded.`);
+  }
+
+  public async startEngine(engineId: string): Promise<void> {
+    if (!this.context) {
+      throw new Error('EngineManager has not been initialized with a runtime context.');
+    }
+    const engine = this.engines.get(engineId);
+    if (!engine) {
+      throw new Error(`Engine "${engineId}" is not loaded.`);
+    }
+
+    if (this.startedEngines.includes(engineId)) {
+      console.log(`[EngineManager] Engine "${engineId}" is already running.`);
       return;
     }
 
-    const items = fs.readdirSync(enginesDir);
-    for (const item of items) {
-      const itemPath = path.join(enginesDir, item);
-      const stat = fs.statSync(itemPath);
-      if (stat.isDirectory()) {
-        const manifestPath = path.join(itemPath, 'engine.json');
-        if (fs.existsSync(manifestPath)) {
-          try {
-            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-            
-            // Manifest schema validation
-            if (!manifest.id || !manifest.entrypoint) {
-              console.warn(`[EngineManager] Invalid manifest at ${manifestPath}. Skipping.`);
-              continue;
-            }
-
-            // Compatibility check
-            const currentApiVersion = context.kernelVersion || "1.0.0";
-            if (manifest.kernelApiVersion && manifest.kernelApiVersion !== currentApiVersion) {
-              console.warn(`[EngineManager] Engine ${manifest.id} is incompatible (Target API: ${manifest.kernelApiVersion}, Current API: ${currentApiVersion}). Skipping.`);
-              continue;
-            }
-
-            // GPG Signature check (Staged validation, prints warnings for dev mock signatures)
-            if (manifest.signature) {
-              console.log(`[EngineManager] Verifying digital signature for ${manifest.id}... verified.`);
-            }
-
-            // Dynamically import the compiled engine entrypoint
-            const modulePath = path.resolve(itemPath, manifest.entrypoint);
-            const moduleUrl = pathToFileURL(modulePath).toString();
-            console.log(`[EngineManager] Dynamically importing engine ${manifest.id} from ${moduleUrl}...`);
-            const engineModule = await import(moduleUrl);
-            
-            let engineInstance: any = null;
-            
-            // Scan all exports for a constructable class that implements IEngine
-            for (const key of Object.keys(engineModule)) {
-              const val = engineModule[key];
-              if (typeof val === 'function' && val.prototype) {
-                try {
-                  const inst = new (val as any)();
-                  if (inst.metadata && inst.metadata.id) {
-                    engineInstance = inst;
-                    break;
-                  }
-                } catch (e) {}
-              }
-            }
-
-            if (!engineInstance) {
-              if (engineModule.default && engineModule.default.metadata) {
-                engineInstance = engineModule.default;
-              } else if (engineModule.metadata) {
-                engineInstance = engineModule;
-              }
-            }
-
-            if (!engineInstance || !engineInstance.metadata) {
-              throw new Error(`No valid IEngine implementation found in exports of ${moduleUrl}`);
-            }
-
-            // Register instance
-            this.register(engineInstance);
-            console.log(`[EngineManager] Registered discovered engine: ${manifest.id}`);
-          } catch (err: any) {
-            console.error(`[EngineManager] Failed to load engine from ${itemPath}:`, err.message || err);
-          }
-        }
-      }
-    }
+    console.log(`[EngineManager] Starting engine "${engineId}"...`);
+    await engine.initialize(this.context);
+    await engine.start();
+    this.startedEngines.push(engineId);
   }
+
+  public async stopEngine(engineId: string): Promise<void> {
+    const engine = this.engines.get(engineId);
+    if (!engine) {
+      console.log(`[EngineManager] Engine "${engineId}" is not currently registered.`);
+      return;
+    }
+
+    console.log(`[EngineManager] Stopping engine "${engineId}"...`);
+    try {
+      await engine.shutdown();
+    } catch (e: any) {
+      console.error(`[EngineManager] Error shutting down engine ${engineId}:`, e.message || e);
+    }
+    
+    this.startedEngines = this.startedEngines.filter(id => id !== engineId);
+    this.engines.delete(engineId);
+  }
+
+  // --- Lifecycle Executions ---
 
   public getLoadOrder(): string[] {
     const visited = new Set<string>();
@@ -184,7 +192,7 @@ export class EngineManager {
     const order = this.getLoadOrder();
     for (const id of order) {
       const engine = this.engines.get(id)!;
-      if (engine.metadata.autoStart) {
+      if (engine.metadata.autoStart && !this.startedEngines.includes(id)) {
         try {
           console.log(`[EngineManager] Starting engine: ${engine.metadata.displayName}...`);
           await engine.start();

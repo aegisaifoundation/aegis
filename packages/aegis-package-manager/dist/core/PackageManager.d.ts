@@ -35,4 +35,10 @@ export declare class PackageManager {
     private loadRepositoriesFromDb;
     private resolvePackageFromRepositories;
     private notifyRuntime;
+    enableEngine(engineId: string): Promise<void>;
+    disableEngine(engineId: string): Promise<void>;
+    listEngines(): any[];
+    private getRepositoryRoot;
+    private getWorkspacePath;
+    private syncRegistry;
 }

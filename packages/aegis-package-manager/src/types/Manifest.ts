@@ -49,6 +49,7 @@ export interface PackageInfo {
   installationState: 'INSTALLED' | 'DEGRADED' | 'BROKEN';
   updateChannel: 'stable' | 'beta' | 'nightly';
   healthState: 'HEALTHY' | 'UNHEALTHY';
+  enabled?: boolean;
 }
 
 export interface PackageDatabaseSchema {

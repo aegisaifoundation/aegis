@@ -1,0 +1,6 @@
+{
+  "name": "@aegis/distributed-intelligence",
+  "version": "1.0.0",
+  "description": "AEGIS Distributed Intelligence Engine Kernel (C++20)",
+  "private": true
+}

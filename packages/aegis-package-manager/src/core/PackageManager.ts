@@ -29,7 +29,9 @@ export class PackageManager {
     this.loadRepositoriesFromDb();
 
     // 4. Run startup crash-recovery of orphaned transactions
-    this.txManager.recoverOrphanedTransactions(configPath).catch(err => {
+    this.txManager.recoverOrphanedTransactions(configPath).then(async () => {
+      await this.syncRegistry();
+    }).catch(err => {
       console.error('[PackageManager] Transaction recovery failed:', err.message);
     });
   }
@@ -189,7 +191,8 @@ export class PackageManager {
         repositorySource: repoSource,
         installationState: 'INSTALLED',
         updateChannel: 'stable',
-        healthState: 'HEALTHY'
+        healthState: 'HEALTHY',
+        enabled: true
       };
 
       this.db.register(info);
@@ -204,6 +207,10 @@ export class PackageManager {
       
       this.notifyRuntime('package.installed', { txId, packageId: manifest.id });
       this.notifyRuntime('package.transaction.committed', { txId, packageId: manifest.id });
+      if (manifest.type === 'Engine') {
+        this.notifyRuntime('RuntimeRegistryUpdated', { action: 'install', engineId: manifest.id });
+      }
+      await this.syncRegistry();
       
       console.log(`[PackageManager] Package "${manifest.id}" successfully installed.`);
       return txId;
@@ -216,6 +223,7 @@ export class PackageManager {
       }
 
       await this.txManager.rollback();
+      await this.syncRegistry();
       this.notifyRuntime('package.transaction.rolled_back', { txId, packageId: manifest.id });
       throw err;
     }
@@ -259,11 +267,16 @@ export class PackageManager {
 
       await this.txManager.commit();
       this.notifyRuntime('package.transaction.committed', { txId, packageId: pkg.id });
+      if (pkg.type === 'Engine') {
+        this.notifyRuntime('RuntimeRegistryUpdated', { action: 'remove', engineId: pkg.id });
+      }
+      await this.syncRegistry();
 
       console.log(`[PackageManager] Package "${pkg.id}" successfully removed.`);
       return txId;
     } catch (err: any) {
       await this.txManager.rollback();
+      await this.syncRegistry();
       this.notifyRuntime('package.transaction.rolled_back', { txId, packageId: pkg.id });
       throw err;
     }
@@ -393,5 +406,172 @@ export class PackageManager {
     } catch {
       // In standalone CLI mode, event bus may not be registered yet. Fail silently.
     }
+  }
+
+  public async enableEngine(engineId: string): Promise<void> {
+    const pkg = this.db.get(engineId);
+    if (!pkg) {
+      throw new Error(`Package "${engineId}" is not installed`);
+    }
+    if (pkg.type !== 'Engine') {
+      throw new Error(`Package "${engineId}" is not an Engine`);
+    }
+
+    this.db.updatePackageState(engineId, { enabled: true });
+    this.notifyRuntime('RuntimeRegistryUpdated', { action: 'enable', engineId: pkg.id });
+    await this.syncRegistry();
+  }
+
+  public async disableEngine(engineId: string): Promise<void> {
+    const pkg = this.db.get(engineId);
+    if (!pkg) {
+      throw new Error(`Package "${engineId}" is not installed`);
+    }
+    if (pkg.type !== 'Engine') {
+      throw new Error(`Package "${engineId}" is not an Engine`);
+    }
+
+    this.db.updatePackageState(engineId, { enabled: false });
+    this.notifyRuntime('RuntimeRegistryUpdated', { action: 'disable', engineId: pkg.id });
+    await this.syncRegistry();
+  }
+
+  public listEngines(): any[] {
+    const registryPath = path.join(this.getWorkspacePath(), 'registry', 'engines.json');
+    if (!fs.existsSync(registryPath)) {
+      return [];
+    }
+    try {
+      const data = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
+      return data.engines || [];
+    } catch {
+      return [];
+    }
+  }
+
+  private getRepositoryRoot(startDir: string): string {
+    let current = path.resolve(startDir);
+    const seen = new Set<string>();
+    while (true) {
+      const packageJson = path.join(current, 'package.json');
+      if (fs.existsSync(packageJson)) {
+        try {
+          const pkg = JSON.parse(fs.readFileSync(packageJson, 'utf8'));
+          if (pkg.name === 'aegis-monorepo') {
+            return current;
+          }
+        } catch (e) {}
+      }
+      const parent = path.dirname(current);
+      if (parent === current || seen.has(parent)) {
+        break;
+      }
+      seen.add(current);
+      current = parent;
+    }
+    return process.cwd();
+  }
+
+  private getWorkspacePath(): string {
+    if (process.env.AEGIS_WORKSPACE_ROOT) {
+      return path.resolve(process.env.AEGIS_WORKSPACE_ROOT);
+    }
+    const config = this.getRuntimeConfig();
+    if (config.workspace) {
+      return path.resolve(path.dirname(this.configPath), config.workspace);
+    }
+    if (config.workspaceRoot) {
+      return path.resolve(path.dirname(this.configPath), config.workspaceRoot);
+    }
+    const configDir = path.dirname(this.configPath);
+    if (configDir.includes('test-pm-sandbox') || configDir.includes('-sandbox')) {
+      return path.join(path.dirname(configDir), 'workspace');
+    }
+    const repoRoot = this.getRepositoryRoot(configDir);
+    return path.join(repoRoot, 'workspace');
+  }
+
+  private async syncRegistry(): Promise<void> {
+    const workspacePath = this.getWorkspacePath();
+    const registryDir = path.join(workspacePath, 'registry');
+    const registryPath = path.join(registryDir, 'engines.json');
+    const historyDir = path.join(registryDir, 'history');
+
+    if (!fs.existsSync(registryDir)) {
+      fs.mkdirSync(registryDir, { recursive: true });
+    }
+    if (!fs.existsSync(historyDir)) {
+      fs.mkdirSync(historyDir, { recursive: true });
+    }
+
+    const reservedFiles = ['packages.json', 'runtime.json', 'sessions.json'];
+    for (const file of reservedFiles) {
+      const reservedPath = path.join(registryDir, file);
+      if (!fs.existsSync(reservedPath)) {
+        fs.writeFileSync(reservedPath, JSON.stringify({ version: '1.0.0', reserved: true }, null, 2), 'utf8');
+      }
+    }
+
+    const allPkgs = this.db.list();
+    const engines = allPkgs.filter(pkg => pkg.type === 'Engine');
+    const repoRoot = this.getRepositoryRoot(path.dirname(this.configPath));
+
+    const registryEntries = engines.map(pkg => {
+      let manifestEntry = 'dist/index.js';
+      const manifestPath = path.join(pkg.installationPath, 'manifest.json');
+      if (fs.existsSync(manifestPath)) {
+        try {
+          const rawManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          if (rawManifest.entrypoint) {
+            manifestEntry = rawManifest.entrypoint;
+          }
+        } catch {}
+      }
+
+      const relativeEntry = path.relative(repoRoot, path.join(pkg.installationPath, manifestEntry)).replace(/\\/g, '/');
+      const relativeManifest = path.relative(repoRoot, path.join(pkg.installationPath, 'engine.json')).replace(/\\/g, '/');
+
+      let runtimeApi = '1.0.0';
+      let sdkVersion = '1.0.0';
+      if (fs.existsSync(manifestPath)) {
+        try {
+          const rawManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          if (rawManifest.kernelApiVersion) {
+            runtimeApi = rawManifest.kernelApiVersion;
+          }
+          if (rawManifest.sdkVersion) {
+            sdkVersion = rawManifest.sdkVersion;
+          }
+        } catch {}
+      }
+
+      return {
+        id: pkg.id,
+        displayName: pkg.name,
+        version: pkg.version,
+        enabled: pkg.enabled !== false,
+        entry: relativeEntry,
+        manifest: relativeManifest,
+        runtimeApi,
+        sdkVersion,
+        installedAt: pkg.installationDate
+      };
+    });
+
+    const registryContent = {
+      version: '1.0.0',
+      generatedBy: '@aegis/package-manager',
+      generatedAt: new Date().toISOString(),
+      engines: registryEntries
+    };
+
+    const registryStr = JSON.stringify(registryContent, null, 2);
+    const tempRegistryPath = registryPath + '.tmp';
+    fs.writeFileSync(tempRegistryPath, registryStr, 'utf8');
+    fs.renameSync(tempRegistryPath, registryPath);
+
+    const timestamp = Date.now();
+    const snapshotPath = path.join(historyDir, `engines_${timestamp}.json`);
+    fs.writeFileSync(snapshotPath, registryStr, 'utf8');
   }
 }

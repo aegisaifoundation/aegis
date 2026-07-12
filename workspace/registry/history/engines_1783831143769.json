@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0",
+  "generatedBy": "@aegis/package-manager",
+  "generatedAt": "2026-07-12T04:39:03.767Z",
+  "engines": [
+    {
+      "id": "engine-a",
+      "displayName": "Mock engine-a Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "test-registry-sandbox/engines/engine-a/dist/index.js",
+      "manifest": "test-registry-sandbox/engines/engine-a/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-12T04:39:03.727Z"
+    },
+    {
+      "id": "engine-b",
+      "displayName": "Mock engine-b Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "test-registry-sandbox/engines/engine-b/dist/index.js",
+      "manifest": "test-registry-sandbox/engines/engine-b/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-12T04:39:03.757Z"
+    }
+  ]
+}

@@ -33,6 +33,13 @@ export class KernelAPI {
     async shutdown() {
         this.setStatus('SHUTTING_DOWN');
         logger.info('System shutdown initiated.', 'system');
+        if (this.container.has('ipcServer')) {
+            const ipcServer = this.container.resolve('ipcServer');
+            try {
+                ipcServer.stop();
+            }
+            catch { }
+        }
         if (this.container.has('engineManager')) {
             const engineMgr = this.container.resolve('engineManager');
             await engineMgr.shutdownAll();
@@ -109,6 +116,16 @@ export class Bootloader {
             await engineManager.discoverAndLoad(runtimeContext);
             await engineManager.initializeAll(runtimeContext);
             await engineManager.startAll();
+            // Start IPC Server control channel
+            try {
+                const { IpcServer } = await import('../transports/IpcServer.js');
+                const ipcServer = new IpcServer(workspaceManager.getWorkspacePath());
+                ipcServer.start();
+                container.bind('ipcServer', ipcServer);
+            }
+            catch (ipcErr) {
+                console.error('[Bootloader] Failed to start IPC Control Channel:', ipcErr.message);
+            }
         }
         catch (err) {
             console.error('[Bootloader] Safe mode triggered due to engine loading failure:', err.message);
