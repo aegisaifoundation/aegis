@@ -1,4 +1,11 @@
 {
   "version": "1.0.0",
-  "autoloadEngines": []
+  "requireSignature": false,
+  "autoloadEngines": [
+    "distributed-intelligence",
+    "aegis-memory",
+    "aegis-agent",
+    "aegis-api"
+  ],
+  "defaultProvider": "local/ollama"
 }

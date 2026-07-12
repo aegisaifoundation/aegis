@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { Container } from '../di/Container.js';
 import { detectHardware, detectOS, detectArch } from '../utils/platform.js';
 import { workspaceManager } from '../workspace/WorkspaceManager.js';
@@ -7,6 +8,7 @@ import { eventBus } from '../eventbus/EventBus.js';
 import { serviceRegistry } from '../registry/ServiceRegistry.js';
 import { engineManager, EngineManager } from '../managers/EngineManager.js';
 import { IKernelAPI_v1, KernelStatus, EventEnvelope } from '@aegis/sdk';
+import { runtimeSessionManager } from '../services/RuntimeSessionManager.js';
 
 export class KernelAPI implements IKernelAPI_v1 {
   readonly version = "1.0.0";
@@ -115,6 +117,31 @@ export class Bootloader {
     serviceRegistry.register('config', configurationManager);
     serviceRegistry.register('kernelAPI', kernelApi);
     serviceRegistry.register('engineManager', engineManager);
+
+    // Register ConversationContext service wrapper around memoryGateway history
+    const conversationContext = {
+      async addMessage(role: string, content: string, metadata?: any) {
+        const activeSessionId = await runtimeSessionManager.getActiveSession();
+        if (!activeSessionId) throw new Error("No active session");
+        const message = {
+          id: crypto.randomUUID(),
+          role,
+          content,
+          metadata,
+          createdAt: new Date().toISOString()
+        };
+        const memoryGateway = serviceRegistry.get<any>('memoryGateway');
+        await memoryGateway.appendHistory(activeSessionId, message);
+      },
+      async getMessages() {
+        const activeSessionId = await runtimeSessionManager.getActiveSession();
+        if (!activeSessionId) return [];
+        const memoryGateway = serviceRegistry.get<any>('memoryGateway');
+        return await memoryGateway.getHistory(activeSessionId);
+      }
+    };
+    container.bind('conversationContext', conversationContext);
+    serviceRegistry.register('conversationContext', conversationContext);
 
     console.log('[Bootloader] Initiating Phase 4: Session & Storage Recovery...');
     logger.log('info', 'System storage verified and state checks successful', 'system');

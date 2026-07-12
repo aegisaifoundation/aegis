@@ -72,9 +72,34 @@ export class IpcServer {
                 id: e.metadata.id,
                 displayName: e.metadata.displayName,
                 autoStart: e.metadata.autoStart,
-                version: e.metadata.version
+                version: e.metadata.version,
+                state: (e as any).getState ? (e as any).getState() : 'UNKNOWN',
+                pid: (e as any).getPid ? (e as any).getPid() : undefined,
+                uptimeMs: (e as any).getUptimeMs ? (e as any).getUptimeMs() : undefined,
               }));
               result = { success: true, engines };
+              break;
+            case 'engineInfo':
+              if (!req.payload || !req.payload.engineId) {
+                throw new Error('Missing engineId in payload');
+              }
+              const targetEngine = engineManager.get(req.payload.engineId);
+              if (!targetEngine) {
+                throw new Error(`Engine "${req.payload.engineId}" is not loaded`);
+              }
+              const healthReport = await targetEngine.health();
+              result = {
+                success: true,
+                info: {
+                  metadata: targetEngine.metadata,
+                  health: healthReport,
+                  state: (targetEngine as any).getState ? (targetEngine as any).getState() : 'UNKNOWN',
+                  pid: (targetEngine as any).getPid ? (targetEngine as any).getPid() : undefined,
+                  uptimeMs: (targetEngine as any).getUptimeMs ? (targetEngine as any).getUptimeMs() : undefined,
+                  restartCount: (targetEngine as any).getRestartCount ? (targetEngine as any).getRestartCount() : 0,
+                  startedAt: (targetEngine as any).getStartedAt ? (targetEngine as any).getStartedAt() : undefined,
+                }
+              };
               break;
             case 'shutdown':
               setTimeout(() => {

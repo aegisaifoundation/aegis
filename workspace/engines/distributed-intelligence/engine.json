@@ -1,0 +1,16 @@
+{
+  "id": "distributed-intelligence",
+  "displayName": "Distributed Intelligence Engine",
+  "version": "1.0.0",
+  "kernelApiVersion": "1.0.0",
+  "entrypoint": "dist/index.js",
+  "dependencies": [],
+  "priority": 10,
+  "autoStart": true,
+  "singleton": true,
+  "permissions": [
+    "process:spawn",
+    "network:tcp",
+    "fs:read"
+  ]
+}

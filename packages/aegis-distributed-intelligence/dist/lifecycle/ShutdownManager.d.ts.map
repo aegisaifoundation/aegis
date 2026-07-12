@@ -1,0 +1,1 @@
+{"version":3,"file":"ShutdownManager.d.ts","sourceRoot":"","sources":["../../src/lifecycle/ShutdownManager.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,YAAY,EAAE,MAAM,eAAe,CAAC;AAE7C,qBAAa,eAAe;IAC1B,OAAO,CAAC,MAAM,CAAC,mBAAmB,CAAQ;WAE7B,SAAS,CAAC,EAAE,EAAE,YAAY,GAAG,IAAI,GAAG,OAAO,CAAC,IAAI,CAAC;CA0C/D;AACD,eAAe,eAAe,CAAC"}

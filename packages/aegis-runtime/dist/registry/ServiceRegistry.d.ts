@@ -1,5 +1,4 @@
 export declare class ServiceRegistry {
-    private static instance;
     private services;
     static getInstance(): ServiceRegistry;
     register(name: string, service: any): void;

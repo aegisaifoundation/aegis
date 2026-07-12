@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { Provider, ChatMessage } from '../../../aegis-core/src/providers/Provider.js';
-import { ProviderContext } from '../../../aegis-core/src/providers/ProviderContext.js';
+import { Provider, ChatMessage } from '@aegis/providers';
+import { ProviderContext } from '@aegis/providers';
 
 export class GGUFProvider implements Provider {
   name = 'local/gguf';

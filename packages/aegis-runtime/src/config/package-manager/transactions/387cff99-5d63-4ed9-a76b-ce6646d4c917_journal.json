@@ -1,0 +1,28 @@
+{
+  "txId": "387cff99-5d63-4ed9-a76b-ce6646d4c917",
+  "state": "COMMITTED",
+  "timestamp": "2026-07-12T14:44:18.620Z",
+  "packageId": "aegis-memory",
+  "action": "install",
+  "backups": [
+    {
+      "originalPath": "C:\\aegis\\workspace\\engines\\aegis-memory",
+      "backupPath": "C:\\aegis\\packages\\aegis-runtime\\src\\config\\package-manager\\backups\\387cff99-5d63-4ed9-a76b-ce6646d4c917\\66eb3da7-2fef-47ae-8b43-7e04ae58d328"
+    }
+  ],
+  "addedFiles": [
+    "C:\\aegis\\workspace\\engines\\aegis-memory\\engine.json"
+  ],
+  "addedDirs": [],
+  "originalConfig": {
+    "version": "1.0.0",
+    "requireSignature": false,
+    "autoloadEngines": [
+      "distributed-intelligence",
+      "aegis-memory",
+      "aegis-agent",
+      "aegis-api"
+    ],
+    "defaultProvider": "local/ollama"
+  }
+}

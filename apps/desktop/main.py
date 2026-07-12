@@ -11,9 +11,15 @@ from llama_cpp import Llama
 
 # Constants
 UI_DIR = os.path.dirname(os.path.abspath(__file__))
-AEGIS_CORE_DIR = os.path.join(os.path.dirname(UI_DIR), "apps", "aegis-boot")
+AEGIS_CORE_DIR = os.path.join(os.path.dirname(UI_DIR), "aegis-boot")
 # Default port for AEGIS local dashboard web server
 UI_PORT = 5001
+
+def get_model_dir():
+    p = "C:\\Mini Project\\rag_pipeline_2"
+    if os.path.exists(p):
+        return p
+    return os.path.join(os.path.dirname(UI_DIR), "Mini Project", "rag_pipeline_2")
 
 # ==========================================================================
 # GGUF MODEL MANAGER
@@ -21,7 +27,7 @@ UI_PORT = 5001
 class GGUFModelManager:
     def __init__(self):
         self.llm = None
-        self.model_path = os.path.join(os.path.dirname(UI_DIR), "Mini Project", "rag_pipeline_2", "model.gguf")
+        self.model_path = os.path.join(get_model_dir(), "model.gguf")
         self.active_lora = None
         self.lora_attached = False
         self.lock = threading.Lock()
@@ -68,7 +74,7 @@ class GGUFModelManager:
             if not lora_name:
                 raise ValueError("lora_name is required to attach")
             
-            lora_dir = os.path.join(os.path.dirname(UI_DIR), "Mini Project", "rag_pipeline_2")
+            lora_dir = get_model_dir()
             full_lora_path = os.path.join(lora_dir, lora_name)
             if not os.path.exists(full_lora_path):
                 raise FileNotFoundError(f"LoRA adapter file not found: {full_lora_path}")
@@ -78,7 +84,7 @@ class GGUFModelManager:
         return False
 
     def list_available_loras(self):
-        lora_dir = os.path.join(os.path.dirname(UI_DIR), "Mini Project", "rag_pipeline_2")
+        lora_dir = get_model_dir()
         loras = []
         if os.path.exists(lora_dir):
             for file in os.listdir(lora_dir):

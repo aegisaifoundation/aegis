@@ -1,0 +1,19 @@
+{
+  "id": "aegis-agent",
+  "name": "AI Agent Engine",
+  "version": "1.0.0",
+  "type": "Engine",
+  "entrypoint": "dist/AgentEngine.js",
+  "kernelApiVersion": "1.0.0",
+  "sdkVersion": "1.0.0",
+  "permissions": [
+    "fs:read",
+    "fs:write"
+  ],
+  "dependencies": {},
+  "supportedPlatforms": [
+    "win32",
+    "linux",
+    "darwin"
+  ]
+}

@@ -1,0 +1,1 @@
+{"version":3,"file":"LogFormatter.d.ts","sourceRoot":"","sources":["../../src/logging/LogFormatter.ts"],"names":[],"mappings":"AAAA,qBAAa,YAAY;IACvB,MAAM,CAAC,MAAM,CAAC,GAAG,EAAE,MAAM,EAAE,QAAQ,CAAC,EAAE,MAAM,CAAC,MAAM,EAAE,GAAG,CAAC,GAAG,MAAM;CAWnE;AACD,eAAe,YAAY,CAAC"}

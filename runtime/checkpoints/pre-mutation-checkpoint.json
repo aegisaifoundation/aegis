@@ -1,0 +1,37 @@
+{
+  "runtimeId": "8688df74-8a80-4e18-8ac3-95cb3e3fe56d",
+  "runtimeClusterId": "cluster-default",
+  "runtimeEpoch": 1,
+  "activeSessionId": "session_1783840491552",
+  "mountedSessionId": "session_1783840491552",
+  "runtimeState": "ACTIVE",
+  "bootMode": "RESTORE_PREVIOUS",
+  "lastBootAt": "2026-07-12T07:14:41.554Z",
+  "lastShutdownAt": "",
+  "runtimeVersion": "1.0.0",
+  "lastSessionSwitchAt": "2026-07-12T07:14:51.705Z",
+  "recoveryRequired": false,
+  "recoveryReason": "",
+  "recoveryAttempts": 0,
+  "runtimeLockState": "IDLE",
+  "mountGeneration": 2,
+  "mountToken": "ac42d663-ada0-422a-b50b-7100a0dbf9d7",
+  "lastShutdownClean": true,
+  "lastHeartbeatAt": "2026-07-12T07:14:41.554Z",
+  "activeCapabilities": {
+    "tools": [],
+    "plugins": [],
+    "providers": [],
+    "workflows": []
+  },
+  "runtimeHealthStatus": "HEALTHY",
+  "runtimeContextVersion": "1.0.0",
+  "runtimeMode": "NORMAL",
+  "checkoutStage": "FINALIZING",
+  "mountLease": {
+    "ownerRuntimeId": "8688df74-8a80-4e18-8ac3-95cb3e3fe56d",
+    "acquiredAt": "2026-07-12T07:14:51.705Z",
+    "expiresAt": "2026-07-12T07:24:51.705Z"
+  },
+  "lastRecoveryCheckpoint": "C:\\aegis\\runtime\\checkpoints\\pre-mutation-checkpoint.json"
+}

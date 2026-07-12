@@ -1,0 +1,1 @@
+{"version":3,"file":"EngineManifest.d.ts","sourceRoot":"","sources":["../../src/capabilities/EngineManifest.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,QAAQ,EAAE,MAAM,uBAAuB,CAAC;AAEjD,qBAAa,cAAc;IACzB,MAAM,CAAC,IAAI,CAAC,YAAY,EAAE,MAAM,GAAG,QAAQ;CAuB5C;AACD,eAAe,cAAc,CAAC"}

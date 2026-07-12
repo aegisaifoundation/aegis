@@ -1,0 +1,47 @@
+{
+  "messages": [
+    {
+      "id": "1253c667-ee39-49df-91d2-3d2b90d66845",
+      "role": "user",
+      "content": "hi",
+      "createdAt": "2026-07-12T14:08:40.309Z"
+    },
+    {
+      "id": "1d7c3f0c-ff36-4927-80b7-d78a9e8f30a1",
+      "role": "user",
+      "content": "hi",
+      "createdAt": "2026-07-12T14:10:05.978Z"
+    },
+    {
+      "id": "142104d5-8ec9-4e7e-b0e8-51fc9ca1cc0b",
+      "role": "assistant",
+      "content": "Hello! How can I assist you today?",
+      "createdAt": "2026-07-12T14:10:06.925Z"
+    },
+    {
+      "id": "63c311a3-9521-4cd5-9da9-a5bf158f5ded",
+      "role": "user",
+      "content": "hi",
+      "createdAt": "2026-07-12T14:12:00.616Z"
+    },
+    {
+      "id": "542e4272-9fe1-409b-9e0e-2cced7e969ea",
+      "role": "assistant",
+      "content": "Hello again! Is there anything I can help you with today? 😊",
+      "createdAt": "2026-07-12T14:12:35.013Z"
+    },
+    {
+      "id": "0bbb991e-483c-4ea5-aeae-3ee0fbebb10f",
+      "role": "user",
+      "content": "whatys your agenda today",
+      "createdAt": "2026-07-12T14:48:56.787Z"
+    },
+    {
+      "id": "5d7dbdb5-b6f3-4deb-af7b-3887f56f4f85",
+      "role": "assistant",
+      "content": "As an AI agent, I don't have a personal \"agenda\" in the human sense! 😊\n\nMy purpose is simply to assist you with whatever you need—whether that's answering questions, brainstorming ideas, writing content, solving problems, or providing information on any topic.\n\n**So, my current agenda is entirely focused on you.** How can I help you right now?",
+      "createdAt": "2026-07-12T14:49:31.223Z"
+    }
+  ],
+  "memoryVersion": "1.0.0"
+}

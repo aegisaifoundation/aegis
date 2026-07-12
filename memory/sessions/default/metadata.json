@@ -1,0 +1,25 @@
+{
+  "sessionId": "default",
+  "createdAt": "2026-07-12T07:14:51.623Z",
+  "updatedAt": "2026-07-12T07:14:51.623Z",
+  "lastAccessedAt": "2026-07-12T07:14:51.623Z",
+  "memoryVersion": "1.0.0",
+  "lifecycleState": "ACTIVE",
+  "checksums": {
+    "history": "ec8b6a4d4cd27d8819d7ccfbbb3c0304f7f283bdfb3bb0849d2b19d7d880add6",
+    "sessionMemory": "ff59687791c850b492ab89fbceabe23a711a4301643661e819f5cedc6ebece2e",
+    "workingMemory": "75fa352e59b131a0a0de849619ad7e4530feedecdcfdb77eb6b95e3697d78bf3",
+    "task": "5973cae11f63366856e39242a4e79fabd38807a4e2d49800ed53cba7a9e611a3"
+  },
+  "confidence": {},
+  "tags": [
+    "default"
+  ],
+  "quotas": {
+    "maxSessions": 100,
+    "maxHistorySize": 10485760,
+    "maxWorkingMemorySize": 1500,
+    "maxSessionMemorySize": 1000,
+    "maxSnapshots": 10
+  }
+}

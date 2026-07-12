@@ -1,5 +1,165 @@
 {
-  "packages": {},
+  "packages": {
+    "distributed-intelligence": {
+      "id": "distributed-intelligence",
+      "name": "Distributed Intelligence Engine",
+      "version": "1.0.0",
+      "type": "Engine",
+      "installationDate": "2026-07-12T06:59:46.714Z",
+      "installationPath": "C:\\aegis\\workspace\\engines\\distributed-intelligence",
+      "dependencies": {},
+      "reverseDependencies": [],
+      "checksum": "",
+      "signatureStatus": "UNSIGNED",
+      "repositorySource": "local",
+      "installationState": "INSTALLED",
+      "updateChannel": "stable",
+      "healthState": "HEALTHY",
+      "enabled": true
+    },
+    "aegis-memory": {
+      "id": "aegis-memory",
+      "name": "Cognitive Memory Engine",
+      "version": "1.0.0",
+      "type": "Engine",
+      "installationDate": "2026-07-12T14:44:18.976Z",
+      "installationPath": "C:\\aegis\\workspace\\engines\\aegis-memory",
+      "dependencies": {},
+      "reverseDependencies": [],
+      "checksum": "",
+      "signatureStatus": "UNSIGNED",
+      "repositorySource": "local",
+      "installationState": "INSTALLED",
+      "updateChannel": "stable",
+      "healthState": "HEALTHY",
+      "enabled": true
+    },
+    "aegis-agent": {
+      "id": "aegis-agent",
+      "name": "AI Agent Engine",
+      "version": "1.0.0",
+      "type": "Engine",
+      "installationDate": "2026-07-12T14:44:19.070Z",
+      "installationPath": "C:\\aegis\\workspace\\engines\\aegis-agent",
+      "dependencies": {},
+      "reverseDependencies": [],
+      "checksum": "",
+      "signatureStatus": "UNSIGNED",
+      "repositorySource": "local",
+      "installationState": "INSTALLED",
+      "updateChannel": "stable",
+      "healthState": "HEALTHY",
+      "enabled": true
+    },
+    "aegis-api": {
+      "id": "aegis-api",
+      "name": "REST API Connector Engine",
+      "version": "1.0.0",
+      "type": "Engine",
+      "installationDate": "2026-07-12T14:44:19.135Z",
+      "installationPath": "C:\\aegis\\workspace\\engines\\aegis-api",
+      "dependencies": {},
+      "reverseDependencies": [],
+      "checksum": "",
+      "signatureStatus": "UNSIGNED",
+      "repositorySource": "local",
+      "installationState": "INSTALLED",
+      "updateChannel": "stable",
+      "healthState": "HEALTHY",
+      "enabled": true
+    }
+  },
   "repositories": [],
-  "transactionHistory": []
+  "transactionHistory": [
+    {
+      "txId": "3f99ccc2-a162-4306-a657-628fd7b688b8",
+      "action": "install",
+      "timestamp": "2026-07-12T06:59:46.718Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "ffa3d15e-9047-456a-b855-d0cf137699dd",
+      "action": "install",
+      "timestamp": "2026-07-12T07:12:46.948Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "06dc06dd-f0a7-4153-bc0e-4c823884d1f4",
+      "action": "install",
+      "timestamp": "2026-07-12T07:12:46.987Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "c850bd0c-9d0b-48f3-bce8-69427f3e999a",
+      "action": "install",
+      "timestamp": "2026-07-12T07:12:47.024Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "69158528-a5d8-4c1c-a1d7-297195a8a288",
+      "action": "install",
+      "timestamp": "2026-07-12T14:01:12.233Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "b40d62ba-193f-4e9b-9da2-0639568f5b89",
+      "action": "install",
+      "timestamp": "2026-07-12T14:01:18.356Z",
+      "status": "ROLLED_BACK"
+    },
+    {
+      "txId": "943d47a1-1f24-408f-8838-530f4bdd6a1a",
+      "action": "install",
+      "timestamp": "2026-07-12T14:01:25.206Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "86782797-c43e-4f14-91ee-a4abb1fba2f7",
+      "action": "install",
+      "timestamp": "2026-07-12T14:01:25.278Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "96c679a0-4a55-47a3-bee5-05575f674e11",
+      "action": "install",
+      "timestamp": "2026-07-12T14:01:25.346Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "784b11eb-9a1d-4c80-8bab-3388a85f9f32",
+      "action": "install",
+      "timestamp": "2026-07-12T14:09:45.720Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "cb0f442e-368d-4fa8-a66c-dd30b690dfa5",
+      "action": "install",
+      "timestamp": "2026-07-12T14:09:45.794Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "6d5e1cb0-0e52-4f72-8066-541410b805ab",
+      "action": "install",
+      "timestamp": "2026-07-12T14:09:45.846Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "387cff99-5d63-4ed9-a76b-ce6646d4c917",
+      "action": "install",
+      "timestamp": "2026-07-12T14:44:19.008Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "0634bfdd-1621-447a-b77a-b37251fecbb2",
+      "action": "install",
+      "timestamp": "2026-07-12T14:44:19.079Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "13f6485e-c19f-4188-ae50-5205f0b47c08",
+      "action": "install",
+      "timestamp": "2026-07-12T14:44:19.143Z",
+      "status": "COMMITTED"
+    }
+  ]
 }

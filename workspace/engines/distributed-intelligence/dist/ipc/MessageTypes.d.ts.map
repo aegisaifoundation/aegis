@@ -1,0 +1,1 @@
+{"version":3,"file":"MessageTypes.d.ts","sourceRoot":"","sources":["../../src/ipc/MessageTypes.ts"],"names":[],"mappings":"AAAA,oBAAY,WAAW;IACrB,KAAK,UAAU;IACf,SAAS,cAAc;IACvB,GAAG,QAAQ;IACX,OAAO,YAAY;IACnB,KAAK,UAAU;IACf,OAAO,YAAY;IACnB,YAAY,iBAAiB;IAC7B,MAAM,WAAW;IACjB,KAAK,UAAU;IACf,OAAO,YAAY;IACnB,QAAQ,aAAa;IACrB,QAAQ,aAAa;IACrB,IAAI,SAAS;IACb,IAAI,SAAS;CACd"}

@@ -64,6 +64,12 @@ async function main() {
   
   const { spawn } = await import('child_process');
   
+  const logDir = path.resolve(repoRoot, 'workspace/logs');
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+  const logFile = fs.openSync(path.join(logDir, 'daemon_boot.log'), 'a');
+
   let child;
   if (isDev) {
     child = spawn('node', [
@@ -91,7 +97,7 @@ async function main() {
   child.unref();
   
   console.log('[Bootloader] Waiting for daemon to initialize and become healthy...');
-  const hasApiEngine = fs.existsSync(path.resolve(repoRoot, 'engines/aegis-api'));
+  const hasApiEngine = fs.existsSync(path.resolve(repoRoot, 'workspace/engines/aegis-api'));
   
   let healthy = false;
   for (let i = 0; i < 20; i++) {

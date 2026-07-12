@@ -1,0 +1,6 @@
+{
+  "name": "engine list",
+  "description": "List all registered engines, their status, version, PID, and uptime.",
+  "version": "1.0.0",
+  "category": "shared"
+}

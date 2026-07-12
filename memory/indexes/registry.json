@@ -1,0 +1,22 @@
+{
+  "sessions": {
+    "session_1783840491552": {
+      "sessionId": "session_1783840491552",
+      "tags": [],
+      "createdAt": "2026-07-12T07:14:51.587Z",
+      "updatedAt": "2026-07-12T14:49:31.256Z",
+      "lastAccessedAt": "2026-07-12T14:55:27.848Z",
+      "lifecycleState": "ACTIVE"
+    },
+    "default": {
+      "sessionId": "default",
+      "tags": [
+        "default"
+      ],
+      "createdAt": "2026-07-12T07:14:51.623Z",
+      "updatedAt": "2026-07-12T07:14:51.623Z",
+      "lastAccessedAt": "2026-07-12T07:14:51.623Z",
+      "lifecycleState": "ACTIVE"
+    }
+  }
+}

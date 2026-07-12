@@ -1,0 +1,6 @@
+{
+  "name": "engine start",
+  "description": "Start a registered engine by ID.",
+  "version": "1.0.0",
+  "category": "shared"
+}

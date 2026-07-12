@@ -1,9 +1,13 @@
+const REGISTRY_SYMBOL = Symbol.for('aegis.ServiceRegistry');
+
 export class ServiceRegistry {
-  private static instance = new ServiceRegistry();
   private services = new Map<string, any>();
 
   static getInstance(): ServiceRegistry {
-    return this.instance;
+    if (!(globalThis as any)[REGISTRY_SYMBOL]) {
+      (globalThis as any)[REGISTRY_SYMBOL] = new ServiceRegistry();
+    }
+    return (globalThis as any)[REGISTRY_SYMBOL];
   }
 
   register(name: string, service: any): void {

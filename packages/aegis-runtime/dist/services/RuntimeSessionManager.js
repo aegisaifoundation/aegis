@@ -534,6 +534,10 @@ export class RuntimeSessionManager {
         if (existsSync(trashDir)) {
             await fs.rm(trashDir, { recursive: true, force: true }).catch(() => { });
         }
+        const trashParentDir = path.dirname(trashDir);
+        if (!existsSync(trashParentDir)) {
+            await fs.mkdir(trashParentDir, { recursive: true });
+        }
         await fs.rename(sourceDir, trashDir);
         eventBus.emit(EventTypes.SESSION_DELETED, { sessionId, actor }, 'session-continuity');
         await getMemoryIndexManager().unregisterSession(sessionId);

@@ -68,9 +68,34 @@ export class IpcServer {
                                 id: e.metadata.id,
                                 displayName: e.metadata.displayName,
                                 autoStart: e.metadata.autoStart,
-                                version: e.metadata.version
+                                version: e.metadata.version,
+                                state: e.getState ? e.getState() : 'UNKNOWN',
+                                pid: e.getPid ? e.getPid() : undefined,
+                                uptimeMs: e.getUptimeMs ? e.getUptimeMs() : undefined,
                             }));
                             result = { success: true, engines };
+                            break;
+                        case 'engineInfo':
+                            if (!req.payload || !req.payload.engineId) {
+                                throw new Error('Missing engineId in payload');
+                            }
+                            const targetEngine = engineManager.get(req.payload.engineId);
+                            if (!targetEngine) {
+                                throw new Error(`Engine "${req.payload.engineId}" is not loaded`);
+                            }
+                            const healthReport = await targetEngine.health();
+                            result = {
+                                success: true,
+                                info: {
+                                    metadata: targetEngine.metadata,
+                                    health: healthReport,
+                                    state: targetEngine.getState ? targetEngine.getState() : 'UNKNOWN',
+                                    pid: targetEngine.getPid ? targetEngine.getPid() : undefined,
+                                    uptimeMs: targetEngine.getUptimeMs ? targetEngine.getUptimeMs() : undefined,
+                                    restartCount: targetEngine.getRestartCount ? targetEngine.getRestartCount() : 0,
+                                    startedAt: targetEngine.getStartedAt ? targetEngine.getStartedAt() : undefined,
+                                }
+                            };
                             break;
                         case 'shutdown':
                             setTimeout(() => {

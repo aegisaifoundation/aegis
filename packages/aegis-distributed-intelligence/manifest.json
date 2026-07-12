@@ -1,0 +1,13 @@
+{
+  "id": "distributed-intelligence",
+  "name": "Distributed Intelligence Engine",
+  "version": "1.0.0",
+  "type": "Engine",
+  "entrypoint": "dist/index.js",
+  "kernelApiVersion": "1.0.0",
+  "sdkVersion": "1.0.0",
+  "permissions": ["process:spawn", "network:tcp", "fs:read"],
+  "dependencies": {},
+  "supportedPlatforms": ["win32", "linux", "darwin"],
+  "description": "AEGIS Distributed Intelligence Kernel — C++20 native engine providing distributed node discovery, heartbeat, membership management, messaging, and resource monitoring."
+}

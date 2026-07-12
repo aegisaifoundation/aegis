@@ -1,0 +1,28 @@
+{
+  "txId": "6d5e1cb0-0e52-4f72-8066-541410b805ab",
+  "state": "COMMITTED",
+  "timestamp": "2026-07-12T14:09:45.804Z",
+  "packageId": "aegis-api",
+  "action": "install",
+  "backups": [
+    {
+      "originalPath": "C:\\aegis\\workspace\\engines\\aegis-api",
+      "backupPath": "C:\\aegis\\packages\\aegis-runtime\\src\\config\\package-manager\\backups\\6d5e1cb0-0e52-4f72-8066-541410b805ab\\65f6eb34-1b6d-4239-8cab-27c59105b50d"
+    }
+  ],
+  "addedFiles": [
+    "C:\\aegis\\workspace\\engines\\aegis-api\\engine.json"
+  ],
+  "addedDirs": [],
+  "originalConfig": {
+    "version": "1.0.0",
+    "requireSignature": false,
+    "autoloadEngines": [
+      "distributed-intelligence",
+      "aegis-memory",
+      "aegis-agent",
+      "aegis-api"
+    ],
+    "defaultProvider": "api/openai-compatible"
+  }
+}

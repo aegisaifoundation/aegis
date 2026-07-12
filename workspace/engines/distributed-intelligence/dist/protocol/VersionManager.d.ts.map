@@ -1,0 +1,1 @@
+{"version":3,"file":"VersionManager.d.ts","sourceRoot":"","sources":["../../src/protocol/VersionManager.ts"],"names":[],"mappings":"AAAA,qBAAa,cAAc;IACzB,MAAM,CAAC,YAAY,CAAC,aAAa,EAAE,MAAM,EAAE,aAAa,EAAE,MAAM,GAAG,OAAO;IAgB1E,OAAO,CAAC,MAAM,CAAC,KAAK;CAWrB;AACD,eAAe,cAAc,CAAC"}

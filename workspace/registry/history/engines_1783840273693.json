@@ -1,0 +1,18 @@
+{
+  "version": "1.0.0",
+  "generatedBy": "@aegis/package-manager",
+  "generatedAt": "2026-07-12T07:11:13.691Z",
+  "engines": [
+    {
+      "id": "distributed-intelligence",
+      "displayName": "Distributed Intelligence Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "workspace/engines/distributed-intelligence/dist/index.js",
+      "manifest": "workspace/engines/distributed-intelligence/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-12T06:59:46.714Z"
+    }
+  ]
+}

@@ -1,8 +1,0 @@
-venv/
-adapter.gguf
-model.gguf
-rag_pipeline*/documents/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
