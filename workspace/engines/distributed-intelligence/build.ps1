@@ -36,7 +36,9 @@ $sources = @(
     "cpp/src/resource-manager/ResourceMonitor.cpp",
     "cpp/src/resource-manager/ResourceSnapshot.cpp",
     "cpp/src/resource-manager/ResourceHistory.cpp",
-    "cpp/src/resource-manager/ResourceStatistics.cpp"
+    "cpp/src/resource-manager/ResourceStatistics.cpp",
+    "cpp/src/scheduler/WorkerPool.cpp",
+    "cpp/src/plugins/PluginManager.cpp"
 )
 
 $fullSources = $sources | ForEach-Object { Join-Path $PackageRoot $_ }
@@ -53,8 +55,8 @@ Write-Host "[DIE Build] Running: g++ $($gppArgs -join ' ')" -ForegroundColor Dar
 & g++ @gppArgs
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "[DIE Build] ❌ C++ compilation FAILED (exit code $LASTEXITCODE)" -ForegroundColor Red
+    Write-Host "[DIE Build] [X] C++ compilation FAILED (exit code $LASTEXITCODE)" -ForegroundColor Red
     exit $LASTEXITCODE
 }
 
-Write-Host "[DIE Build] ✔ die-service.exe compiled successfully → $outputExe" -ForegroundColor Green
+Write-Host "[DIE Build] [OK] die-service.exe compiled successfully -> $outputExe" -ForegroundColor Green
