@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import type { SkillContext } from '../../../aegis-core/src/skills/SkillContext.js';
-import type { ToolContext } from '../../../aegis-core/src/types/Tool.js';
+import type { SkillContext } from '@aegis/skills';
+import type { ToolContext } from '@aegis/runtime';
 import type { NormalizedPatientRecord } from '../../../tools/shared/PatientDataTool/types.js';
 
 const __filename = fileURLToPath(import.meta.url);

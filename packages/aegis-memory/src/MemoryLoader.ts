@@ -28,7 +28,7 @@ export class MemoryLoader {
   }
 
   getWorkspaceRoot(): string {
-    return path.dirname(this.getAegisCoreRoot());
+    return path.dirname(path.dirname(this.getAegisCoreRoot()));
   }
 
   getMemoryModulesDir(): string {

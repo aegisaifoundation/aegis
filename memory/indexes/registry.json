@@ -4,8 +4,8 @@
       "sessionId": "session_1783840491552",
       "tags": [],
       "createdAt": "2026-07-12T07:14:51.587Z",
-      "updatedAt": "2026-07-12T14:49:31.256Z",
-      "lastAccessedAt": "2026-07-12T17:23:37.179Z",
+      "updatedAt": "2026-07-13T11:37:27.497Z",
+      "lastAccessedAt": "2026-07-13T11:54:01.431Z",
       "lifecycleState": "ACTIVE"
     },
     "default": {
@@ -15,15 +15,23 @@
       ],
       "createdAt": "2026-07-12T07:14:51.623Z",
       "updatedAt": "2026-07-12T07:14:51.623Z",
-      "lastAccessedAt": "2026-07-12T07:14:51.623Z",
+      "lastAccessedAt": "2026-07-13T11:36:50.823Z",
       "lifecycleState": "ACTIVE"
     },
-    "session_1783876795565": {
-      "sessionId": "session_1783876795565",
+    "session_1783867814730": {
+      "sessionId": "session_1783867814730",
       "tags": [],
-      "createdAt": "2026-07-12T17:19:55.594Z",
-      "updatedAt": "2026-07-12T17:20:42.498Z",
-      "lastAccessedAt": "2026-07-12T17:23:40.529Z",
+      "createdAt": "2026-07-12T14:50:14.768Z",
+      "updatedAt": "2026-07-13T11:37:27.102Z",
+      "lastAccessedAt": "2026-07-13T11:39:24.812Z",
+      "lifecycleState": "ACTIVE"
+    },
+    "session_1783943647439": {
+      "sessionId": "session_1783943647439",
+      "tags": [],
+      "createdAt": "2026-07-13T11:54:07.452Z",
+      "updatedAt": "2026-07-13T11:54:07.452Z",
+      "lastAccessedAt": "2026-07-13T11:54:07.566Z",
       "lifecycleState": "ACTIVE"
     }
   }

@@ -1,5 +1,5 @@
-// Type imports from aegis-core types
-import type { PluginContext } from '../../aegis-core/src/plugins/PluginContext.js';
+// Import types from @aegis/plugins — the correct package, not a relative aegis-core path.
+import type { PluginContext } from '@aegis/plugins';
 
 let eventHandlers: { [key: string]: (...args: any[]) => void } = {};
 
@@ -8,7 +8,7 @@ export default async function initialize(context: PluginContext): Promise<void> 
   logger.info('Template Plugin initializing...');
 
   const eventBus = context.services.getEventBus();
-  
+
   // Set up event listeners or initialize resources
   eventHandlers['log'] = (data: any) => {
     // Example: listen to general log events

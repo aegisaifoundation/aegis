@@ -1,4 +1,4 @@
-import type { ToolContext } from '../../../aegis-core/src/types/Tool.js';
+import type { ToolContext } from '@aegis/runtime';
 import type { NormalizedPatientRecord, PatientEncounter } from './types.js';
 
 function toStringArray(value: any): string[] {

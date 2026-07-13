@@ -55,7 +55,7 @@ export class PluginLoader {
   }
 
   getWorkspaceRoot(): string {
-    return path.dirname(this.getAegisCoreRoot());
+    return path.dirname(path.dirname(this.getAegisCoreRoot()));
   }
 
   getPluginsDir(): string {
@@ -216,3 +216,5 @@ export class PluginLoader {
     }
   }
 }
+
+export const pluginLoader = new PluginLoader();

@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import type { ToolContext } from '../../../aegis-core/src/types/Tool.js';
+import type { ToolContext } from '@aegis/runtime';
 
 export default function execute(input: any, context: ToolContext): Promise<string> {
   const command = typeof input === 'string' ? input : (input.command || input.cmd);

@@ -1,6 +1,6 @@
 import { Ollama } from 'ollama';
-import { Provider, ChatMessage } from '@aegis/providers';
-import { ProviderContext } from '@aegis/providers';
+import type { Provider, ChatMessage } from '@aegis/providers';
+import type { ProviderContext } from '@aegis/providers';
 import { config } from '@aegis/runtime';
 
 export class OllamaProvider implements Provider {

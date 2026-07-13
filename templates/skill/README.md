@@ -65,18 +65,16 @@ To run LLM generation or interact with system components, skills must declare pe
 
 ---
 
-## ⚠️ Important Note on Import Path Errors
+## ⚠️ ESM Import Rules
 
-If you copy files from this directory directly, you may notice TypeScript import errors.
-
-### Why this happens:
-1. **Relative Path Traversal Difference**:
-   - This template is stored at `c:\aegis\templates\skill\`, which is **2 directories deep** from the repository root. Therefore, it imports types using `../../aegis-core/...`.
-   - Active skills are placed in `c:\aegis\skills\shared\<SkillName>\`, which is **3 directories deep** from the repository root.
-   - When you copy these template files into your active skill folder, you **must adjust the relative paths** to go up three levels: change `../../aegis-core/...` to `../../../aegis-core/...` in `execute.ts`.
+1. **Use package imports — never relative `aegis-core` paths:**
+   - ✅ `import type { SkillContext } from '@aegis/skills';`
+   - ❌ `import type { SkillContext } from '../../../aegis-core/src/skills/SkillContext.js';` — this path does NOT exist.
 
 2. **TypeScript ESM Resolution (`.js` extensions)**:
    - Always append `.js` to relative imports (e.g., `import execute from './execute.js'`) even though the source file on disk is `.ts`.
+
+3. **Use `import type` for type-only imports** to avoid ESM runtime errors.
 
 ---
 
@@ -84,7 +82,7 @@ If you copy files from this directory directly, you may notice TypeScript import
 
 The `context` parameter passed to `execute` provides safe access to permitted services:
 ```typescript
-import type { SkillContext } from '../../../aegis-core/src/skills/SkillContext.js';
+import type { SkillContext } from '@aegis/skills';
 
 export default async function execute(input: any, context: SkillContext): Promise<any> {
   // Call the permitted LLM provider

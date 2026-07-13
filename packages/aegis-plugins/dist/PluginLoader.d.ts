@@ -10,3 +10,4 @@ export declare class PluginLoader {
     initializePlugin(name: string): Promise<void>;
     shutdownPlugin(name: string): Promise<void>;
 }
+export declare const pluginLoader: PluginLoader;

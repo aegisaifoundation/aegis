@@ -45,7 +45,7 @@ export class SkillLoader {
         return cwd;
     }
     getWorkspaceRoot() {
-        return path.dirname(this.getAegisCoreRoot());
+        return path.dirname(path.dirname(this.getAegisCoreRoot()));
     }
     getSkillsDir() {
         const wsRoot = this.getWorkspaceRoot();

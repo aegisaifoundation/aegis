@@ -1,4 +1,4 @@
-import { ToolContext } from '../../../aegis-core/src/types/Tool.js';
+import type { ToolContext } from '@aegis/runtime';
 
 export default {
   name: "memory-delete",

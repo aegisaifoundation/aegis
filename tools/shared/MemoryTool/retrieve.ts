@@ -1,5 +1,5 @@
-import { memoryManager } from '../../../aegis-core/src/memory/index.js';
-import type { ToolContext } from '../../../aegis-core/src/types/Tool.js';
+import { memoryManager } from '@aegis/memory';
+import type { ToolContext } from '@aegis/runtime';
 
 export default async function execute(input: any, context: ToolContext): Promise<string> {
   const mems = memoryManager.getMemories();

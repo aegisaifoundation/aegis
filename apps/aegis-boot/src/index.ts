@@ -68,7 +68,7 @@ async function main() {
   if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir, { recursive: true });
   }
-  const logFile = fs.openSync(path.join(logDir, 'daemon_boot.log'), 'a');
+  const logFile = fs.openSync(path.join(logDir, 'daemon_boot.log'), 'w');
 
   let child;
   if (isDev) {
@@ -79,7 +79,7 @@ async function main() {
       daemonTsPath
     ], {
       detached: true,
-      stdio: 'ignore',
+      stdio: ['ignore', logFile, logFile],
       cwd: repoRoot
     });
   } else {
@@ -89,7 +89,7 @@ async function main() {
       daemonJsPath
     ], {
       detached: true,
-      stdio: 'ignore',
+      stdio: ['ignore', logFile, logFile],
       cwd: repoRoot
     });
   }

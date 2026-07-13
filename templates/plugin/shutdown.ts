@@ -1,5 +1,5 @@
-// Type imports from aegis-core types
-import type { PluginContext } from '../../aegis-core/src/plugins/PluginContext.js';
+// Import types from @aegis/plugins — the correct package, not a relative aegis-core path.
+import type { PluginContext } from '@aegis/plugins';
 
 export default async function shutdown(context: PluginContext): Promise<void> {
   const logger = context.services.getLogger();

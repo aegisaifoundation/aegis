@@ -55,6 +55,11 @@ async function main() {
     const isDev = fs.existsSync(daemonTsPath);
     console.log(`[Bootloader] Spawning daemon in ${isDev ? 'development (TSX)' : 'production (JS)'} mode...`);
     const { spawn } = await import('child_process');
+    const logDir = path.resolve(repoRoot, 'workspace/logs');
+    if (!fs.existsSync(logDir)) {
+        fs.mkdirSync(logDir, { recursive: true });
+    }
+    const logFile = fs.openSync(path.join(logDir, 'daemon_boot.log'), 'w');
     let child;
     if (isDev) {
         child = spawn('node', [
@@ -64,7 +69,7 @@ async function main() {
             daemonTsPath
         ], {
             detached: true,
-            stdio: 'ignore',
+            stdio: ['ignore', logFile, logFile],
             cwd: repoRoot
         });
     }
@@ -75,13 +80,13 @@ async function main() {
             daemonJsPath
         ], {
             detached: true,
-            stdio: 'ignore',
+            stdio: ['ignore', logFile, logFile],
             cwd: repoRoot
         });
     }
     child.unref();
     console.log('[Bootloader] Waiting for daemon to initialize and become healthy...');
-    const hasApiEngine = fs.existsSync(path.resolve(repoRoot, 'engines/aegis-api'));
+    const hasApiEngine = fs.existsSync(path.resolve(repoRoot, 'workspace/engines/aegis-api'));
     let healthy = false;
     for (let i = 0; i < 20; i++) {
         await new Promise(resolve => setTimeout(resolve, 1000));
