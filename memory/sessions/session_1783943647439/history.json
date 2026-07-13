@@ -1,0 +1,17 @@
+{
+  "messages": [
+    {
+      "id": "554d7a15-d3cd-451c-9b8a-1516cae2cf16",
+      "role": "user",
+      "content": "hi",
+      "createdAt": "2026-07-13T11:54:11.640Z"
+    },
+    {
+      "id": "f2c7904a-0f3a-4461-bd86-1dcb0fcae878",
+      "role": "assistant",
+      "content": "Hello! How can I help you today? 😊",
+      "createdAt": "2026-07-13T11:54:32.873Z"
+    }
+  ],
+  "memoryVersion": "1.0.0"
+}

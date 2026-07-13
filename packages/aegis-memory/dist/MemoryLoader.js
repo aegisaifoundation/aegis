@@ -26,7 +26,7 @@ export class MemoryLoader {
         return process.cwd();
     }
     getWorkspaceRoot() {
-        return path.dirname(this.getAegisCoreRoot());
+        return path.dirname(path.dirname(this.getAegisCoreRoot()));
     }
     getMemoryModulesDir() {
         const wsRoot = this.getWorkspaceRoot();

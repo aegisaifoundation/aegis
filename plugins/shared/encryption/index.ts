@@ -1,4 +1,4 @@
-import { PluginContext } from '../../../aegis-core/src/plugins/PluginContext.js';
+import type { PluginContext } from '@aegis/plugins';
 import crypto from 'crypto';
 
 export default {

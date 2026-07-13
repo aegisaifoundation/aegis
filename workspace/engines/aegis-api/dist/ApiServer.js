@@ -249,7 +249,7 @@ export async function startApiServer() {
             }
             // Endpoint: GET /api/capabilities
             if (pathname === '/api/capabilities' && req.method === 'GET') {
-                const projectRoot = path.resolve(workspaceManager.getWorkspacePath(), '../..');
+                const projectRoot = path.resolve(workspaceManager.getWorkspacePath(), '..');
                 const getSubdirs = async (dirPath) => {
                     if (!existsSync(dirPath))
                         return [];

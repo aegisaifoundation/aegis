@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
-import type { ToolContext } from '../../../aegis-core/src/types/Tool.js';
-import { safeResolve } from '../../../aegis-core/src/utils/pathSandbox.js';
+import type { ToolContext } from '@aegis/runtime';
+import { safeResolve } from '@aegis/runtime';
 
 export default async function execute(input: any, context: ToolContext): Promise<string> {
   const target = typeof input === 'string' ? input : (input.path || input.folderPath);

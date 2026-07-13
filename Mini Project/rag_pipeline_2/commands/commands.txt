@@ -1,0 +1,2 @@
+ python -m uvicorn rag_pipeline_1.main:app --host 0.0.0.0 --port 8000 --reload
+

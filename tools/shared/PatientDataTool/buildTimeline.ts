@@ -1,4 +1,4 @@
-import type { ToolContext } from '../../../aegis-core/src/types/Tool.js';
+import type { ToolContext } from '@aegis/runtime';
 import type { PatientEncounter, TimelineEntry, TimelineResult } from './types.js';
 
 function parseDate(value: string | null | undefined): Date | null {

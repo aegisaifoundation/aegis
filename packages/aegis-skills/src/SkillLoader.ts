@@ -50,7 +50,7 @@ export class SkillLoader {
   }
 
   getWorkspaceRoot(): string {
-    return path.dirname(this.getAegisCoreRoot());
+    return path.dirname(path.dirname(this.getAegisCoreRoot()));
   }
 
   getSkillsDir(): string {

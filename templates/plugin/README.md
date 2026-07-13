@@ -88,7 +88,7 @@ Executed when the plugin is unloaded or updated.
 
 The `context` parameter passed to both hooks provides access to approved services:
 ```typescript
-import type { PluginContext } from '../../aegis-core/src/plugins/PluginContext.js';
+import type { PluginContext } from '@aegis/plugins';
 
 export default async function initialize(context: PluginContext): Promise<void> {
   // Get the centralized Logger
@@ -105,6 +105,10 @@ export default async function initialize(context: PluginContext): Promise<void> 
   const pluginConfig = context.config;
 }
 ```
+
+> ⚠️ **Always use `import type { PluginContext } from '@aegis/plugins'`**  
+> Never import from relative `aegis-core` paths — that directory does not exist.
+> Never use `import { PluginContext }` (value import) — always `import type` to avoid ESM errors.
 
 ---
 

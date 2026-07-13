@@ -36,7 +36,7 @@ export class ToolLoader {
   }
 
   private getWorkspaceRoot(): string {
-    return path.dirname(this.getAegisCoreRoot());
+    return path.dirname(path.dirname(this.getAegisCoreRoot()));
   }
 
   getToolsDir(): string {
@@ -151,3 +151,5 @@ export class ToolLoader {
     return tool;
   }
 }
+
+export const toolLoader = new ToolLoader();

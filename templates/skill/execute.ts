@@ -2,9 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// NOTE: If copying this template to `skills/shared/<SkillName>/`,
-// change the relative path below from `../../aegis-core` to `../../../aegis-core`
-import type { SkillContext } from '../../aegis-core/src/skills/SkillContext.js';
+// Import types from @aegis/skills — the correct package, not a relative aegis-core path.
+import type { SkillContext } from '@aegis/skills';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,13 +18,13 @@ export default async function execute(input: any, context: SkillContext): Promis
     throw new Error('Input must be a string or contain a "text" field.');
   }
 
-  // Load the prompt template
+  // Load the prompt template from the prompts/ folder
   const promptPath = path.join(__dirname, 'prompts', 'template.prompt');
   let promptTemplate = '';
   try {
     promptTemplate = fs.readFileSync(promptPath, 'utf8');
   } catch (err) {
-    // Fallback template
+    // Fallback if prompt file is missing
     promptTemplate = 'Process the following text:\n\n{{text}}';
   }
 

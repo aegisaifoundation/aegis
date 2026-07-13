@@ -34,7 +34,7 @@ export class ToolLoader {
         return cwd;
     }
     getWorkspaceRoot() {
-        return path.dirname(this.getAegisCoreRoot());
+        return path.dirname(path.dirname(this.getAegisCoreRoot()));
     }
     getToolsDir() {
         const wsRoot = this.getWorkspaceRoot();
@@ -133,3 +133,4 @@ export class ToolLoader {
         return tool;
     }
 }
+export const toolLoader = new ToolLoader();

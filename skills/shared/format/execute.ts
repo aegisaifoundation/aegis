@@ -1,4 +1,4 @@
-import type { SkillContext } from '../../../aegis-core/src/skills/SkillContext.js';
+import type { SkillContext } from '@aegis/skills';
 
 export default async function execute(input: any, context: SkillContext): Promise<{ formatted: string }> {
   let content = '';

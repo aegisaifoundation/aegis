@@ -1,4 +1,4 @@
-import { PluginContext } from '../../../aegis-core/src/plugins/PluginContext.js';
+import type { PluginContext } from '@aegis/plugins';
 
 export default async function shutdown(context: PluginContext): Promise<void> {
   const eventBus = context.services.getEventBus();

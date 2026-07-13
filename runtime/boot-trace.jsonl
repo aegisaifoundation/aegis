@@ -17,3 +17,16 @@
 {"timestamp":"2026-07-12T17:23:34.868Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
 {"timestamp":"2026-07-12T17:23:37.057Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
 {"timestamp":"2026-07-12T17:23:40.421Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-13T11:36:50.764Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-13T11:36:51.469Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-13T11:36:52.839Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-13T11:37:18.878Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-13T11:37:35.338Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-13T11:39:15.416Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-07-13T11:39:24.768Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-13T11:39:33.741Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-13T11:39:49.669Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-07-13T11:40:44.060Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-07-13T11:54:01.371Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-13T11:54:07.520Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-13T11:54:11.630Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}

@@ -5,3 +5,4 @@ export declare class ToolLoader {
     getToolsDir(): string;
     loadTool(toolPath: string): Promise<Tool>;
 }
+export declare const toolLoader: ToolLoader;

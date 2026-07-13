@@ -7,5 +7,12 @@
     "aegis-agent",
     "aegis-api"
   ],
-  "defaultProvider": "local/ollama"
+  "defaultProvider": "local/ollama",
+  "autoloadTools": [],
+  "autoloadSkills": [
+    "shared/summarize"
+  ],
+  "autoloadPlugins": [
+    "shared/logging"
+  ]
 }

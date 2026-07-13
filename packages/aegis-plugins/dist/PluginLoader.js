@@ -51,7 +51,7 @@ export class PluginLoader {
         return _cachedPluginRoot;
     }
     getWorkspaceRoot() {
-        return path.dirname(this.getAegisCoreRoot());
+        return path.dirname(path.dirname(this.getAegisCoreRoot()));
     }
     getPluginsDir() {
         const wsRoot = this.getWorkspaceRoot();
@@ -195,3 +195,4 @@ export class PluginLoader {
         }
     }
 }
+export const pluginLoader = new PluginLoader();
