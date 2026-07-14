@@ -30,6 +30,10 @@ namespace aegis::die::statistics {
 struct NodeStatistics;
 }
 
+namespace aegis::die::execution {
+class DistributedExecutionLayer;
+}
+
 namespace aegis::die::runtime {
 
 class RuntimeContext {
@@ -43,6 +47,8 @@ public:
   virtual std::shared_ptr<registry::RoleRegistry> getRoleRegistry() = 0;
   virtual std::shared_ptr<registry::CapabilityRegistry> getCapabilityRegistry() = 0;
   virtual std::shared_ptr<registry::ResourceRegistry> getResourceRegistry() = 0;
+  
+  virtual std::shared_ptr<execution::DistributedExecutionLayer> getExecutionLayer() = 0;
   
   virtual std::shared_ptr<communication::ICommunication> getCommunication() = 0;
   virtual std::shared_ptr<transport::ITransport> getTransport() = 0;

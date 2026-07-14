@@ -3,6 +3,7 @@ import { IRuntimeContext_v1 } from '@aegis/sdk';
 import { ProcessSupervisor } from './ProcessSupervisor.js';
 import { RestartManager } from './RestartManager.js';
 import { EngineStateMachine } from '../state/EngineStateMachine.js';
+import { IPCManager } from '../ipc/IPCManager.js';
 import { DiagnosticsManager } from '../diagnostics/DiagnosticsManager.js';
 import { MetricsCollector } from '../monitoring/MetricsCollector.js';
 import { HealthMonitor } from '../monitoring/HealthMonitor.js';
@@ -35,6 +36,7 @@ export declare class EngineLifecycle extends EventEmitter {
     getHealthMonitor(): HealthMonitor;
     getLogger(): NativeLogger;
     getSupervisor(): ProcessSupervisor;
+    getIpcManager(): IPCManager;
     getStartedAt(): Date | null;
     getUptimeMs(): number;
     getRestartCount(): number;

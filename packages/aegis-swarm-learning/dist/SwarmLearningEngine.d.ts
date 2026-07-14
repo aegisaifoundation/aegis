@@ -1,0 +1,31 @@
+import { IEngine, IEngineMetadata, IRuntimeContext_v1, EngineHealthReport } from '@aegis/sdk';
+export declare class SwarmLearningEngine implements IEngine {
+    readonly metadata: IEngineMetadata;
+    private context;
+    private state;
+    private isLeader;
+    private currentLeaderId;
+    private localNodeId;
+    private swarmRound;
+    private peerModels;
+    initialize(context: IRuntimeContext_v1): Promise<void>;
+    start(): Promise<void>;
+    shutdown(): Promise<void>;
+    configure(_config: Record<string, any>): Promise<void>;
+    pause(): Promise<void>;
+    resume(): Promise<void>;
+    reload(): Promise<void>;
+    dispose(): Promise<void>;
+    health(): Promise<EngineHealthReport>;
+    private getDis;
+    private setupListeners;
+    triggerLeaderElection(): Promise<void>;
+    private handleLeaderProposal;
+    private becomeLeader;
+    private participateInSwarmRound;
+    private tryAggregateSwarm;
+    private applyGlobalWeights;
+    startSwarmRound(): Promise<void>;
+    getState(): string;
+}
+export default SwarmLearningEngine;

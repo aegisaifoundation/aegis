@@ -1,0 +1,37 @@
+import { NodeIdentity } from '../NodeIdentity/NodeIdentityManager.js';
+import { NodeConfigManager, NodeConfig } from '../NodeConfiguration/NodeConfigManager.js';
+import { NodeRegistry } from '../NodeRegistry/NodeRegistry.js';
+import { CapabilityRegistry } from '../CapabilityRegistry/CapabilityRegistry.js';
+import { TrustManager } from '../TrustManager/TrustManager.js';
+import { FederationManager } from '../FederationMetadata/FederationMetadata.js';
+import { PackageOrchestrator } from '../PackageOrchestrator/PackageOrchestrator.js';
+import { NodeRuntime } from '../NodeRuntime/NodeRuntime.js';
+export declare class NodeManager {
+    private identityManager;
+    private configManager;
+    private trustManager;
+    private federationManager;
+    private orchestrator;
+    private runtime;
+    private nodeRegistry;
+    private capabilityRegistry;
+    private isInitialized;
+    private workspacePath;
+    constructor(workspacePath?: string);
+    initialize(name?: string, edition?: string, role?: string): void;
+    boot(): Promise<void>;
+    shutdown(): Promise<void>;
+    restart(): Promise<void>;
+    save(): void;
+    load(): void;
+    status(): Record<string, any>;
+    getIdentity(): NodeIdentity | null;
+    getConfig(): NodeConfig;
+    getConfigManager(): NodeConfigManager;
+    getTrustManager(): TrustManager;
+    getFederationManager(): FederationManager;
+    getOrchestrator(): PackageOrchestrator;
+    getNodeRegistry(): NodeRegistry;
+    getCapabilityRegistry(): CapabilityRegistry;
+    getRuntime(): NodeRuntime;
+}

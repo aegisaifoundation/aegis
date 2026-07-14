@@ -1,0 +1,19 @@
+{
+  "id": "aegis-distributed-learning",
+  "displayName": "Distributed Learning Engine",
+  "version": "1.0.0",
+  "kernelApiVersion": "1.0.0",
+  "entrypoint": "workspace/engines/aegis-distributed-learning/dist/index.js",
+  "autoStart": true,
+  "dependencies": ["distributed-intelligence"],
+  "permissions": ["fs:read", "fs:write"],
+  "capabilities": [
+    "distributed_learning",
+    "lora_training",
+    "federated_learning",
+    "swarm_learning",
+    "secure_aggregation",
+    "model_versioning",
+    "checkpoint_recovery"
+  ]
+}

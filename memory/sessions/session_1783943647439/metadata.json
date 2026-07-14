@@ -2,13 +2,13 @@
   "sessionId": "session_1783943647439",
   "createdAt": "2026-07-13T11:54:07.452Z",
   "updatedAt": "2026-07-13T11:54:32.887Z",
-  "lastAccessedAt": "2026-07-13T11:54:32.887Z",
+  "lastAccessedAt": "2026-07-13T13:49:20.480Z",
   "memoryVersion": "1.0.0",
-  "lifecycleState": "ACTIVE",
+  "lifecycleState": "INACTIVE",
   "checksums": {
     "history": "55cad99e59cc2c4f0c2da486b02e446cfeecf683c163c49b77508d7b496075c9",
-    "workingMemory": "80e5caafce2b23ef6589b384e0fa91d0f9cddc97ae803e32deb018da99a32900",
     "sessionMemory": "38a085637de382161ba0e8c51cd96a62a9ae46908566d97fbec6985450f8a65e",
+    "workingMemory": "80e5caafce2b23ef6589b384e0fa91d0f9cddc97ae803e32deb018da99a32900",
     "task": "0e15818f90316b1bc268fcf33090bc64b108b8735f819f4f1a611dfc8f509f2f"
   },
   "confidence": {},
@@ -20,5 +20,5 @@
     "maxSessionMemorySize": 1000,
     "maxSnapshots": 10
   },
-  "lastMountedAt": "2026-07-13T11:54:07.556Z"
+  "lastMountedAt": "2026-07-13T13:48:34.911Z"
 }

@@ -1,0 +1,10 @@
+{
+  "id": "aegis-swarm-learning",
+  "displayName": "Swarm Learning Engine",
+  "version": "1.0.0",
+  "kernelApiVersion": "1.0.0",
+  "entrypoint": "workspace/engines/aegis-swarm-learning/dist/index.js",
+  "autoStart": true,
+  "dependencies": ["distributed-intelligence"],
+  "permissions": []
+}

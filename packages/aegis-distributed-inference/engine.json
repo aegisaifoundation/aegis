@@ -1,0 +1,10 @@
+{
+  "id": "aegis-distributed-inference",
+  "displayName": "Distributed Inference Engine",
+  "version": "1.0.0",
+  "kernelApiVersion": "1.0.0",
+  "entrypoint": "workspace/engines/aegis-distributed-inference/dist/index.js",
+  "autoStart": false,
+  "dependencies": ["distributed-intelligence"],
+  "permissions": []
+}
