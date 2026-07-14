@@ -8,7 +8,9 @@
     "aegis-api"
   ],
   "defaultProvider": "local/ollama",
-  "autoloadTools": [],
+  "autoloadTools": [
+    "shared/memory-read"
+  ],
   "autoloadSkills": [
     "shared/summarize"
   ],

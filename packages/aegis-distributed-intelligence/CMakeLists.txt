@@ -23,9 +23,9 @@ target_include_directories(die-identity INTERFACE ${DIE_INCLUDE_DIR})
 target_link_libraries(die-identity INTERFACE die-common)
 
 # 4. capabilities
-add_library(die-capabilities INTERFACE)
-target_include_directories(die-capabilities INTERFACE ${DIE_INCLUDE_DIR})
-target_link_libraries(die-capabilities INTERFACE die-common)
+add_library(die-capabilities STATIC cpp/src/capabilities/NodeCapabilities.cpp)
+target_include_directories(die-capabilities PUBLIC ${DIE_INCLUDE_DIR})
+target_link_libraries(die-capabilities PUBLIC die-common)
 
 # 5. resources
 add_library(die-resources INTERFACE)
@@ -60,8 +60,9 @@ add_library(die-statistics INTERFACE)
 target_include_directories(die-statistics INTERFACE ${DIE_INCLUDE_DIR})
 
 # 12. scheduler
-add_library(die-scheduler INTERFACE)
-target_include_directories(die-scheduler INTERFACE ${DIE_INCLUDE_DIR})
+add_library(die-scheduler STATIC cpp/src/scheduler/CapabilityScheduler.cpp cpp/src/scheduler/WorkerPool.cpp)
+target_include_directories(die-scheduler PUBLIC ${DIE_INCLUDE_DIR})
+target_link_libraries(die-scheduler PUBLIC die-common)
 
 # 13. discovery
 add_library(die-discovery STATIC cpp/src/discovery/DiscoveryManagerImpl.cpp)
@@ -113,8 +114,9 @@ target_include_directories(die-messaging PUBLIC ${DIE_INCLUDE_DIR})
 target_link_libraries(die-messaging PUBLIC die-common)
 
 # 23. tasks
-add_library(die-tasks INTERFACE)
-target_include_directories(die-tasks INTERFACE ${DIE_INCLUDE_DIR})
+add_library(die-tasks STATIC cpp/src/tasks/DistributedTask.cpp cpp/src/tasks/DistributedTaskQueue.cpp)
+target_include_directories(die-tasks PUBLIC ${DIE_INCLUDE_DIR})
+target_link_libraries(die-tasks PUBLIC die-common)
 
 # 24. cluster
 add_library(die-cluster INTERFACE)
@@ -152,6 +154,22 @@ target_link_libraries(die-node PUBLIC
     die-policy
 )
 
+# 30. execution
+add_library(die-execution STATIC
+    cpp/src/execution/WorkerRuntime.cpp
+    cpp/src/execution/CheckpointManager.cpp
+    cpp/src/execution/ResultManager.cpp
+    cpp/src/execution/DistributedExecutionService.cpp
+)
+target_include_directories(die-execution PUBLIC ${DIE_INCLUDE_DIR})
+target_link_libraries(die-execution PUBLIC
+    die-common
+    die-tasks
+    die-capabilities
+    die-scheduler
+    die-transport
+)
+
 # 28. runtime
 add_library(die-runtime STATIC cpp/src/runtime/DistributedRuntime.cpp cpp/src/runtime/NodeRuntime.cpp)
 target_include_directories(die-runtime PUBLIC ${DIE_INCLUDE_DIR})
@@ -162,6 +180,7 @@ target_link_libraries(die-runtime PUBLIC
     die-messaging
     die-transport
     die-events
+    die-execution
 )
 
 # 29. resource-manager
@@ -200,6 +219,7 @@ add_executable(die-tests
     cpp/tests/runtime/RuntimeTest.cpp
     cpp/tests/messaging/MessagingTest.cpp
     cpp/tests/transport/TransportTest.cpp
+    cpp/tests/execution/DistributedExecutionTest.cpp
     cpp/tests/demo/LocalNetworkDemo.cpp
     cpp/tests/resource-manager/ResourceManagerTest.cpp
     cpp/tests/resource-manager/ResourceSyncDemo.cpp
@@ -207,6 +227,7 @@ add_executable(die-tests
 target_link_libraries(die-tests PRIVATE
     die-runtime
     die-resource-manager
+    die-execution
     die-discovery
     die-heartbeat
     die-membership

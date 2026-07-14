@@ -866,3 +866,115 @@
 {"timestamp":"2026-07-13T12:49:47.027Z","level":"info","event":"Starting REST API Server...","sessionId":"api","details":{}}
 {"timestamp":"2026-07-13T12:49:47.047Z","level":"info","event":"[ApiEngine] REST API Server successfully started.","sessionId":"api","details":{}}
 {"timestamp":"2026-07-13T12:49:47.054Z","level":"info","event":"AEGIS Core Runtime Kernel is ACTIVE","sessionId":"system","details":{}}
+{"timestamp":"2026-07-13T13:26:59.280Z","level":"info","event":"Kernel log system initialized","sessionId":"system","details":{"hardware":{"cpu":"13th Gen Intel(R) Core(TM) i5-13420H","cores":12,"ramGb":16,"cudaEnabled":false},"platform":"win32","arch":"x64"}}
+{"timestamp":"2026-07-13T13:26:59.282Z","level":"info","event":"System storage verified and state checks successful","sessionId":"system","details":{}}
+{"timestamp":"2026-07-13T13:26:59.903Z","level":"info","event":"Engine transition: UNINITIALIZED -> INITIALIZING","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:26:59.903Z","level":"info","event":"Lifecycle initialized. Executable path set to: C:\\aegis\\workspace\\engines\\distributed-intelligence\\dist\\die-service.exe","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:26:59.903Z","level":"info","event":"MemoryEngine initialized successfully.","sessionId":"memory","details":{}}
+{"timestamp":"2026-07-13T13:26:59.904Z","level":"info","event":"AgentEngine: Initializing AI ProviderManager...","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-13T13:27:00.558Z","level":"info","event":"AgentEngine: Registered providerManager, agent, registries, and loaders successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-13T13:27:00.558Z","level":"info","event":"AgentEngine initialized successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-13T13:27:00.558Z","level":"info","event":"ApiEngine initialized successfully.","sessionId":"api","details":{}}
+{"timestamp":"2026-07-13T13:27:00.558Z","level":"info","event":"Engine transition: INITIALIZING -> STARTING","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:00.558Z","level":"info","event":"Spawning native process with args: --node-name aegis-die-node --port 9900","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:02.014Z","level":"info","event":"[Native] [INFO] [Runtime] Boot sequence initiated for aegis-die-node","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:02.015Z","level":"info","event":"[Native] [INFO] [Runtime] Initializing native services...","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:02.015Z","level":"info","event":"[Native] [DIS] Registered default model: llama-3-8b","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:02.015Z","level":"info","event":"[Native] [INFO] [Runtime] Starting TCP transport layer...","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:02.015Z","level":"info","event":"[Native] [INFO] [Runtime] Starting native services...","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:02.015Z","level":"info","event":"[Native] [DIS] Distributed Inference Service started.","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:02.015Z","level":"info","event":"[Native] [INFO] [Runtime] Boot sequence completed. State: ONLINE","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:02.015Z","level":"info","event":"Engine transition: STARTING -> HANDSHAKING","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:02.015Z","level":"info","event":"Engine transition: HANDSHAKING -> LOADING","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:02.015Z","level":"info","event":"Engine transition: LOADING -> READY","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:02.015Z","level":"info","event":"Engine transition: READY -> ONLINE","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:02.015Z","level":"info","event":"Engine launched successfully and marked ONLINE.","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:02.016Z","level":"info","event":"MemoryEngine started successfully.","sessionId":"memory","details":{}}
+{"timestamp":"2026-07-13T13:27:02.016Z","level":"info","event":"AgentEngine started successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-13T13:27:02.016Z","level":"info","event":"Starting REST API Server...","sessionId":"api","details":{}}
+{"timestamp":"2026-07-13T13:27:02.036Z","level":"info","event":"[ApiEngine] REST API Server successfully started.","sessionId":"api","details":{}}
+{"timestamp":"2026-07-13T13:27:02.046Z","level":"info","event":"AEGIS Core Runtime Kernel is ACTIVE","sessionId":"system","details":{}}
+{"timestamp":"2026-07-13T13:27:45.038Z","level":"info","event":"Kernel log system initialized","sessionId":"system","details":{"hardware":{"cpu":"13th Gen Intel(R) Core(TM) i5-13420H","cores":12,"ramGb":16,"cudaEnabled":false},"platform":"win32","arch":"x64"}}
+{"timestamp":"2026-07-13T13:27:45.039Z","level":"info","event":"System storage verified and state checks successful","sessionId":"system","details":{}}
+{"timestamp":"2026-07-13T13:27:45.446Z","level":"info","event":"Engine transition: UNINITIALIZED -> INITIALIZING","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:45.446Z","level":"info","event":"Lifecycle initialized. Executable path set to: C:\\aegis\\workspace\\engines\\distributed-intelligence\\dist\\die-service.exe","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:45.447Z","level":"info","event":"MemoryEngine initialized successfully.","sessionId":"memory","details":{}}
+{"timestamp":"2026-07-13T13:27:45.447Z","level":"info","event":"AgentEngine: Initializing AI ProviderManager...","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-13T13:27:45.743Z","level":"info","event":"AgentEngine: Registered providerManager, agent, registries, and loaders successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-13T13:27:45.743Z","level":"info","event":"AgentEngine initialized successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-13T13:27:45.743Z","level":"info","event":"ApiEngine initialized successfully.","sessionId":"api","details":{}}
+{"timestamp":"2026-07-13T13:27:45.743Z","level":"info","event":"Engine transition: INITIALIZING -> STARTING","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:45.744Z","level":"info","event":"Spawning native process with args: --node-name aegis-die-node --port 9900","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:45.788Z","level":"info","event":"[Native] [INFO] [Runtime] Boot sequence initiated for aegis-die-node","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:45.788Z","level":"info","event":"[Native] [INFO] [Runtime] Initializing native services...","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:45.788Z","level":"info","event":"[Native] [DIS] Registered default model: llama-3-8b","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:45.788Z","level":"info","event":"[Native] [INFO] [Runtime] Starting TCP transport layer...","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:45.788Z","level":"info","event":"[Native] [INFO] [Runtime] Starting native services...","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:45.788Z","level":"info","event":"[Native] [DIS] Distributed Inference Service started.","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:45.788Z","level":"info","event":"[Native] [INFO] [Runtime] Boot sequence completed. State: ONLINE","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:45.788Z","level":"info","event":"Engine transition: STARTING -> HANDSHAKING","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:45.788Z","level":"info","event":"Engine transition: HANDSHAKING -> LOADING","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:45.788Z","level":"info","event":"Engine transition: LOADING -> READY","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:45.788Z","level":"info","event":"Engine transition: READY -> ONLINE","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:45.788Z","level":"info","event":"Engine launched successfully and marked ONLINE.","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:27:45.788Z","level":"info","event":"MemoryEngine started successfully.","sessionId":"memory","details":{}}
+{"timestamp":"2026-07-13T13:27:45.788Z","level":"info","event":"AgentEngine started successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-13T13:27:45.789Z","level":"info","event":"Starting REST API Server...","sessionId":"api","details":{}}
+{"timestamp":"2026-07-13T13:27:45.811Z","level":"info","event":"[ApiEngine] REST API Server successfully started.","sessionId":"api","details":{}}
+{"timestamp":"2026-07-13T13:27:45.823Z","level":"info","event":"AEGIS Core Runtime Kernel is ACTIVE","sessionId":"system","details":{}}
+{"timestamp":"2026-07-13T13:40:09.674Z","level":"info","event":"Kernel log system initialized","sessionId":"system","details":{"hardware":{"cpu":"13th Gen Intel(R) Core(TM) i5-13420H","cores":12,"ramGb":16,"cudaEnabled":false},"platform":"win32","arch":"x64"}}
+{"timestamp":"2026-07-13T13:40:09.675Z","level":"info","event":"System storage verified and state checks successful","sessionId":"system","details":{}}
+{"timestamp":"2026-07-13T13:40:10.150Z","level":"info","event":"Engine transition: UNINITIALIZED -> INITIALIZING","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:40:10.150Z","level":"info","event":"Lifecycle initialized. Executable path set to: C:\\aegis\\workspace\\engines\\distributed-intelligence\\dist\\die-service.exe","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:40:10.151Z","level":"info","event":"MemoryEngine initialized successfully.","sessionId":"memory","details":{}}
+{"timestamp":"2026-07-13T13:40:10.151Z","level":"info","event":"AgentEngine: Initializing AI ProviderManager...","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-13T13:40:10.398Z","level":"info","event":"AgentEngine: Registered providerManager, agent, registries, and loaders successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-13T13:40:10.398Z","level":"info","event":"AgentEngine initialized successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-13T13:40:10.398Z","level":"info","event":"ApiEngine initialized successfully.","sessionId":"api","details":{}}
+{"timestamp":"2026-07-13T13:40:10.398Z","level":"info","event":"Engine transition: INITIALIZING -> STARTING","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:40:10.398Z","level":"info","event":"Spawning native process with args: --node-name aegis-die-node --port 9900","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:40:10.441Z","level":"info","event":"[Native] [INFO] [Runtime] Boot sequence initiated for aegis-die-node","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:40:10.441Z","level":"info","event":"[Native] [INFO] [Runtime] Initializing native services...","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:40:10.441Z","level":"info","event":"[Native] [DIS] Registered default model: llama-3-8b","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:40:10.441Z","level":"info","event":"[Native] [INFO] [Runtime] Starting TCP transport layer...","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:40:10.441Z","level":"info","event":"[Native] [INFO] [Runtime] Starting native services...","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:40:10.441Z","level":"info","event":"[Native] [DIS] Distributed Inference Service started.","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:40:10.441Z","level":"info","event":"[Native] [INFO] [Runtime] Boot sequence completed. State: ONLINE","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:40:10.441Z","level":"info","event":"Engine transition: STARTING -> HANDSHAKING","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:40:10.441Z","level":"info","event":"Engine transition: HANDSHAKING -> LOADING","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:40:10.441Z","level":"info","event":"Engine transition: LOADING -> READY","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:40:10.441Z","level":"info","event":"Engine transition: READY -> ONLINE","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:40:10.442Z","level":"info","event":"Engine launched successfully and marked ONLINE.","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-13T13:40:10.442Z","level":"info","event":"MemoryEngine started successfully.","sessionId":"memory","details":{}}
+{"timestamp":"2026-07-13T13:40:10.442Z","level":"info","event":"AgentEngine started successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-13T13:40:10.442Z","level":"info","event":"Starting REST API Server...","sessionId":"api","details":{}}
+{"timestamp":"2026-07-13T13:40:10.471Z","level":"info","event":"[ApiEngine] REST API Server successfully started.","sessionId":"api","details":{}}
+{"timestamp":"2026-07-13T13:40:10.484Z","level":"info","event":"AEGIS Core Runtime Kernel is ACTIVE","sessionId":"system","details":{}}
+{"timestamp":"2026-07-14T14:23:39.715Z","level":"info","event":"Kernel log system initialized","sessionId":"system","details":{"hardware":{"cpu":"13th Gen Intel(R) Core(TM) i5-13420H","cores":12,"ramGb":16,"cudaEnabled":false},"platform":"win32","arch":"x64"}}
+{"timestamp":"2026-07-14T14:23:39.716Z","level":"info","event":"System storage verified and state checks successful","sessionId":"system","details":{}}
+{"timestamp":"2026-07-14T14:23:39.964Z","level":"info","event":"Engine transition: UNINITIALIZED -> INITIALIZING","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-14T14:23:39.964Z","level":"info","event":"Lifecycle initialized. Executable path set to: C:\\aegis\\workspace\\engines\\distributed-intelligence\\dist\\die-service.exe","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-14T14:23:39.965Z","level":"info","event":"MemoryEngine initialized successfully.","sessionId":"memory","details":{}}
+{"timestamp":"2026-07-14T14:23:39.965Z","level":"info","event":"AgentEngine: Initializing AI ProviderManager...","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-14T14:23:40.150Z","level":"info","event":"AgentEngine: Registered providerManager, agent, registries, and loaders successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-14T14:23:40.150Z","level":"info","event":"AgentEngine initialized successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-14T14:23:40.150Z","level":"info","event":"ApiEngine initialized successfully.","sessionId":"api","details":{}}
+{"timestamp":"2026-07-14T14:23:40.150Z","level":"info","event":"Engine transition: INITIALIZING -> STARTING","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-14T14:23:40.150Z","level":"info","event":"Spawning native process with args: --node-name aegis-die-node --port 9900","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-14T14:23:41.750Z","level":"info","event":"[Native] [INFO] [Runtime] Boot sequence initiated for aegis-die-node","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-14T14:23:41.750Z","level":"info","event":"[Native] [INFO] [Runtime] Initializing native services...","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-14T14:23:41.751Z","level":"info","event":"[Native] [DIS] Registered default model: llama-3-8b","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-14T14:23:41.751Z","level":"info","event":"[Native] [INFO] [Runtime] Starting TCP transport layer...","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-14T14:23:41.751Z","level":"info","event":"[Native] [INFO] [Runtime] Starting native services...","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-14T14:23:41.751Z","level":"info","event":"[Native] [DIS] Distributed Inference Service started.","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-14T14:23:41.751Z","level":"info","event":"[Native] [INFO] [Runtime] Boot sequence completed. State: ONLINE","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-14T14:23:41.751Z","level":"info","event":"Engine transition: STARTING -> HANDSHAKING","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-14T14:23:41.751Z","level":"info","event":"Engine transition: HANDSHAKING -> LOADING","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-14T14:23:41.751Z","level":"info","event":"Engine transition: LOADING -> READY","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-14T14:23:41.751Z","level":"info","event":"Engine transition: READY -> ONLINE","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-14T14:23:41.751Z","level":"info","event":"Engine launched successfully and marked ONLINE.","sessionId":"distributed-intelligence","details":{}}
+{"timestamp":"2026-07-14T14:23:41.751Z","level":"info","event":"MemoryEngine started successfully.","sessionId":"memory","details":{}}
+{"timestamp":"2026-07-14T14:23:41.752Z","level":"info","event":"AgentEngine started successfully.","sessionId":"agent","details":{}}
+{"timestamp":"2026-07-14T14:23:41.752Z","level":"info","event":"Starting REST API Server...","sessionId":"api","details":{}}
+{"timestamp":"2026-07-14T14:23:41.782Z","level":"info","event":"[ApiEngine] REST API Server successfully started.","sessionId":"api","details":{}}
+{"timestamp":"2026-07-14T14:23:41.790Z","level":"info","event":"AEGIS Core Runtime Kernel is ACTIVE","sessionId":"system","details":{}}

@@ -11,6 +11,8 @@
 #include "aegis/die/statistics/NodeStatistics.hpp"
 #include "aegis/die/logging/StructuredLogger.hpp"
 #include "aegis/die/lifecycle/ServiceManager.hpp"
+#include "aegis/die/execution/DistributedExecutionLayer.hpp"
+#include "aegis/die/execution/DistributedExecutionService.hpp"
 #include "ai-runtime/runtime/AIRuntime.hpp"
 #include "distributed-inference/runtime/DistributedInferenceService.hpp"
 
@@ -54,6 +56,9 @@ public:
   std::shared_ptr<registry::CapabilityRegistry> getCapabilityRegistry() override { return m_capReg; }
   std::shared_ptr<registry::ResourceRegistry> getResourceRegistry() override { return m_resReg; }
   
+  std::shared_ptr<execution::DistributedExecutionLayer> getExecutionLayer() override { return m_execLayer; }
+  void setExecutionLayer(std::shared_ptr<execution::DistributedExecutionLayer> layer) { m_execLayer = layer; }
+  
   std::shared_ptr<communication::ICommunication> getCommunication() override { return nullptr; }
   std::shared_ptr<transport::ITransport> getTransport() override { return m_transport; }
   std::shared_ptr<events::EventDispatcher> getEventDispatcher() override { return m_eventDispatcher; }
@@ -71,6 +76,7 @@ private:
   std::shared_ptr<registry::RoleRegistry> m_roleReg;
   std::shared_ptr<registry::CapabilityRegistry> m_capReg;
   std::shared_ptr<registry::ResourceRegistry> m_resReg;
+  std::shared_ptr<execution::DistributedExecutionLayer> m_execLayer;
   std::shared_ptr<messaging::MessageBus> m_msgBus;
   std::shared_ptr<transport::TcpTransport> m_transport;
   std::shared_ptr<events::EventDispatcher> m_eventDispatcher;
@@ -93,13 +99,19 @@ void DistributedRuntime::boot() {
   if (m_running) return;
 
   m_state = RuntimeState::STARTING;
-  m_context = std::make_shared<RuntimeContextImpl>(m_config);
+  auto ctxImpl = std::make_shared<RuntimeContextImpl>(m_config);
+  m_context = ctxImpl;
   m_context->log("INFO", "Runtime", "Boot sequence initiated for " + m_config.node.nodeName);
 
   m_state = RuntimeState::INITIALIZING;
 
   auto serviceManager = std::make_shared<lifecycle::ServiceManager>();
   m_serviceManager = serviceManager;
+
+  // Register DistributedExecutionService
+  auto execService = std::make_shared<execution::DistributedExecutionService>(m_context);
+  ctxImpl->setExecutionLayer(execService);
+  serviceManager->registerService("DistributedExecutionService", execService);
 
   auto aiRuntime = std::make_shared<aegis::air::AIRuntime>(m_context);
   serviceManager->registerService("AIRuntime", aiRuntime);
