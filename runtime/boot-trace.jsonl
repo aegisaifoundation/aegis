@@ -45,3 +45,6 @@
 {"timestamp":"2026-07-13T13:49:20.446Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
 {"timestamp":"2026-07-13T13:52:41.739Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
 {"timestamp":"2026-07-13T13:52:46.798Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-14T17:55:57.761Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-07-14T18:24:08.472Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-07-14T18:24:13.941Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
