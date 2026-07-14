@@ -1,6 +1,19 @@
 import { IEngine, IEngineMetadata, IRuntimeContext_v1, EngineHealthReport } from '@aegis/sdk';
+import { serviceRegistry } from '@aegis/runtime';
 import { EngineLifecycle } from '../lifecycle/EngineLifecycle.js';
 import { EngineState } from '../state/EngineState.js';
+import {
+  DiscoveryService,
+  MessagingService,
+  TransportService,
+  ExecutionService,
+  CapabilityService,
+  ResourceService,
+  TrustService,
+  SchedulerService,
+  EventService,
+  IEngineIpcHost
+} from '../services/index.js';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -8,7 +21,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export class DistributedIntelligenceEngine implements IEngine {
+export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
   readonly metadata: IEngineMetadata = {
     id: 'distributed-intelligence',
     displayName: 'Distributed Intelligence Engine',
@@ -23,6 +36,20 @@ export class DistributedIntelligenceEngine implements IEngine {
 
   private lifecycle = new EngineLifecycle();
   private context!: IRuntimeContext_v1;
+
+  readonly discoveryService = new DiscoveryService(this);
+  readonly messagingService = new MessagingService(this);
+  readonly transportService = new TransportService(this);
+  readonly executionService = new ExecutionService(this);
+  readonly capabilityService = new CapabilityService(this);
+  readonly resourceService = new ResourceService(this);
+  readonly trustService = new TrustService(this);
+  readonly schedulerService = new SchedulerService(this);
+  readonly eventService = new EventService(this);
+
+  getIpcManager() {
+    return this.lifecycle.getIpcManager();
+  }
 
   async initialize(context: IRuntimeContext_v1): Promise<void> {
     this.context = context;
@@ -39,6 +66,13 @@ export class DistributedIntelligenceEngine implements IEngine {
         this.context.getEventBus()?.emit('engine:ready', { engineId: this.metadata.id });
       }
     });
+
+    // Register inside service registry
+    serviceRegistry.register('distributed-intelligence', this);
+    serviceRegistry.register('distributed-intelligence:discovery', this.discoveryService);
+    serviceRegistry.register('distributed-intelligence:messaging', this.messagingService);
+    serviceRegistry.register('distributed-intelligence:execution', this.executionService);
+    serviceRegistry.register('distributed-intelligence:trust', this.trustService);
 
     await this.lifecycle.initialize(context, executablePath);
   }

@@ -1,8 +1,19 @@
 import { IEngine, IEngineMetadata, IRuntimeContext_v1, EngineHealthReport } from '@aegis/sdk';
-export declare class DistributedIntelligenceEngine implements IEngine {
+import { DiscoveryService, MessagingService, TransportService, ExecutionService, CapabilityService, ResourceService, TrustService, SchedulerService, EventService, IEngineIpcHost } from '../services/index.js';
+export declare class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
     readonly metadata: IEngineMetadata;
     private lifecycle;
     private context;
+    readonly discoveryService: DiscoveryService;
+    readonly messagingService: MessagingService;
+    readonly transportService: TransportService;
+    readonly executionService: ExecutionService;
+    readonly capabilityService: CapabilityService;
+    readonly resourceService: ResourceService;
+    readonly trustService: TrustService;
+    readonly schedulerService: SchedulerService;
+    readonly eventService: EventService;
+    getIpcManager(): import("../ipc/IPCManager.js").IPCManager;
     initialize(context: IRuntimeContext_v1): Promise<void>;
     configure(config: Record<string, any>): Promise<void>;
     start(): Promise<void>;

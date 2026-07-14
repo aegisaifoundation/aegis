@@ -12,7 +12,15 @@ const enginesDir  = path.join(__dirname, 'workspace/engines');
 
 const pm = new PackageManager(configPath, enginesDir);
 
-const packages = ['aegis-memory', 'aegis-agent', 'aegis-api'];
+const packages = [
+  'aegis-memory',
+  'aegis-agent',
+  'aegis-api',
+  'aegis-federated-learning',
+  'aegis-swarm-learning',
+  'aegis-distributed-inference',
+  'aegis-knowledge-sync'
+];
 
 console.log('[register-default-engines] Starting registration of default engines...');
 

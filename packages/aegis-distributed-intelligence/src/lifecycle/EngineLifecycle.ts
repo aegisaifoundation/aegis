@@ -52,6 +52,7 @@ export class EngineLifecycle extends EventEmitter {
   getHealthMonitor(): HealthMonitor { return this.healthMonitor; }
   getLogger(): NativeLogger { return this.logger; }
   getSupervisor(): ProcessSupervisor { return this.supervisor; }
+  getIpcManager(): IPCManager { return this.ipcManager; }
   getStartedAt(): Date | null { return this.startedAt; }
   getUptimeMs(): number { return this.metrics.getUptimeMs(); }
   getRestartCount(): number { return this.restartManager.getRestartCount(); }
