@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "generatedBy": "@aegis/package-manager",
-  "generatedAt": "2026-07-15T17:35:06.449Z",
+  "generatedAt": "2026-07-15T16:33:19.315Z",
   "engines": [
     {
       "id": "distributed-intelligence",
@@ -18,7 +18,7 @@
       "id": "aegis-memory",
       "displayName": "Cognitive Memory Engine",
       "version": "1.0.0",
-      "enabled": true,
+      "enabled": false,
       "entry": "workspace/engines/aegis-memory/dist/MemoryEngine.js",
       "manifest": "workspace/engines/aegis-memory/engine.json",
       "runtimeApi": "1.0.0",

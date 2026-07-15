@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "generatedBy": "@aegis/package-manager",
-  "generatedAt": "2026-07-15T17:35:06.449Z",
+  "generatedAt": "2026-07-15T16:30:22.543Z",
   "engines": [
     {
       "id": "distributed-intelligence",
@@ -29,7 +29,7 @@
       "id": "aegis-agent",
       "displayName": "AI Agent Engine",
       "version": "1.0.0",
-      "enabled": true,
+      "enabled": false,
       "entry": "workspace/engines/aegis-agent/dist/AgentEngine.js",
       "manifest": "workspace/engines/aegis-agent/engine.json",
       "runtimeApi": "1.0.0",
