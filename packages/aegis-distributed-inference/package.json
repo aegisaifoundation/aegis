@@ -4,9 +4,9 @@
   "description": "AEGIS Distributed Inference Engine (Architecture Placeholder)",
   "type": "module",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "node --test dist/test/AIRuntime.test.js"
   },
   "dependencies": {
     "@aegis/sdk": "*",
