@@ -14,3 +14,6 @@ export { ExchangeManager } from './manager/ExchangeManager.js';
 
 // Types
 export * from './types/index.js';
+
+// Network & Tunnel Overlay
+export { AonEngine, AonTunnel, PublicAddress } from './network/AonEngine.js';

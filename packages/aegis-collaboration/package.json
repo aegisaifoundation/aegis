@@ -7,7 +7,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "node --test dist/test/CollaborationEngine.test.js"
+    "test": "node --test dist/test/CollaborationEngine.test.js dist/test/AonEngine.test.js"
   },
   "dependencies": {
     "@aegis/sdk": "*",
