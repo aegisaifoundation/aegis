@@ -22,7 +22,8 @@ const packages = [
   'aegis-knowledge-sync',
   'aegis-distributed-learning',
   'aegis-data',
-  'aegis-collaboration'
+  'aegis-collaboration',
+  'aegis-collective-intelligence'
 ];
 
 console.log('[register-default-engines] Starting registration of default engines...');
