@@ -1,0 +1,19 @@
+{
+  "id": "aegis-distributed-learning",
+  "name": "Distributed Learning Engine",
+  "version": "1.0.0",
+  "type": "Engine",
+  "entrypoint": "workspace/engines/aegis-distributed-learning/dist/index.js",
+  "kernelApiVersion": "1.0.0",
+  "sdkVersion": "1.0.0",
+  "permissions": [
+    "fs:read",
+    "fs:write"
+  ],
+  "dependencies": {},
+  "supportedPlatforms": [
+    "win32",
+    "linux",
+    "darwin"
+  ]
+}

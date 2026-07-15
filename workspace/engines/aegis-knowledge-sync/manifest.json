@@ -1,0 +1,16 @@
+{
+  "id": "aegis-knowledge-sync",
+  "name": "Knowledge Synchronization Engine",
+  "version": "1.0.0",
+  "type": "Engine",
+  "entrypoint": "workspace/engines/aegis-knowledge-sync/dist/index.js",
+  "kernelApiVersion": "1.0.0",
+  "sdkVersion": "1.0.0",
+  "permissions": [],
+  "dependencies": {},
+  "supportedPlatforms": [
+    "win32",
+    "linux",
+    "darwin"
+  ]
+}

@@ -5,8 +5,11 @@
   "kernelApiVersion": "1.0.0",
   "entrypoint": "dist/MemoryEngine.js",
   "dependencies": [],
-  "priority": 5,
+  "priority": 10,
   "autoStart": true,
   "singleton": true,
-  "permissions": ["fs:read", "fs:write"]
+  "permissions": [
+    "fs:read",
+    "fs:write"
+  ]
 }

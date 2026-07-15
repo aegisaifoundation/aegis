@@ -1,0 +1,12 @@
+{
+  "id": "aegis-knowledge-sync",
+  "displayName": "Knowledge Synchronization Engine",
+  "version": "1.0.0",
+  "kernelApiVersion": "1.0.0",
+  "entrypoint": "workspace/engines/aegis-knowledge-sync/dist/index.js",
+  "dependencies": [],
+  "priority": 10,
+  "autoStart": true,
+  "singleton": true,
+  "permissions": []
+}

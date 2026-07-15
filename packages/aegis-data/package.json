@@ -1,0 +1,17 @@
+{
+  "name": "@aegis/data",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@aegis/sdk": "*",
+    "@aegis/runtime": "*",
+    "@aegis/providers": "*",
+    "@aegis/tools": "*",
+    "@aegis/skills": "*"
+  }
+}

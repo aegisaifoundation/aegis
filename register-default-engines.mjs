@@ -20,7 +20,8 @@ const packages = [
   'aegis-swarm-learning',
   'aegis-distributed-inference',
   'aegis-knowledge-sync',
-  'aegis-distributed-learning'
+  'aegis-distributed-learning',
+  'aegis-data'
 ];
 
 console.log('[register-default-engines] Starting registration of default engines...');

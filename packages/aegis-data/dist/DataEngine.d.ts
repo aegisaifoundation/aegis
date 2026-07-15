@@ -1,0 +1,44 @@
+import { IEngine, IEngineMetadata, IRuntimeContext_v1, EngineHealthReport } from '@aegis/sdk';
+import { DataSource } from './DataSourceManager.js';
+import { DatasetMetadata, DatasetPolicy } from './DatasetRegistry.js';
+import { PipelineOptions } from './Pipeline.js';
+export declare class DataEngine implements IEngine {
+    readonly metadata: IEngineMetadata;
+    private context;
+    private workspacePath;
+    private pythonManager;
+    private privacyEngine;
+    private dataSourceManager;
+    private datasetRegistry;
+    private pipeline;
+    private isRunning;
+    initialize(context: IRuntimeContext_v1): Promise<void>;
+    configure(config: Record<string, any>): Promise<void>;
+    start(): Promise<void>;
+    pause(): Promise<void>;
+    resume(): Promise<void>;
+    health(): Promise<EngineHealthReport>;
+    reload(): Promise<void>;
+    shutdown(): Promise<void>;
+    dispose(): Promise<void>;
+    RegisterSource(sourceId: string, name: string, type: string, config: Record<string, any>, enabled?: boolean): Promise<DataSource>;
+    RemoveSource(sourceId: string): Promise<boolean>;
+    EnableSource(sourceId: string): Promise<boolean>;
+    DisableSource(sourceId: string): Promise<boolean>;
+    ImportDataset(datasetId: string, name: string, owner: string, source: string, privacy: string, policies: DatasetPolicy): Promise<DatasetMetadata>;
+    DeleteDataset(datasetId: string): Promise<boolean>;
+    PrepareDataset(datasetId: string, options?: PipelineOptions): Promise<DatasetMetadata>;
+    ListDatasets(): DatasetMetadata[];
+    DatasetStatistics(datasetId: string): Promise<Record<string, any>>;
+    DatasetMetadata(datasetId: string): Promise<DatasetMetadata | undefined>;
+    ValidateDataset(datasetId: string): Promise<boolean>;
+    TokenizeDataset(datasetId: string, text: string): Promise<number[]>;
+    ChunkDataset(datasetId: string, text: string, options?: {
+        size?: number;
+        overlap?: number;
+    }): Promise<string[]>;
+    ExportMetadata(datasetId: string): Promise<Record<string, any>>;
+    VersionHistory(datasetId: string): Promise<any[]>;
+    DatasetStatus(datasetId: string): string;
+}
+export default DataEngine;

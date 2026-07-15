@@ -5,7 +5,13 @@
     "distributed-intelligence",
     "aegis-memory",
     "aegis-agent",
-    "aegis-api"
+    "aegis-api",
+    "aegis-federated-learning",
+    "aegis-swarm-learning",
+    "aegis-distributed-inference",
+    "aegis-knowledge-sync",
+    "aegis-distributed-learning",
+    "aegis-data"
   ],
   "defaultProvider": "local/ollama",
   "autoloadTools": [

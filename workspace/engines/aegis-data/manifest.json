@@ -1,0 +1,20 @@
+{
+  "id": "aegis-data",
+  "name": "AEGIS Data Engine",
+  "version": "1.0.0",
+  "type": "Engine",
+  "entrypoint": "dist/DataEngine.js",
+  "kernelApiVersion": "1.0.0",
+  "sdkVersion": "1.0.0",
+  "permissions": [
+    "fs:read",
+    "fs:write",
+    "process:spawn"
+  ],
+  "dependencies": {},
+  "supportedPlatforms": [
+    "win32",
+    "linux",
+    "darwin"
+  ]
+}

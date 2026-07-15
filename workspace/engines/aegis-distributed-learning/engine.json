@@ -1,0 +1,15 @@
+{
+  "id": "aegis-distributed-learning",
+  "displayName": "Distributed Learning Engine",
+  "version": "1.0.0",
+  "kernelApiVersion": "1.0.0",
+  "entrypoint": "workspace/engines/aegis-distributed-learning/dist/index.js",
+  "dependencies": [],
+  "priority": 10,
+  "autoStart": true,
+  "singleton": true,
+  "permissions": [
+    "fs:read",
+    "fs:write"
+  ]
+}

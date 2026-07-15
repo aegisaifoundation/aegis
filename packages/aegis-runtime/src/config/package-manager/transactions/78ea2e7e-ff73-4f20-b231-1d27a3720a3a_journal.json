@@ -1,0 +1,34 @@
+{
+  "txId": "78ea2e7e-ff73-4f20-b231-1d27a3720a3a",
+  "state": "COMMITTED",
+  "timestamp": "2026-07-15T03:35:26.491Z",
+  "packageId": "aegis-federated-learning",
+  "action": "install",
+  "backups": [],
+  "addedFiles": [
+    "C:\\aegis\\workspace\\engines\\aegis-federated-learning\\engine.json"
+  ],
+  "addedDirs": [
+    "C:\\aegis\\workspace\\engines\\aegis-federated-learning"
+  ],
+  "originalConfig": {
+    "version": "1.0.0",
+    "requireSignature": false,
+    "autoloadEngines": [
+      "distributed-intelligence",
+      "aegis-memory",
+      "aegis-agent",
+      "aegis-api"
+    ],
+    "defaultProvider": "local/ollama",
+    "autoloadTools": [
+      "shared/memory-read"
+    ],
+    "autoloadSkills": [
+      "shared/summarize"
+    ],
+    "autoloadPlugins": [
+      "shared/logging"
+    ]
+  }
+}

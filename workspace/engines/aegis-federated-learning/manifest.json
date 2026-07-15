@@ -1,0 +1,16 @@
+{
+  "id": "aegis-federated-learning",
+  "name": "Federated Learning Engine",
+  "version": "1.0.0",
+  "type": "Engine",
+  "entrypoint": "workspace/engines/aegis-federated-learning/dist/index.js",
+  "kernelApiVersion": "1.0.0",
+  "sdkVersion": "1.0.0",
+  "permissions": [],
+  "dependencies": {},
+  "supportedPlatforms": [
+    "win32",
+    "linux",
+    "darwin"
+  ]
+}

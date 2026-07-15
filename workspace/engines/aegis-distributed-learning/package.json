@@ -1,0 +1,19 @@
+{
+  "name": "@aegis/distributed-learning",
+  "version": "1.0.0",
+  "description": "AEGIS Distributed Learning Engine — coordination layer for distributed model training, LoRA sharing, secure aggregation, and collaborative intelligence",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --experimental-vm-modules dist/test/unit/LearningManagerTest.js && node --experimental-vm-modules dist/test/unit/LoRAManagerTest.js && node --experimental-vm-modules dist/test/unit/RoundManagerTest.js && node --experimental-vm-modules dist/test/integration/FederatedLearningIntegrationTest.js && node --experimental-vm-modules dist/test/simulation/MultiNodeSimulationTest.js"
+  },
+  "dependencies": {
+    "@aegis/sdk": "*",
+    "@aegis/runtime": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

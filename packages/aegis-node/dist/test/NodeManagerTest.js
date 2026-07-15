@@ -120,7 +120,10 @@ describe('NodeManager Platform Tests', () => {
         assert.ok(info.nodeId.startsWith('aegis://'));
         assert.strictEqual(info.name, 'Research Laptop');
         assert.strictEqual(api.RuntimeStatus(), 'INACTIVE', 'Runtime should be inactive by default');
-        assert.deepStrictEqual(api.ListCapabilities(), []);
+        const caps = api.ListCapabilities();
+        assert.ok(Array.isArray(caps));
+        assert.ok(caps.length > 0);
+        assert.strictEqual(caps[0].type, 'Engine');
     });
 });
 //# sourceMappingURL=NodeManagerTest.js.map
