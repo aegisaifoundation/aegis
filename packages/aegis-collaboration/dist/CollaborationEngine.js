@@ -1,6 +1,6 @@
 import { serviceRegistry } from '@aegis/runtime';
 import os from 'os';
-import { createHash } from 'crypto';
+import crypto, { createHash } from 'crypto';
 // Managers
 import { CollaborationManager } from './manager/CollaborationManager.js';
 import { CapabilityDiscoveryManager } from './manager/CapabilityDiscoveryManager.js';
@@ -10,6 +10,7 @@ import { ConsensusManager } from './manager/ConsensusManager.js';
 import { ReputationManager } from './manager/ReputationManager.js';
 import { ReasoningManager } from './manager/ReasoningManager.js';
 import { ExchangeManager } from './manager/ExchangeManager.js';
+import { AonEngine } from './network/AonEngine.js';
 export class CollaborationEngine {
     metadata = {
         id: 'aegis-collaboration',
@@ -34,6 +35,7 @@ export class CollaborationEngine {
     reputationManager;
     reasoningManager;
     exchangeManager;
+    aonEngine;
     initStartTime = 0;
     async initialize(context) {
         this.initStartTime = Date.now();
@@ -49,11 +51,13 @@ export class CollaborationEngine {
         this.reputationManager = new ReputationManager(this.localNodeId);
         this.reasoningManager = new ReasoningManager(this.consensusManager);
         this.exchangeManager = new ExchangeManager();
+        this.aonEngine = new AonEngine();
         // Register with runtime serviceRegistry
         serviceRegistry.register('collaboration', this);
         serviceRegistry.register('collaboration:discovery', this.discoveryManager);
         serviceRegistry.register('collaboration:reputation', this.reputationManager);
         serviceRegistry.register('collaboration:policy', this.policyManager);
+        serviceRegistry.register('collaboration:aon', this.aonEngine);
     }
     async configure(config) {
         if (config.policyType) {
@@ -227,6 +231,23 @@ export class CollaborationEngine {
     /** 16. Get trust score */
     TrustMetrics(nodeId) {
         return this.reputationManager.getReputation(nodeId).trustScore;
+    }
+    /** 17. Resolve public address of this node using AON STUN client */
+    async GetPublicAddress() {
+        return await this.aonEngine.resolvePublicAddress();
+    }
+    /** 18. Establish a secure encrypted virtual tunnel to a remote peer */
+    async ConnectOverlayPeer(peerIp, peerPort, tunnelId) {
+        const tempECDH = crypto.createECDH('secp256k1');
+        tempECDH.generateKeys();
+        const peerPubKey = tempECDH.getPublicKey('hex');
+        const secret = this.aonEngine.deriveSharedSecret(peerPubKey);
+        const id = tunnelId ?? `tunnel-${createHash('sha256').update(peerIp + peerPort + Date.now()).digest('hex').slice(0, 16)}`;
+        return this.aonEngine.establishTunnel(id, `${peerIp}:${peerPort}`, secret);
+    }
+    /** 19. Get list of active encrypted tunnels */
+    GetActiveTunnels() {
+        return this.aonEngine.listTunnels();
     }
     // ── Sub-manager accessors (for testing / simulation) ──────────────────────
     getCollaborationManager() { return this.collaborationManager; }

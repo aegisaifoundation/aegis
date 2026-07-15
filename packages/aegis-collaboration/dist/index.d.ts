@@ -10,3 +10,4 @@ export { ReputationManager } from './manager/ReputationManager.js';
 export { ReasoningManager } from './manager/ReasoningManager.js';
 export { ExchangeManager } from './manager/ExchangeManager.js';
 export * from './types/index.js';
+export { AonEngine, AonTunnel, PublicAddress } from './network/AonEngine.js';

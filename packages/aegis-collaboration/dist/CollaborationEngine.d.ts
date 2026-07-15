@@ -7,6 +7,7 @@ import { ConsensusManager } from './manager/ConsensusManager.js';
 import { ReputationManager } from './manager/ReputationManager.js';
 import { ReasoningManager } from './manager/ReasoningManager.js';
 import { ExchangeManager } from './manager/ExchangeManager.js';
+import { AonTunnel, PublicAddress } from './network/AonEngine.js';
 import { CollaborationSession, CapabilityInfo, KnowledgePackage, ExperiencePackage, ConsensusVote } from './types/index.js';
 export declare class CollaborationEngine implements IEngine {
     readonly metadata: IEngineMetadata;
@@ -21,6 +22,7 @@ export declare class CollaborationEngine implements IEngine {
     private reputationManager;
     private reasoningManager;
     private exchangeManager;
+    private aonEngine;
     private initStartTime;
     initialize(context: IRuntimeContext_v1): Promise<void>;
     configure(config: Record<string, any>): Promise<void>;
@@ -74,6 +76,12 @@ export declare class CollaborationEngine implements IEngine {
     Reputation(nodeId: string): import("./types/index.js").ReputationMetrics;
     /** 16. Get trust score */
     TrustMetrics(nodeId: string): number;
+    /** 17. Resolve public address of this node using AON STUN client */
+    GetPublicAddress(): Promise<PublicAddress>;
+    /** 18. Establish a secure encrypted virtual tunnel to a remote peer */
+    ConnectOverlayPeer(peerIp: string, peerPort: number, tunnelId?: string): Promise<AonTunnel>;
+    /** 19. Get list of active encrypted tunnels */
+    GetActiveTunnels(): AonTunnel[];
     getCollaborationManager(): CollaborationManager;
     getDiscoveryManager(): CapabilityDiscoveryManager;
     getSessionManager(): CollaborationSessionManager;

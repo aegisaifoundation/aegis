@@ -12,3 +12,5 @@ export { ReasoningManager } from './manager/ReasoningManager.js';
 export { ExchangeManager } from './manager/ExchangeManager.js';
 // Types
 export * from './types/index.js';
+// Network & Tunnel Overlay
+export { AonEngine } from './network/AonEngine.js';

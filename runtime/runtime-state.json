@@ -33,5 +33,5 @@
     "acquiredAt": "2026-07-14T18:24:13.985Z",
     "expiresAt": "2026-07-14T18:34:13.985Z"
   },
-  "lastRecoveryCheckpoint": "C:\\aegis\\runtime\\checkpoints\\pre-switch-checkpoint.json"
+  "lastRecoveryCheckpoint": "C:\\aegis\\runtime\\checkpoints\\pre-mutation-checkpoint.json"
 }
