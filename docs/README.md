@@ -22,3 +22,4 @@ This documentation covers the implemented features of all nine core phases, the 
 
 ### 3. Production Deployment
 - [Production UI & Requirements Blueprint](file:///c:/aegis/docs/production_ui_requirements.md) - Desktop/Web dashboard designs, authentication, licensing editions, cluster scheduling, and logging.
+- [AEGIS Overlay Network (AON)](file:///c:/aegis/docs/aegis_overlay_network.md) - Native built-in private mesh networking specifications.
