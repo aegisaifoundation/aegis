@@ -30,7 +30,8 @@ export class AggregationManager {
     roundNumber: number,
     weightSets: Record<string, number[]>[],
     contributors: string[],
-    algorithm: 'fedavg' | 'fedprox' | string = 'fedavg'
+    algorithm: 'fedavg' | 'fedprox' | string = 'fedavg',
+    options?: Record<string, any>
   ): Promise<AggregationResult> {
     const validSets = weightSets.filter((_, i) => !this.rejectedUpdates.has(contributors[i]!));
     const validContributors = contributors.filter(id => !this.rejectedUpdates.has(id));
@@ -40,8 +41,25 @@ export class AggregationManager {
     }
 
     let aggregated: Record<string, number[]>;
-    if (algorithm === 'fedprox') {
+    const algLower = algorithm.toLowerCase();
+    
+    if (algLower === 'fedprox') {
       aggregated = this._fedProx(validSets);
+    } else if (algLower === 'weighted_average' || algLower === 'weighted') {
+      const weights = options?.sampleCounts ?? validContributors.map(() => 1);
+      aggregated = this._weightedAvg(validSets, weights);
+    } else if (algLower === 'trust_weighted' || algLower === 'trust') {
+      const weights = options?.trustScores ?? validContributors.map(() => 1);
+      aggregated = this._weightedAvg(validSets, weights);
+    } else if (algLower === 'performance_weighted' || algLower === 'performance') {
+      const weights = options?.performanceScores ?? validContributors.map(() => 1);
+      aggregated = this._weightedAvg(validSets, weights);
+    } else if (algLower === 'adaptive') {
+      // Adaptive combines trust, performance, and sample size dynamically
+      const trusts = options?.trustScores ?? validContributors.map(() => 1);
+      const perfs = options?.performanceScores ?? validContributors.map(() => 1);
+      const combinedWeights = validContributors.map((_, i) => (trusts[i] ?? 1) * (perfs[i] ?? 1));
+      aggregated = this._weightedAvg(validSets, combinedWeights);
     } else {
       aggregated = this._fedAvg(validSets);
     }
@@ -79,9 +97,11 @@ export class AggregationManager {
     roundId: string,
     roundNumber: number,
     loraDeltas: Record<string, number[]>[],
-    contributors: string[]
+    contributors: string[],
+    algorithm = 'fedavg',
+    options?: Record<string, any>
   ): Promise<AggregationResult> {
-    return this.aggregateWeights(roundId, roundNumber, loraDeltas, contributors, 'fedavg');
+    return this.aggregateWeights(roundId, roundNumber, loraDeltas, contributors, algorithm, options);
   }
 
   /**
@@ -161,6 +181,23 @@ export class AggregationManager {
       return result;
     });
     return this._fedAvg(proxed);
+  }
+
+  /** Weighted Averaging based on variable node weighting (e.g. sample size, trust, performance) */
+  private _weightedAvg(sets: Record<string, number[]>[], weights: number[]): Record<string, number[]> {
+    const result: Record<string, number[]> = {};
+    const keys = Object.keys(sets[0] ?? {});
+    const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+
+    for (const key of keys) {
+      const allVectors = sets.map(s => s[key] ?? []);
+      const len = Math.max(...allVectors.map(v => v.length));
+      result[key] = Array.from({ length: len }, (_, i) => {
+        const sum = allVectors.reduce((acc, v, j) => acc + (v[i] ?? 0) * (weights[j] ?? 1), 0);
+        return sum / totalWeight;
+      });
+    }
+    return result;
   }
 
   private _hashWeights(weights: Record<string, number[]>): string {

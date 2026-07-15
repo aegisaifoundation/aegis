@@ -91,7 +91,7 @@ await test('Import rejects tampered blob', async () => {
   });
   const blob = mgr.exportAdapter(adapter.id)!;
   // Tamper: corrupt the weights
-  const tampered = blob.replace(/"[-\d.]+,/g, '"99999,');
+  const tampered = blob.replace(/[-\d.]+,/g, '99999,');
   const result = mgr.importAdapter(tampered);
   assert(result === null, 'Tampered import rejected (null returned)');
 });

@@ -25,6 +25,10 @@ export declare class LearningCheckpointManager {
     saveLoRACheckpoint(adapter: LoRAAdapter): Promise<void>;
     /** Restore the latest LoRA checkpoint for a given adapter ID */
     restoreLoRACheckpoint(adapterId: string): LoRAAdapter | null;
+    /** Save aggregation results to disk */
+    saveAggregationCheckpoint(roundId: string, result: any): Promise<void>;
+    /** Restore aggregation checkpoint for a round */
+    restoreAggregationCheckpoint(roundId: string): any | null;
     /** Rollback a round to a specific prior checkpoint version */
     rollbackRound(roundId: string, _version?: string): LearningRound | null;
     /** Delete training checkpoints older than maxAgeMs */

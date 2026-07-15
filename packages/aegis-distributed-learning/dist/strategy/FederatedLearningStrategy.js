@@ -78,7 +78,7 @@ export class FederatedLearningStrategy {
         // Include our own local weights
         const localWeights = this.context.loraManager.getLatestAdapterWeights();
         weightSets.push(localWeights);
-        const result = await this.context.aggregationManager.aggregateWeights(round.roundId, round.roundNumber, weightSets, Array.from(this.pendingWeights.keys()));
+        const result = await this.context.aggregationManager.aggregateWeights(round.roundId, round.roundNumber, weightSets, [...Array.from(this.pendingWeights.keys()), this.context.localNodeId]);
         return result;
     }
     async validate(result) {

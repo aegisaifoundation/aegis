@@ -94,6 +94,27 @@ export class LearningCheckpointManager {
     }
   }
 
+  // ── Aggregation Checkpoints ───────────────────────────────────────────────
+
+  /** Save aggregation results to disk */
+  async saveAggregationCheckpoint(roundId: string, result: any): Promise<void> {
+    const file = path.join(this.checkpointDir, 'aggregation', `${roundId}.json`);
+    this._ensureDir(path.dirname(file));
+    fs.writeFileSync(file, JSON.stringify({ ...result, _checkpointedAt: new Date().toISOString() }, null, 2), 'utf8');
+    console.log(`[CheckpointManager] Saved aggregation checkpoint for round: ${roundId}`);
+  }
+
+  /** Restore aggregation checkpoint for a round */
+  restoreAggregationCheckpoint(roundId: string): any | null {
+    const file = path.join(this.checkpointDir, 'aggregation', `${roundId}.json`);
+    if (!fs.existsSync(file)) return null;
+    try {
+      return JSON.parse(fs.readFileSync(file, 'utf8'));
+    } catch {
+      return null;
+    }
+  }
+
   // ── Rollback ──────────────────────────────────────────────────────────────
 
   /** Rollback a round to a specific prior checkpoint version */

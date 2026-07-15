@@ -12,6 +12,7 @@ export { RoundManager } from './manager/RoundManager.js';
 export { AggregationManager } from './manager/AggregationManager.js';
 export { LearningCheckpointManager } from './manager/LearningCheckpointManager.js';
 export { LearningVersionManager } from './manager/LearningVersionManager.js';
+export { ValidationManager } from './manager/ValidationManager.js';
 export { ModelManager } from './model/ModelManager.js';
 export { LoRAManager } from './model/LoRAManager.js';
 export { LocalTrainer } from './model/LocalTrainer.js';

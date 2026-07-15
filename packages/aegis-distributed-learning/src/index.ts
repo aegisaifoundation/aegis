@@ -19,6 +19,7 @@ export { RoundManager } from './manager/RoundManager.js';
 export { AggregationManager } from './manager/AggregationManager.js';
 export { LearningCheckpointManager } from './manager/LearningCheckpointManager.js';
 export { LearningVersionManager } from './manager/LearningVersionManager.js';
+export { ValidationManager } from './manager/ValidationManager.js';
 
 // Model layer
 export { ModelManager } from './model/ModelManager.js';

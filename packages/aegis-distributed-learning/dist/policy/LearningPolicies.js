@@ -29,6 +29,22 @@ export class LearningPolicies {
     defaultStrategy = 'federated';
     /** Maximum retry attempts for a failed round before giving up */
     maxRoundRetries = 2;
+    /** Maximum participants allowed in a round */
+    maxParticipants = 50;
+    /** Minimum peer trust score required to participate/accept update */
+    minTrust = 0.5;
+    /** Minimum accuracy target */
+    minAccuracy = 0.7;
+    /** Accuracy change threshold for aggregation acceptance */
+    aggregationThreshold = 0.05;
+    /** Allowed base models list */
+    allowedModels = ['llama-3', 'mistral-7b'];
+    /** Allowed LoRA formats list */
+    allowedLoraFormats = ['aegis-lora-v1'];
+    /** Maximum update byte size */
+    maxUpdateSize = 50_000_000;
+    /** Simulated resource training budget */
+    trainingBudget = 1000;
     /**
      * Apply a partial policy override from the engine's config object.
      * Unknown fields are silently ignored for forward compatibility.
@@ -44,7 +60,15 @@ export class LearningPolicies {
             'allowSimulationMode',
             'loraStoragePath',
             'defaultStrategy',
-            'maxRoundRetries'
+            'maxRoundRetries',
+            'maxParticipants',
+            'minTrust',
+            'minAccuracy',
+            'aggregationThreshold',
+            'allowedModels',
+            'allowedLoraFormats',
+            'maxUpdateSize',
+            'trainingBudget'
         ];
         for (const key of allowedKeys) {
             if (key in config && config[key] !== undefined) {
@@ -70,7 +94,15 @@ export class LearningPolicies {
             allowSimulationMode: this.allowSimulationMode,
             loraStoragePath: this.loraStoragePath,
             defaultStrategy: this.defaultStrategy,
-            maxRoundRetries: this.maxRoundRetries
+            maxRoundRetries: this.maxRoundRetries,
+            maxParticipants: this.maxParticipants,
+            minTrust: this.minTrust,
+            minAccuracy: this.minAccuracy,
+            aggregationThreshold: this.aggregationThreshold,
+            allowedModels: this.allowedModels,
+            allowedLoraFormats: this.allowedLoraFormats,
+            maxUpdateSize: this.maxUpdateSize,
+            trainingBudget: this.trainingBudget
         };
     }
 }

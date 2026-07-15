@@ -29,6 +29,22 @@ export declare class LearningPolicies {
     defaultStrategy: string;
     /** Maximum retry attempts for a failed round before giving up */
     maxRoundRetries: number;
+    /** Maximum participants allowed in a round */
+    maxParticipants: number;
+    /** Minimum peer trust score required to participate/accept update */
+    minTrust: number;
+    /** Minimum accuracy target */
+    minAccuracy: number;
+    /** Accuracy change threshold for aggregation acceptance */
+    aggregationThreshold: number;
+    /** Allowed base models list */
+    allowedModels: string[];
+    /** Allowed LoRA formats list */
+    allowedLoraFormats: string[];
+    /** Maximum update byte size */
+    maxUpdateSize: number;
+    /** Simulated resource training budget */
+    trainingBudget: number;
     /**
      * Apply a partial policy override from the engine's config object.
      * Unknown fields are silently ignored for forward compatibility.

@@ -119,6 +119,35 @@ export class LoRAManager {
         console.log(`[LoRAManager] Compressed adapter ${adapterId}.`);
         return updated;
     }
+    /**
+     * Quantize adapter weights (int8 format).
+     * Reduces precision representation of weight floats.
+     */
+    quantizeAdapter(adapterId, bits = 8) {
+        const adapter = this.adapters.get(adapterId);
+        const wts = this.weights.get(adapterId);
+        if (!adapter || !wts)
+            return null;
+        const quantized = {};
+        const maxVal = bits === 4 ? 7 : 127;
+        for (const [key, values] of Object.entries(wts)) {
+            const max = Math.max(...values.map(Math.abs)) || 1;
+            quantized[key] = values.map(v => Math.round((v / max) * maxVal) / maxVal * max);
+        }
+        this.weights.set(adapterId, quantized);
+        const newHash = this._hashWeights(quantized);
+        const updated = {
+            ...adapter,
+            hash: newHash,
+            signature: this._stubSign(newHash, adapterId),
+            sizeBytes: JSON.stringify(quantized).length,
+            metadata: { ...adapter.metadata, quantized: true, quantizationBits: bits }
+        };
+        this.adapters.set(adapterId, updated);
+        this._persistAdapter(updated, quantized);
+        console.log(`[LoRAManager] Quantized adapter ${adapterId} to ${bits} bits.`);
+        return updated;
+    }
     /** Export a LoRA adapter as a self-contained JSON blob for P2P transmission */
     exportAdapter(adapterId) {
         const adapter = this.adapters.get(adapterId);

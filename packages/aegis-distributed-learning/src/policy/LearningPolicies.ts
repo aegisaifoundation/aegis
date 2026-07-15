@@ -39,6 +39,30 @@ export class LearningPolicies {
   /** Maximum retry attempts for a failed round before giving up */
   maxRoundRetries: number = 2;
 
+  /** Maximum participants allowed in a round */
+  maxParticipants: number = 50;
+
+  /** Minimum peer trust score required to participate/accept update */
+  minTrust: number = 0.5;
+
+  /** Minimum accuracy target */
+  minAccuracy: number = 0.7;
+
+  /** Accuracy change threshold for aggregation acceptance */
+  aggregationThreshold: number = 0.05;
+
+  /** Allowed base models list */
+  allowedModels: string[] = ['llama-3', 'mistral-7b'];
+
+  /** Allowed LoRA formats list */
+  allowedLoraFormats: string[] = ['aegis-lora-v1'];
+
+  /** Maximum update byte size */
+  maxUpdateSize: number = 50_000_000;
+
+  /** Simulated resource training budget */
+  trainingBudget: number = 1000;
+
   /**
    * Apply a partial policy override from the engine's config object.
    * Unknown fields are silently ignored for forward compatibility.
@@ -54,7 +78,15 @@ export class LearningPolicies {
       'allowSimulationMode',
       'loraStoragePath',
       'defaultStrategy',
-      'maxRoundRetries'
+      'maxRoundRetries',
+      'maxParticipants',
+      'minTrust',
+      'minAccuracy',
+      'aggregationThreshold',
+      'allowedModels',
+      'allowedLoraFormats',
+      'maxUpdateSize',
+      'trainingBudget'
     ];
 
     for (const key of allowedKeys) {
@@ -83,7 +115,15 @@ export class LearningPolicies {
       allowSimulationMode: this.allowSimulationMode,
       loraStoragePath: this.loraStoragePath,
       defaultStrategy: this.defaultStrategy,
-      maxRoundRetries: this.maxRoundRetries
+      maxRoundRetries: this.maxRoundRetries,
+      maxParticipants: this.maxParticipants,
+      minTrust: this.minTrust,
+      minAccuracy: this.minAccuracy,
+      aggregationThreshold: this.aggregationThreshold,
+      allowedModels: this.allowedModels,
+      allowedLoraFormats: this.allowedLoraFormats,
+      maxUpdateSize: this.maxUpdateSize,
+      trainingBudget: this.trainingBudget
     };
   }
 }

@@ -7,7 +7,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "node --experimental-vm-modules dist/test/unit/LearningManagerTest.js && node --experimental-vm-modules dist/test/unit/LoRAManagerTest.js && node --experimental-vm-modules dist/test/unit/RoundManagerTest.js && node --experimental-vm-modules dist/test/integration/FederatedLearningIntegrationTest.js && node --experimental-vm-modules dist/test/simulation/MultiNodeSimulationTest.js"
+    "test": "node --experimental-vm-modules dist/test/unit/LearningManagerTest.js && node --experimental-vm-modules dist/test/unit/LoRAManagerTest.js && node --experimental-vm-modules dist/test/unit/RoundManagerTest.js && node --experimental-vm-modules dist/test/unit/ValidationAndAggregationTest.js && node --experimental-vm-modules dist/test/integration/FederatedLearningIntegrationTest.js && node --experimental-vm-modules dist/test/simulation/MultiNodeSimulationTest.js"
   },
   "dependencies": {
     "@aegis/sdk": "*",
