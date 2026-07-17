@@ -1,8 +1,9 @@
 import { PackageInfo } from '../types/Manifest.js';
 export declare class PackageDatabase {
     private dbPath;
+    private enginesDir?;
     private schema;
-    constructor(dbPath: string);
+    constructor(dbPath: string, enginesDir?: string | undefined);
     getDbPath(): string;
     load(): void;
     save(): void;

@@ -1,0 +1,45 @@
+{
+  "txId": "23790578-d298-40c7-8764-4846bf24390a",
+  "state": "COMMITTED",
+  "timestamp": "2026-07-16T17:40:22.829Z",
+  "packageId": "aegis-distributed-inference",
+  "action": "install",
+  "backups": [
+    {
+      "originalPath": "C:\\aegis\\workspace\\engines\\aegis-distributed-inference",
+      "backupPath": "C:\\aegis\\packages\\aegis-runtime\\src\\config\\package-manager\\backups\\23790578-d298-40c7-8764-4846bf24390a\\3d68b16f-6552-427b-bd08-37a4205039a4"
+    }
+  ],
+  "addedFiles": [
+    "C:\\aegis\\workspace\\engines\\aegis-distributed-inference\\engine.json"
+  ],
+  "addedDirs": [],
+  "originalConfig": {
+    "version": "1.0.0",
+    "requireSignature": false,
+    "autoloadEngines": [
+      "distributed-intelligence",
+      "aegis-memory",
+      "aegis-agent",
+      "aegis-api",
+      "aegis-federated-learning",
+      "aegis-swarm-learning",
+      "aegis-distributed-inference",
+      "aegis-knowledge-sync",
+      "aegis-distributed-learning",
+      "aegis-data",
+      "aegis-collaboration",
+      "aegis-collective-intelligence"
+    ],
+    "defaultProvider": "local/ollama",
+    "autoloadTools": [
+      "shared/memory-read"
+    ],
+    "autoloadSkills": [
+      "shared/summarize"
+    ],
+    "autoloadPlugins": [
+      "shared/logging"
+    ]
+  }
+}

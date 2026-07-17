@@ -11,7 +11,9 @@
     "aegis-distributed-inference",
     "aegis-knowledge-sync",
     "aegis-distributed-learning",
-    "aegis-data"
+    "aegis-data",
+    "aegis-collaboration",
+    "aegis-collective-intelligence"
   ],
   "defaultProvider": "local/ollama",
   "autoloadTools": [

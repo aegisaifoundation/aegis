@@ -1,0 +1,45 @@
+{
+  "txId": "361e1a05-6a76-4441-8720-6f37d8bd8b98",
+  "state": "COMMITTED",
+  "timestamp": "2026-07-16T17:40:22.755Z",
+  "packageId": "aegis-swarm-learning",
+  "action": "install",
+  "backups": [
+    {
+      "originalPath": "C:\\aegis\\workspace\\engines\\aegis-swarm-learning",
+      "backupPath": "C:\\aegis\\packages\\aegis-runtime\\src\\config\\package-manager\\backups\\361e1a05-6a76-4441-8720-6f37d8bd8b98\\7c95b6ff-178c-4c65-9ce1-12c0502b05a1"
+    }
+  ],
+  "addedFiles": [
+    "C:\\aegis\\workspace\\engines\\aegis-swarm-learning\\engine.json"
+  ],
+  "addedDirs": [],
+  "originalConfig": {
+    "version": "1.0.0",
+    "requireSignature": false,
+    "autoloadEngines": [
+      "distributed-intelligence",
+      "aegis-memory",
+      "aegis-agent",
+      "aegis-api",
+      "aegis-federated-learning",
+      "aegis-swarm-learning",
+      "aegis-distributed-inference",
+      "aegis-knowledge-sync",
+      "aegis-distributed-learning",
+      "aegis-data",
+      "aegis-collaboration",
+      "aegis-collective-intelligence"
+    ],
+    "defaultProvider": "local/ollama",
+    "autoloadTools": [
+      "shared/memory-read"
+    ],
+    "autoloadSkills": [
+      "shared/summarize"
+    ],
+    "autoloadPlugins": [
+      "shared/logging"
+    ]
+  }
+}

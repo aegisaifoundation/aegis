@@ -4,7 +4,8 @@ export declare class ConversationConnector implements IDataConnector {
     readonly type = "Conversation";
     private connected;
     private isEnabled;
-    constructor(id: string);
+    private workspacePath?;
+    constructor(id: string, workspacePath?: string);
     connect(config?: {
         enabled?: boolean;
     }): Promise<void>;

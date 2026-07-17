@@ -102,7 +102,7 @@ export class FederatedLearningStrategy implements ILearningStrategy {
       round.roundId,
       round.roundNumber,
       weightSets,
-      Array.from(this.pendingWeights.keys())
+      [...Array.from(this.pendingWeights.keys()), this.context.localNodeId]
     );
 
     return result;

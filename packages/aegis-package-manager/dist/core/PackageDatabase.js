@@ -2,13 +2,15 @@ import fs from 'fs';
 import path from 'path';
 export class PackageDatabase {
     dbPath;
+    enginesDir;
     schema = {
         packages: {},
         repositories: [],
         transactionHistory: []
     };
-    constructor(dbPath) {
+    constructor(dbPath, enginesDir) {
         this.dbPath = dbPath;
+        this.enginesDir = enginesDir;
         this.load();
     }
     getDbPath() {
@@ -27,6 +29,15 @@ export class PackageDatabase {
             this.schema.packages = this.schema.packages || {};
             this.schema.repositories = this.schema.repositories || [];
             this.schema.transactionHistory = this.schema.transactionHistory || [];
+            // Resolve relative paths back to absolute
+            if (this.enginesDir) {
+                for (const key of Object.keys(this.schema.packages)) {
+                    const pkg = this.schema.packages[key];
+                    if (pkg.installationPath && !path.isAbsolute(pkg.installationPath)) {
+                        pkg.installationPath = path.resolve(this.enginesDir, pkg.installationPath);
+                    }
+                }
+            }
         }
         catch {
             console.warn(`[PackageDatabase] Database file corrupted, initializing fresh registry.`);
@@ -36,8 +47,18 @@ export class PackageDatabase {
     }
     save() {
         this.ensureDirectoriesExist();
+        // Create a clone of the schema to avoid mutating the in-memory object
+        const schemaToSave = JSON.parse(JSON.stringify(this.schema));
+        if (this.enginesDir) {
+            for (const key of Object.keys(schemaToSave.packages)) {
+                const pkg = schemaToSave.packages[key];
+                if (pkg.installationPath && path.isAbsolute(pkg.installationPath)) {
+                    pkg.installationPath = path.relative(this.enginesDir, pkg.installationPath).replace(/\\/g, '/');
+                }
+            }
+        }
         const tempPath = this.dbPath + '.tmp';
-        fs.writeFileSync(tempPath, JSON.stringify(this.schema, null, 2), 'utf8');
+        fs.writeFileSync(tempPath, JSON.stringify(schemaToSave, null, 2), 'utf8');
         fs.renameSync(tempPath, this.dbPath);
     }
     ensureDirectoriesExist() {

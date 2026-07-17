@@ -95,7 +95,7 @@ export class DistributedLearningEngine implements IEngine {
     this.versionManager     = new LearningVersionManager();
     this.modelManager       = new ModelManager();
     this.loraManager        = new LoRAManager(this.workspacePath);
-    this.localTrainer       = new LocalTrainer(this.loraManager, this.checkpointManager);
+    this.localTrainer       = new LocalTrainer(this.loraManager, this.checkpointManager, this.workspacePath);
     this.privacyManager     = new PrivacyManager();
     this.profileRegistry    = new LearningProfileRegistry(this.workspacePath);
     this.validationManager  = new ValidationManager(this.loraManager);

@@ -22,15 +22,35 @@ export class AggregationManager {
      * @param contributors Ordered list of node IDs matching weightSets
      * @param algorithm  Aggregation algorithm (default: 'fedavg')
      */
-    async aggregateWeights(roundId, roundNumber, weightSets, contributors, algorithm = 'fedavg') {
+    async aggregateWeights(roundId, roundNumber, weightSets, contributors, algorithm = 'fedavg', options) {
         const validSets = weightSets.filter((_, i) => !this.rejectedUpdates.has(contributors[i]));
         const validContributors = contributors.filter(id => !this.rejectedUpdates.has(id));
         if (validSets.length === 0) {
             throw new Error('[AggregationManager] No valid weight sets to aggregate.');
         }
         let aggregated;
-        if (algorithm === 'fedprox') {
+        const algLower = algorithm.toLowerCase();
+        if (algLower === 'fedprox') {
             aggregated = this._fedProx(validSets);
+        }
+        else if (algLower === 'weighted_average' || algLower === 'weighted') {
+            const weights = options?.sampleCounts ?? validContributors.map(() => 1);
+            aggregated = this._weightedAvg(validSets, weights);
+        }
+        else if (algLower === 'trust_weighted' || algLower === 'trust') {
+            const weights = options?.trustScores ?? validContributors.map(() => 1);
+            aggregated = this._weightedAvg(validSets, weights);
+        }
+        else if (algLower === 'performance_weighted' || algLower === 'performance') {
+            const weights = options?.performanceScores ?? validContributors.map(() => 1);
+            aggregated = this._weightedAvg(validSets, weights);
+        }
+        else if (algLower === 'adaptive') {
+            // Adaptive combines trust, performance, and sample size dynamically
+            const trusts = options?.trustScores ?? validContributors.map(() => 1);
+            const perfs = options?.performanceScores ?? validContributors.map(() => 1);
+            const combinedWeights = validContributors.map((_, i) => (trusts[i] ?? 1) * (perfs[i] ?? 1));
+            aggregated = this._weightedAvg(validSets, combinedWeights);
         }
         else {
             aggregated = this._fedAvg(validSets);
@@ -57,8 +77,8 @@ export class AggregationManager {
      * Aggregate a set of LoRA delta tensor sets (same mechanism as weight aggregation
      * but semantically specific to LoRA adapters).
      */
-    async aggregateLoRA(roundId, roundNumber, loraDeltas, contributors) {
-        return this.aggregateWeights(roundId, roundNumber, loraDeltas, contributors, 'fedavg');
+    async aggregateLoRA(roundId, roundNumber, loraDeltas, contributors, algorithm = 'fedavg', options) {
+        return this.aggregateWeights(roundId, roundNumber, loraDeltas, contributors, algorithm, options);
     }
     /**
      * Mark a contributor's update as invalid — it will be excluded from aggregation.
@@ -129,6 +149,21 @@ export class AggregationManager {
             return result;
         });
         return this._fedAvg(proxed);
+    }
+    /** Weighted Averaging based on variable node weighting (e.g. sample size, trust, performance) */
+    _weightedAvg(sets, weights) {
+        const result = {};
+        const keys = Object.keys(sets[0] ?? {});
+        const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+        for (const key of keys) {
+            const allVectors = sets.map(s => s[key] ?? []);
+            const len = Math.max(...allVectors.map(v => v.length));
+            result[key] = Array.from({ length: len }, (_, i) => {
+                const sum = allVectors.reduce((acc, v, j) => acc + (v[i] ?? 0) * (weights[j] ?? 1), 0);
+                return sum / totalWeight;
+            });
+        }
+        return result;
     }
     _hashWeights(weights) {
         const serialised = JSON.stringify(weights, Object.keys(weights).sort());

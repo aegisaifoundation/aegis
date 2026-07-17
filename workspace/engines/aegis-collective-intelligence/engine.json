@@ -1,0 +1,15 @@
+{
+  "id": "aegis-collective-intelligence",
+  "displayName": "Collective Intelligence Engine",
+  "version": "1.0.0",
+  "kernelApiVersion": "1.0.0",
+  "entrypoint": "dist/CollectiveIntelligenceEngine.js",
+  "dependencies": [],
+  "priority": 10,
+  "autoStart": true,
+  "singleton": true,
+  "permissions": [
+    "fs:read",
+    "fs:write"
+  ]
+}

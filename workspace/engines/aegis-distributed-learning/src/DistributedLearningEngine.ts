@@ -9,6 +9,7 @@ import { RoundManager } from './manager/RoundManager.js';
 import { AggregationManager } from './manager/AggregationManager.js';
 import { LearningCheckpointManager } from './manager/LearningCheckpointManager.js';
 import { LearningVersionManager } from './manager/LearningVersionManager.js';
+import { ValidationManager } from './manager/ValidationManager.js';
 
 // Model layer
 import { ModelManager } from './model/ModelManager.js';
@@ -72,6 +73,7 @@ export class DistributedLearningEngine implements IEngine {
   private privacyManager!: PrivacyManager;
   private profileRegistry!: LearningProfileRegistry;
   private learningManager!: LearningManager;
+  private validationManager!: ValidationManager;
 
   // Simulation (active when DI is unavailable)
   private simulationMode: SimulationMode | null = null;
@@ -93,9 +95,10 @@ export class DistributedLearningEngine implements IEngine {
     this.versionManager     = new LearningVersionManager();
     this.modelManager       = new ModelManager();
     this.loraManager        = new LoRAManager(this.workspacePath);
-    this.localTrainer       = new LocalTrainer(this.loraManager, this.checkpointManager);
+    this.localTrainer       = new LocalTrainer(this.loraManager, this.checkpointManager, this.workspacePath);
     this.privacyManager     = new PrivacyManager();
     this.profileRegistry    = new LearningProfileRegistry(this.workspacePath);
+    this.validationManager  = new ValidationManager(this.loraManager);
 
     this.learningManager = new LearningManager(
       this.roundManager,
@@ -108,7 +111,9 @@ export class DistributedLearningEngine implements IEngine {
     );
 
     // Resolve DI Engine from registry (may be null in standalone mode)
-    const dis = serviceRegistry.get<any>('distributed-intelligence') ?? null;
+    const dis = serviceRegistry.has('distributed-intelligence')
+      ? serviceRegistry.get<any>('distributed-intelligence')
+      : null;
     const nodeId = context.runtimeId ?? os.hostname();
     this.learningManager.initialize(dis, nodeId);
 
@@ -120,7 +125,8 @@ export class DistributedLearningEngine implements IEngine {
       loraManager: this.loraManager,
       privacyManager: this.privacyManager,
       checkpointManager: this.checkpointManager,
-      versionManager: this.versionManager
+      versionManager: this.versionManager,
+      validationManager: this.validationManager
     };
 
     const federated = new FederatedLearningStrategy();
@@ -143,6 +149,7 @@ export class DistributedLearningEngine implements IEngine {
     serviceRegistry.register('distributed-learning:lora', this.loraManager);
     serviceRegistry.register('distributed-learning:trainer', this.localTrainer);
     serviceRegistry.register('distributed-learning:profiles', this.profileRegistry);
+    serviceRegistry.register('distributed-learning:validation', this.validationManager);
 
     console.log(`[DistributedLearningEngine] Initialized in ${Date.now() - this.initStartTime}ms.`);
     console.log(`[DistributedLearningEngine] DI Engine: ${dis ? '✔ connected' : '✗ standalone (simulation mode active)'}`);
@@ -154,7 +161,9 @@ export class DistributedLearningEngine implements IEngine {
 
   async start(): Promise<void> {
     // Advertise capabilities via DI if available
-    const dis = serviceRegistry.get<any>('distributed-intelligence') ?? null;
+    const dis = serviceRegistry.has('distributed-intelligence')
+      ? serviceRegistry.get<any>('distributed-intelligence')
+      : null;
     if (dis?.capabilityService) {
       await dis.capabilityService.advertiseCapabilities([
         'distributed_learning',
@@ -222,20 +231,151 @@ export class DistributedLearningEngine implements IEngine {
 
   // ── Public API (consumed by other engines via serviceRegistry) ────────────
 
-  /** Start a new distributed learning round */
+  /** 1. Create a learning round */
+  CreateLearningRound(strategyName?: string, profileId?: string) {
+    const leaderId = this.learningManager['localNodeId'] ?? 'local';
+    return this.roundManager.createRound(
+      leaderId,
+      strategyName ?? this.policies.defaultStrategy,
+      this.policies.roundTimeoutMs,
+      profileId
+    );
+  }
+
+  /** 2. Join an externally-initiated round as a participant */
+  async JoinLearningRound(roundId: string, leaderId: string): Promise<boolean> {
+    return this.learningManager.joinRound(roundId, leaderId);
+  }
+
+  /** 3. Leave an active round gracefully */
+  async LeaveLearningRound(): Promise<void> {
+    await this.learningManager.leaveRound();
+  }
+
+  /** 4. Train model locally */
+  async TrainLocalModel(modelId: string, config: any) {
+    if (config?.backend) {
+      this.localTrainer.setBackend(config.backend);
+    }
+    return this.localTrainer.train({
+      modelId,
+      epochs: config?.epochs ?? 3,
+      batchSize: config?.batchSize,
+      learningRate: config?.learningRate,
+      checkpointFrequency: config?.checkpointFrequency,
+      resumeCheckpointId: config?.resumeCheckpointId
+    });
+  }
+
+  /** 5. Pause local training */
+  async PauseTraining(): Promise<void> {
+    this.localTrainer.cancel('paused');
+  }
+
+  /** 6. Resume training from checkpoint */
+  async ResumeTraining(modelId: string, config: any): Promise<any> {
+    return this.TrainLocalModel(modelId, config);
+  }
+
+  /** 7. Cancel running training job */
+  async CancelTraining(): Promise<void> {
+    this.localTrainer.cancel('cancelled');
+  }
+
+  /** 8. Export LoRA adapter to a string blob */
+  ExportLoRA(adapterId: string): string | null {
+    return this.loraManager.exportAdapter(adapterId);
+  }
+
+  /** 9. Import LoRA adapter from string blob */
+  ImportLoRA(blob: string) {
+    return this.loraManager.importAdapter(blob);
+  }
+
+  /** 10. Merge LoRA adapter weights into base weights map */
+  MergeLoRA(baseWeights: Record<string, number[]>, adapterId: string) {
+    return this.loraManager.mergeAdapter(baseWeights, adapterId);
+  }
+
+  /** 11. Validate incoming LoRA adapter */
+  async ValidateLoRA(adapter: any, roundConfig?: any) {
+    const dis = serviceRegistry.has('distributed-intelligence')
+      ? serviceRegistry.get<any>('distributed-intelligence')
+      : null;
+    return this.validationManager.validateLoRA(adapter, roundConfig, dis?.trustService);
+  }
+
+  /** 12. Aggregate weights from multiple contributors */
+  async AggregateUpdates(
+    roundId: string,
+    roundNumber: number,
+    weightSets: Record<string, number[]>[],
+    contributors: string[],
+    algorithm?: string,
+    options?: any
+  ) {
+    return this.aggregationManager.aggregateWeights(
+      roundId,
+      roundNumber,
+      weightSets,
+      contributors,
+      algorithm ?? this.policies.aggregationAlgorithm,
+      options
+    );
+  }
+
+  /** 13. Get status of active round or round count */
+  RoundStatus(roundId?: string) {
+    if (roundId) {
+      return this.roundManager.getRound(roundId)?.status ?? 'PENDING';
+    }
+    const active = this.learningManager.getActiveRound();
+    return active ? active.status : 'IDLE';
+  }
+
+  /** 14. Get local training progress */
+  TrainingStatus() {
+    return this.localTrainer.getProgress();
+  }
+
+  /** 15. Get learning metrics */
+  LearningMetrics() {
+    return {
+      state: this.learningManager.getState(),
+      completedRounds: this.roundManager.getRoundCount(),
+      adaptersCount: this.loraManager.getAdapterCount()
+    };
+  }
+
+  /** 16. Get learning version history */
+  LearningHistory(entityId?: string) {
+    if (entityId) {
+      return this.versionManager.getHistory(entityId);
+    }
+    return this.versionManager.getRoundHistory();
+  }
+
+  /** 17. Get list of checkpoints */
+  CheckpointHistory() {
+    return {
+      roundHistory: this.roundManager.getHistory()
+    };
+  }
+
+  /** Start a new distributed learning round (backward compatibility) */
   async startRound(strategyName?: string, profileId?: string) {
     return this.learningManager.startRound(strategyName ?? this.policies.defaultStrategy, profileId);
   }
 
-  /** Stop the currently active round */
+  /** Stop the currently active round (backward compatibility) */
   async stopRound() { return this.learningManager.stopRound(); }
 
-  /** Train a LoRA adapter locally */
+  /** Train a LoRA adapter locally (backward compatibility) */
   async trainLoRA(modelId: string, config: any, epochs?: number) {
     return this.localTrainer.trainLoRA(modelId, config, epochs);
   }
 
-  /** Run a federated simulation (development/test) */
+  /** Run a federated simulation (development/test) (backward compatibility) */
   async runSimulation(strategy: 'federated' | 'swarm' = 'federated', rounds = 1) {
     if (!this.simulationMode) this.simulationMode = new SimulationMode(4);
     return this.simulationMode.runMultiRound(rounds, strategy);
@@ -248,6 +388,7 @@ export class DistributedLearningEngine implements IEngine {
   getLocalTrainer()       { return this.localTrainer; }
   getProfileRegistry()    { return this.profileRegistry; }
   getPrivacyManager()     { return this.privacyManager; }
+  getValidationManager()  { return this.validationManager; }
   getPolicies()           { return this.policies; }
   getSimulationMode()     { return this.simulationMode; }
 }

@@ -32,6 +32,11 @@ export declare class LoRAManager {
      * Reduces transmission size while preserving convergence direction.
      */
     compressAdapter(adapterId: string): LoRAAdapter | null;
+    /**
+     * Quantize adapter weights (int8 format).
+     * Reduces precision representation of weight floats.
+     */
+    quantizeAdapter(adapterId: string, bits?: number): LoRAAdapter | null;
     /** Export a LoRA adapter as a self-contained JSON blob for P2P transmission */
     exportAdapter(adapterId: string): string | null;
     /** Import a LoRA adapter from an exported blob */

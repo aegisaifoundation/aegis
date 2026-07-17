@@ -1,14 +1,18 @@
 import { IDataConnector, RawSample } from '../interfaces/IDataConnector.js';
 import { serviceRegistry } from '@aegis/runtime';
+import fs from 'fs/promises';
+import path from 'path';
 
 export class ConversationConnector implements IDataConnector {
   readonly id: string;
   readonly type = 'Conversation';
   private connected = false;
   private isEnabled = false;
+  private workspacePath?: string;
 
-  constructor(id: string) {
+  constructor(id: string, workspacePath?: string) {
     this.id = id;
+    this.workspacePath = workspacePath;
   }
 
   async connect(config?: { enabled?: boolean }): Promise<void> {
@@ -28,27 +32,76 @@ export class ConversationConnector implements IDataConnector {
       throw new Error('Conversation history integration is disabled by default and has not been explicitly enabled.');
     }
 
-    const conversationContext = serviceRegistry.get<any>('conversationContext');
-    if (!conversationContext) {
-      return [];
+    let sessionsDir = '';
+    if (this.workspacePath) {
+      sessionsDir = path.join(path.dirname(this.workspacePath), 'memory', 'sessions');
+    } else {
+      sessionsDir = path.join(process.cwd(), 'memory', 'sessions');
     }
 
-    const messages = await conversationContext.getMessages();
-    if (!messages) return [];
+    const samples: RawSample[] = [];
 
-    return messages.map((msg: any) => ({
-      id: `conv-${msg.id}`,
-      content: msg.content,
-      metadata: {
-        role: msg.role,
-        createdAt: msg.createdAt || new Date().toISOString(),
-        source: 'conversationContext'
+    try {
+      const exists = await fs.access(sessionsDir).then(() => true).catch(() => false);
+      if (!exists) {
+        // Fallback: Check active session context if sessions directory does not exist
+        const conversationContext = serviceRegistry.get<any>('conversationContext');
+        if (conversationContext) {
+          const messages = await conversationContext.getMessages();
+          if (messages) {
+            return messages.map((msg: any) => ({
+              id: `conv-${msg.id}`,
+              content: `${msg.role}: ${msg.content}`,
+              metadata: {
+                role: msg.role,
+                createdAt: msg.createdAt || new Date().toISOString(),
+                source: 'conversationContext'
+              }
+            }));
+          }
+        }
+        return [];
       }
-    }));
+
+      const sessionDirs = await fs.readdir(sessionsDir);
+      for (const dir of sessionDirs) {
+        const historyPath = path.join(sessionsDir, dir, 'history.json');
+        const historyExists = await fs.access(historyPath).then(() => true).catch(() => false);
+        if (!historyExists) continue;
+
+        const contentRaw = await fs.readFile(historyPath, 'utf8');
+        let historyObj;
+        try {
+          historyObj = JSON.parse(contentRaw);
+        } catch {
+          continue;
+        }
+        const messages = historyObj.messages || [];
+
+        for (const msg of messages) {
+          if (msg.content && (msg.role === 'user' || msg.role === 'assistant')) {
+            samples.push({
+              id: `conv-${msg.id || Math.random().toString(36).substr(2, 9)}`,
+              content: `${msg.role}: ${msg.content}`,
+              metadata: {
+                role: msg.role,
+                createdAt: msg.createdAt || new Date().toISOString(),
+                source: 'conversationHistory',
+                sessionId: dir
+              }
+            });
+          }
+        }
+      }
+    } catch (err: any) {
+      console.warn(`[ConversationConnector] Error collecting sessions: ${err.message}`);
+    }
+
+    return samples;
   }
 
   async validate(): Promise<boolean> {
-    return this.connected && this.isEnabled && serviceRegistry.has('conversationContext');
+    return this.connected && this.isEnabled;
   }
 
   async watch(onChange: (event: any) => void): Promise<void> {}

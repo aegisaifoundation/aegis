@@ -6,7 +6,7 @@
       "version": "1.0.0",
       "type": "Engine",
       "installationDate": "2026-07-12T06:59:46.714Z",
-      "installationPath": "C:\\aegis\\workspace\\engines\\distributed-intelligence",
+      "installationPath": "distributed-intelligence",
       "dependencies": {},
       "reverseDependencies": [],
       "checksum": "",
@@ -22,8 +22,8 @@
       "name": "Cognitive Memory Engine",
       "version": "1.0.0",
       "type": "Engine",
-      "installationDate": "2026-07-15T03:35:26.275Z",
-      "installationPath": "C:\\aegis\\workspace\\engines\\aegis-memory",
+      "installationDate": "2026-07-16T17:45:09.713Z",
+      "installationPath": "aegis-memory",
       "dependencies": {},
       "reverseDependencies": [],
       "checksum": "",
@@ -39,8 +39,8 @@
       "name": "AI Agent Engine",
       "version": "1.0.0",
       "type": "Engine",
-      "installationDate": "2026-07-15T03:35:26.415Z",
-      "installationPath": "C:\\aegis\\workspace\\engines\\aegis-agent",
+      "installationDate": "2026-07-16T17:45:09.880Z",
+      "installationPath": "aegis-agent",
       "dependencies": {},
       "reverseDependencies": [],
       "checksum": "",
@@ -56,8 +56,8 @@
       "name": "REST API Connector Engine",
       "version": "1.0.0",
       "type": "Engine",
-      "installationDate": "2026-07-15T03:35:26.472Z",
-      "installationPath": "C:\\aegis\\workspace\\engines\\aegis-api",
+      "installationDate": "2026-07-16T17:45:09.982Z",
+      "installationPath": "aegis-api",
       "dependencies": {},
       "reverseDependencies": [],
       "checksum": "",
@@ -73,8 +73,8 @@
       "name": "Federated Learning Engine",
       "version": "1.0.0",
       "type": "Engine",
-      "installationDate": "2026-07-15T03:35:26.513Z",
-      "installationPath": "C:\\aegis\\workspace\\engines\\aegis-federated-learning",
+      "installationDate": "2026-07-16T17:45:10.068Z",
+      "installationPath": "aegis-federated-learning",
       "dependencies": {},
       "reverseDependencies": [],
       "checksum": "",
@@ -90,8 +90,8 @@
       "name": "Swarm Learning Engine",
       "version": "1.0.0",
       "type": "Engine",
-      "installationDate": "2026-07-15T03:35:26.560Z",
-      "installationPath": "C:\\aegis\\workspace\\engines\\aegis-swarm-learning",
+      "installationDate": "2026-07-16T17:45:10.152Z",
+      "installationPath": "aegis-swarm-learning",
       "dependencies": {},
       "reverseDependencies": [],
       "checksum": "",
@@ -107,8 +107,8 @@
       "name": "Distributed Inference Engine",
       "version": "1.0.0",
       "type": "Engine",
-      "installationDate": "2026-07-15T03:35:26.638Z",
-      "installationPath": "C:\\aegis\\workspace\\engines\\aegis-distributed-inference",
+      "installationDate": "2026-07-16T17:45:10.454Z",
+      "installationPath": "aegis-distributed-inference",
       "dependencies": {},
       "reverseDependencies": [],
       "checksum": "",
@@ -124,8 +124,8 @@
       "name": "Knowledge Synchronization Engine",
       "version": "1.0.0",
       "type": "Engine",
-      "installationDate": "2026-07-15T03:35:26.686Z",
-      "installationPath": "C:\\aegis\\workspace\\engines\\aegis-knowledge-sync",
+      "installationDate": "2026-07-16T17:45:10.571Z",
+      "installationPath": "aegis-knowledge-sync",
       "dependencies": {},
       "reverseDependencies": [],
       "checksum": "",
@@ -141,8 +141,8 @@
       "name": "Distributed Learning Engine",
       "version": "1.0.0",
       "type": "Engine",
-      "installationDate": "2026-07-15T03:35:26.882Z",
-      "installationPath": "C:\\aegis\\workspace\\engines\\aegis-distributed-learning",
+      "installationDate": "2026-07-16T17:45:11.079Z",
+      "installationPath": "aegis-distributed-learning",
       "dependencies": {},
       "reverseDependencies": [],
       "checksum": "",
@@ -158,8 +158,42 @@
       "name": "AEGIS Data Engine",
       "version": "1.0.0",
       "type": "Engine",
-      "installationDate": "2026-07-15T03:35:26.954Z",
-      "installationPath": "C:\\aegis\\workspace\\engines\\aegis-data",
+      "installationDate": "2026-07-16T17:45:11.360Z",
+      "installationPath": "aegis-data",
+      "dependencies": {},
+      "reverseDependencies": [],
+      "checksum": "",
+      "signatureStatus": "UNSIGNED",
+      "repositorySource": "local",
+      "installationState": "INSTALLED",
+      "updateChannel": "stable",
+      "healthState": "HEALTHY",
+      "enabled": true
+    },
+    "aegis-collaboration": {
+      "id": "aegis-collaboration",
+      "name": "AEGIS Secure Collaboration Engine",
+      "version": "1.0.0",
+      "type": "Engine",
+      "installationDate": "2026-07-16T17:45:11.560Z",
+      "installationPath": "aegis-collaboration",
+      "dependencies": {},
+      "reverseDependencies": [],
+      "checksum": "",
+      "signatureStatus": "UNSIGNED",
+      "repositorySource": "local",
+      "installationState": "INSTALLED",
+      "updateChannel": "stable",
+      "healthState": "HEALTHY",
+      "enabled": true
+    },
+    "aegis-collective-intelligence": {
+      "id": "aegis-collective-intelligence",
+      "name": "Collective Intelligence Engine",
+      "version": "1.0.0",
+      "type": "Engine",
+      "installationDate": "2026-07-16T17:45:11.792Z",
+      "installationPath": "aegis-collective-intelligence",
       "dependencies": {},
       "reverseDependencies": [],
       "checksum": "",
@@ -315,6 +349,204 @@
       "txId": "8af9a493-6093-44a9-b546-2321dbb4195b",
       "action": "install",
       "timestamp": "2026-07-15T03:35:26.958Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "1b263fbb-c34c-4f7c-89b4-5a2c11ef3ea1",
+      "action": "install",
+      "timestamp": "2026-07-16T16:00:59.149Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "85c49614-9662-46d7-ab9b-4ca2e377fde0",
+      "action": "install",
+      "timestamp": "2026-07-16T16:00:59.217Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "53d75857-4f65-4816-b9a6-093247e8c8e0",
+      "action": "install",
+      "timestamp": "2026-07-16T16:00:59.271Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "f46dd83e-a886-4054-ad21-1acdc7f17567",
+      "action": "install",
+      "timestamp": "2026-07-16T16:00:59.321Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "63e1e791-68e7-46ca-9999-91904ca3ba36",
+      "action": "install",
+      "timestamp": "2026-07-16T16:00:59.377Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "fc636765-04ee-4923-89e9-9cccedc75bd2",
+      "action": "install",
+      "timestamp": "2026-07-16T16:00:59.490Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "7c40a610-f469-4e26-8a4c-25bddcd45b0f",
+      "action": "install",
+      "timestamp": "2026-07-16T16:00:59.540Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "e60e7209-01d1-4ea3-b8bb-ae8f7f3b6a9c",
+      "action": "install",
+      "timestamp": "2026-07-16T16:00:59.853Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "c9d124c4-e6dc-413d-a41d-ac65a4f3b2ca",
+      "action": "install",
+      "timestamp": "2026-07-16T16:01:00.033Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "502dfa65-731d-4f2c-82d4-4e8aa7893863",
+      "action": "install",
+      "timestamp": "2026-07-16T16:01:00.098Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "484bea93-af64-463d-8f4d-7688bed4b956",
+      "action": "install",
+      "timestamp": "2026-07-16T16:01:00.199Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "febe4882-6a4e-437d-8000-a97bf4ee96e8",
+      "action": "install",
+      "timestamp": "2026-07-16T17:40:22.466Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "4fa067fd-75bc-4fcd-9cd2-cd4829b63053",
+      "action": "install",
+      "timestamp": "2026-07-16T17:40:22.558Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "705f95e5-b65c-4546-847e-fc1c112bda0c",
+      "action": "install",
+      "timestamp": "2026-07-16T17:40:22.651Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "f7f3701d-314e-4a2f-b0ee-99d584c937f8",
+      "action": "install",
+      "timestamp": "2026-07-16T17:40:22.732Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "361e1a05-6a76-4441-8720-6f37d8bd8b98",
+      "action": "install",
+      "timestamp": "2026-07-16T17:40:22.811Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "23790578-d298-40c7-8764-4846bf24390a",
+      "action": "install",
+      "timestamp": "2026-07-16T17:40:23.097Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "0608d42c-51c3-47b9-a665-afc5679461b0",
+      "action": "install",
+      "timestamp": "2026-07-16T17:40:23.182Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "2eed1402-d191-4658-aff4-4d5739f9e1a4",
+      "action": "install",
+      "timestamp": "2026-07-16T17:40:23.680Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "6a1f9172-ac3d-43aa-8c84-849b09b0d673",
+      "action": "install",
+      "timestamp": "2026-07-16T17:40:23.868Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "d3e90fb3-a9bd-45f4-a34a-15534f545cf8",
+      "action": "install",
+      "timestamp": "2026-07-16T17:40:24.075Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "ddec1ac5-d20d-4b7d-b0e1-f33f42859828",
+      "action": "install",
+      "timestamp": "2026-07-16T17:40:24.338Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "86ad8182-5242-4b09-a587-aa5dc0cc9a93",
+      "action": "install",
+      "timestamp": "2026-07-16T17:45:09.774Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "a39f7934-d2c0-471d-b36b-0b13c479c28a",
+      "action": "install",
+      "timestamp": "2026-07-16T17:45:09.893Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "210386cd-ce96-4917-ab55-4f586ec21eca",
+      "action": "install",
+      "timestamp": "2026-07-16T17:45:09.993Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "27e2de47-3256-4e42-bd53-6673739135cc",
+      "action": "install",
+      "timestamp": "2026-07-16T17:45:10.080Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "8951030e-6421-4bf8-a7c7-6fe6142c0cb5",
+      "action": "install",
+      "timestamp": "2026-07-16T17:45:10.164Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "4758866d-f94c-4c8b-8df6-c2bbb7449e6b",
+      "action": "install",
+      "timestamp": "2026-07-16T17:45:10.487Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "8219d455-9134-410a-80ab-bf2dbbe80bc2",
+      "action": "install",
+      "timestamp": "2026-07-16T17:45:10.594Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "0df4225b-2357-48f1-9fb6-f3d4deb3d531",
+      "action": "install",
+      "timestamp": "2026-07-16T17:45:11.129Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "040a2fc4-7444-4995-b2c8-6f2264668537",
+      "action": "install",
+      "timestamp": "2026-07-16T17:45:11.396Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "6b35d8a8-82be-471f-b691-5f02d49328d5",
+      "action": "install",
+      "timestamp": "2026-07-16T17:45:11.581Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "3bd571c0-c388-4f68-ab26-d268f260d3c8",
+      "action": "install",
+      "timestamp": "2026-07-16T17:45:11.817Z",
       "status": "COMMITTED"
     }
   ]

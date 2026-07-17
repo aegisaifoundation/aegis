@@ -19,7 +19,7 @@ export class PackageManager {
         const workspacePath = path.dirname(configPath);
         // 1. Initialize DB
         const dbPath = path.join(workspacePath, 'package-manager/package-db.json');
-        this.db = new PackageDatabase(dbPath);
+        this.db = new PackageDatabase(dbPath, this.enginesDir);
         // 2. Initialize Sub-Managers
         this.txManager = new TransactionManager(workspacePath, this.db);
         this.cacheManager = new CacheManager(workspacePath);

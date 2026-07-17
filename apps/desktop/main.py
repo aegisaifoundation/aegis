@@ -16,10 +16,7 @@ AEGIS_CORE_DIR = os.path.join(os.path.dirname(UI_DIR), "aegis-boot")
 UI_PORT = 5001
 
 def get_model_dir():
-    p = "C:\\Mini Project\\rag_pipeline_2"
-    if os.path.exists(p):
-        return p
-    return os.path.join(os.path.dirname(UI_DIR), "Mini Project", "rag_pipeline_2")
+    return os.path.join(os.path.dirname(os.path.dirname(UI_DIR)), "models")
 
 # ==========================================================================
 # GGUF MODEL MANAGER

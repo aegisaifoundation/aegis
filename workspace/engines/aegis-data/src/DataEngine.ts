@@ -65,7 +65,7 @@ export class DataEngine implements IEngine {
     // Register connectors
     connectorRegistry.register(new FolderConnector('connector-folder', this.pythonManager));
     connectorRegistry.register(new MemoryConnector('connector-memory'));
-    connectorRegistry.register(new ConversationConnector('connector-conversation'));
+    connectorRegistry.register(new ConversationConnector('connector-conversation', this.workspacePath));
     connectorRegistry.register(new KnowledgeConnector('connector-knowledge'));
     connectorRegistry.register(new DatabaseConnector('connector-database'));
     connectorRegistry.register(new ApiConnector('connector-api'));

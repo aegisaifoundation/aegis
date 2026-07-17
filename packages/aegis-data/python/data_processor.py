@@ -19,7 +19,7 @@ class DataProcessor:
         self.ip_re = re.compile(r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b', re.IGNORECASE)
         self.ssn_gov_id_re = re.compile(r'\b\d{3}-\d{2}-\d{4}\b|\b\d{9}\b', re.IGNORECASE) # Gov IDs
         self.credit_card_re = re.compile(r'\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b', re.IGNORECASE) # Financial IDs
-        self.hospital_id_re = re.compile(r'\bHOSP-\d{5,8}\b|\bMRN-\d{6,10}\b', re.IGNORECASE) # Hospital IDs / Patient MRNs
+        self.reference_id_re = re.compile(r'\bHOSP-\d{5,8}\b|\bMRN-\d{6,10}\b|\bREF-\d{5,10}\b', re.IGNORECASE) # Reference/System IDs
         
         # Simple Name matcher (for illustration, basic heuristics)
         self.name_indicators = [
@@ -97,9 +97,9 @@ class DataProcessor:
         for m in self.credit_card_re.finditer(text):
             findings.append({"type": "Financial ID", "value": m.group(), "start": m.start(), "end": m.end()})
             
-        # Hospital ID
-        for m in self.hospital_id_re.finditer(text):
-            findings.append({"type": "Hospital ID", "value": m.group(), "start": m.start(), "end": m.end()})
+        # Reference/System ID
+        for m in self.reference_id_re.finditer(text):
+            findings.append({"type": "Reference ID", "value": m.group(), "start": m.start(), "end": m.end()})
 
         # Name Heuristics
         for name_re in self.name_res:

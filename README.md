@@ -57,34 +57,152 @@ Current domain application: **Clinical AI** — with local GGUF model inference 
 | Node.js | 20+ |
 | Python | 3.10+ |
 | npm | 8+ |
-| CMake | 3.15+ (for C++ build) |
+| CMake | 3.15+ (for C++ compilation) |
 | llama-cpp-python | latest |
 
-### 1. Install Node.js dependencies
+---
 
-```bash
-npm install
+## Installation on Another Computer
+
+AEGIS is designed to be fully portable. Depending on the target operating system, follow one of the installation methods below:
+
+### Option A: Automated Installation (Windows)
+If the target computer is running Windows, you can automate configuration, key generation, workspace setup, and building via PowerShell:
+1. Open PowerShell as Administrator.
+2. Run the installer script in the repository root:
+   ```powershell
+   .\install.ps1
+   ```
+   *This automatically generates directory sandboxes, creates the `runtime.json` config, signs certificates, installs NPM packages, and builds node workspaces.*
+
+### Option B: Manual Installation (Linux / macOS / Windows)
+For Linux, macOS, or custom Windows environments, perform the installation manually:
+
+1. **Install Node.js dependencies & build TypeScript packages**:
+   ```bash
+   # Install NPM packages
+   npm install
+
+   # Compile TypeScript workspaces (package manager, runtime, CLI, bootloader)
+   npm run build --workspaces
+   ```
+
+2. **Compile the C++ Native Distributed Intelligence Engine (DIE)**:
+   Since the native socket transport and discovery libraries are compiled for the host architecture, build the executable using CMake:
+   ```bash
+   cd packages/aegis-distributed-intelligence
+   mkdir build && cd build
+   cmake ..
+   cmake --build . --config Release
+
+   # Copy the built binary into the package's dist folder
+   # On Linux/macOS:
+   cp die-service ../dist/
+   # On Windows:
+   copy die-service.exe ..\dist\
+   ```
+
+3. **Register Pluggable Engines**:
+   Initialize and sync the default engine registry from the repository root:
+   ```bash
+   cd ../../..
+   node register-default-engines.mjs
+   ```
+
+---
+
+## Multi-Node Setup (Connecting Two Nodes)
+
+The C++ **Distributed Intelligence Engine (DIE)** handles native peer-to-peer (P2P) discovery and raw TCP socket messaging. To connect two separate computers (Node A and Node B):
+
+1. **Node Configuration**: Configure custom ports and names for each node in their respective daemons.
+   - **Node A**:
+     ```typescript
+     await nodeA.configure({ nodeName: 'node-A', port: 9801 });
+     ```
+   - **Node B**:
+     ```typescript
+     await nodeB.configure({ nodeName: 'node-B', port: 9802 });
+     ```
+
+2. **Peer Registration**: Connect the nodes by registering their target IP address and port mapping into each other's discovery service:
+   - **Node A registration of Node B**:
+     ```typescript
+     await nodeA.discoveryService.registerNode('node-B', '<NODE_B_IP>', 9802);
+     ```
+   - **Node B registration of Node A**:
+     ```typescript
+     await nodeB.discoveryService.registerNode('node-A', '<NODE_A_IP>', 9801);
+     ```
+
+3. **Verification**: Once registered, nodes will establish persistent, encrypted TCP connections and will appear in each other's verified peer list when querying:
+   ```typescript
+   const peers = await nodeA.discoveryService.discoverNodes();
+   // Output: ['node-B']
+   ```
+
+---
+
+## Distributed Learning Workflows
+
+AEGIS coordinates decentralized model training across connected nodes using the **Federated Learning Engine** or the **Swarm Learning Engine**.
+
+### 1. Federated Learning (FedAvg)
+In a Federated Learning scenario, one node acts as the central **Coordinator (Master)** and all other connected nodes act as **Workers**.
+
+```
+  ┌──────────────┐
+  │ Coordinator  │◄─────────────────────────────┐
+  └──────┬───────┘                              │
+         │ (1) Broadcasts round weights         │ (3) Sends local updates
+         ▼                                      │
+  ┌──────────────┐      ┌──────────────┐      ┌─┴────────────┐
+  │   Worker A   │      │   Worker B   │      │   Worker C   │
+  └──────────────┘      └──────────────┘      └──────────────┘
 ```
 
-### 2. Register default engines
+1. **Initiating the Round**: The coordinator node triggers the sync round by calling `triggerGlobalModelSync()`:
+   ```typescript
+   await federatedEngine.triggerGlobalModelSync();
+   ```
+   *This broadcasts a `federated_round_start` message with the current base model weights to all active peers discovered via the P2P transport layer.*
+2. **Local Client Training**: Worker nodes receive the round start notification, run local epochs on their own datasets, and calculate gradient updates:
+   ```typescript
+   // Internal callback triggered in worker nodes:
+   await workerEngine.runLocalTrainingRound(roundId, globalWeights, coordinatorId);
+   ```
+3. **Weight Return**: Worker nodes reply by sending their encrypted, locally-trained weights (`federated_round_weights`) back to the coordinator.
+4. **Aggregation**: The coordinator collects the worker weights, applies the **FedAvg** algorithm to generate a new global model, and redistributes it.
 
-```bash
-node register-default-engines.mjs
-```
+### 2. Swarm Learning (Decentralized Peer-to-Peer)
+Swarm Learning removes the single-point-of-failure Coordinator. Instead, nodes perform peer-to-peer weight exchanges guided by deterministic consensus.
 
-### 3. Start the Runtime Daemon
+1. **Leader Election**: Swarm nodes deterministically elect a temporary round leader based on numerical ID sorting (lowest ID wins). The election is proposed peer-to-peer:
+   ```typescript
+   await swarmEngine.triggerLeaderElection();
+   ```
+2. **Start Swarm Round**: Any peer node triggers the swarm-wide training round:
+   ```typescript
+   await swarmEngine.startSwarmRound();
+   ```
+   *This publishes a `swarm_round_started` event over the distributed network.*
+3. **Local Epoch & Submission**: Nodes execute local learning loops and submit their weights directly to the currently elected leader node using `swarm_model_weights`.
+4. **Consensus Aggregation**: The elected leader aggregates weights from all active peers (`tryAggregateSwarm()`) and broadcasts the aggregated weights (`swarm_aggregated_weights`) back to the swarm, updating all nodes.
 
-```bash
-node --import tsx --experimental-specifier-resolution=node --no-warnings packages/aegis-runtime/src/daemon.ts
-```
+---
 
-### 4. Start the Desktop UI
+## How to Run AEGIS
 
-```bash
-python apps/desktop/main.py
-```
+1. **Start the Daemon (Core Runtime)**:
+   ```bash
+   node --import tsx --experimental-specifier-resolution=node --no-warnings packages/aegis-runtime/src/daemon.ts
+   ```
 
-Open your browser to **http://localhost:5001**
+2. **Start the Desktop Application UI**:
+   ```bash
+   python apps/desktop/main.py
+   ```
+   *Open your web browser and navigate to **`http://localhost:5001`** to access the Aegis console.*
 
 ---
 
@@ -95,6 +213,7 @@ aegis/
 ├── package.json                    # npm workspaces (apps/* + packages/*)
 ├── install.ps1                     # Windows automated setup
 ├── register-default-engines.mjs    # Engine registry bootstrapper
+├── models/                         # GGUF base models (e.g. model.gguf)
 │
 ├── apps/
 │   ├── desktop/                    # Desktop SPA + Python GGUF server

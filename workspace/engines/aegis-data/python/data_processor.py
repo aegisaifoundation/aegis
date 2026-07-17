@@ -13,20 +13,20 @@ except ImportError:
 
 class DataProcessor:
     def __init__(self):
-        # Compiled Regexes for PII
-        self.email_re = re.compile(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+')
-        self.phone_re = re.compile(r'\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}')
-        self.ip_re = re.compile(r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b')
-        self.ssn_gov_id_re = re.compile(r'\b\d{3}-\d{2}-\d{4}\b|\b\d{9}\b') # Gov IDs
-        self.credit_card_re = re.compile(r'\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b') # Financial IDs
-        self.hospital_id_re = re.compile(r'\bHOSP-\d{5,8}\b|\bMRN-\d{6,10}\b') # Hospital IDs / Patient MRNs
+        # Compiled Regexes for PII (case-insensitive)
+        self.email_re = re.compile(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', re.IGNORECASE)
+        self.phone_re = re.compile(r'\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}', re.IGNORECASE)
+        self.ip_re = re.compile(r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b', re.IGNORECASE)
+        self.ssn_gov_id_re = re.compile(r'\b\d{3}-\d{2}-\d{4}\b|\b\d{9}\b', re.IGNORECASE) # Gov IDs
+        self.credit_card_re = re.compile(r'\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b', re.IGNORECASE) # Financial IDs
+        self.reference_id_re = re.compile(r'\bHOSP-\d{5,8}\b|\bMRN-\d{6,10}\b|\bREF-\d{5,10}\b', re.IGNORECASE) # Reference/System IDs
         
         # Simple Name matcher (for illustration, basic heuristics)
         self.name_indicators = [
-            r'\b(?:Dr\.|Mr\.|Ms\.|Mrs\.|Prof\.)\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\b',
-            r'\b(?:John|Jane|Alice|Bob|Charlie|David|Emma|Frank|Grace|Henry|Ivy|Jack)\s+[A-Z][a-z]+\b'
+            r'\b(?:dr\.|mr\.|ms\.|mrs\.|prof\.)\s+[a-z]+(?:\s+[a-z]+)?\b',
+            r'\b(?:john|jane|alice|bob|charlie|david|emma|frank|grace|henry|ivy|jack)\s+[a-z]+\b'
         ]
-        self.name_res = [re.compile(ind) for ind in self.name_indicators]
+        self.name_res = [re.compile(ind, re.IGNORECASE) for ind in self.name_indicators]
 
     def clean(self, text):
         if not text:
@@ -97,9 +97,9 @@ class DataProcessor:
         for m in self.credit_card_re.finditer(text):
             findings.append({"type": "Financial ID", "value": m.group(), "start": m.start(), "end": m.end()})
             
-        # Hospital ID
-        for m in self.hospital_id_re.finditer(text):
-            findings.append({"type": "Hospital ID", "value": m.group(), "start": m.start(), "end": m.end()})
+        # Reference/System ID
+        for m in self.reference_id_re.finditer(text):
+            findings.append({"type": "Reference ID", "value": m.group(), "start": m.start(), "end": m.end()})
 
         # Name Heuristics
         for name_re in self.name_res:

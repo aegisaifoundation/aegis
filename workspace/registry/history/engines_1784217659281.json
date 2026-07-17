@@ -1,0 +1,117 @@
+{
+  "version": "1.0.0",
+  "generatedBy": "@aegis/package-manager",
+  "generatedAt": "2026-07-16T16:00:59.280Z",
+  "engines": [
+    {
+      "id": "distributed-intelligence",
+      "displayName": "Distributed Intelligence Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "workspace/engines/distributed-intelligence/dist/index.js",
+      "manifest": "workspace/engines/distributed-intelligence/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-12T06:59:46.714Z"
+    },
+    {
+      "id": "aegis-memory",
+      "displayName": "Cognitive Memory Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "workspace/engines/aegis-memory/dist/MemoryEngine.js",
+      "manifest": "workspace/engines/aegis-memory/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-16T16:00:59.116Z"
+    },
+    {
+      "id": "aegis-agent",
+      "displayName": "AI Agent Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "workspace/engines/aegis-agent/dist/AgentEngine.js",
+      "manifest": "workspace/engines/aegis-agent/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-16T16:00:59.206Z"
+    },
+    {
+      "id": "aegis-api",
+      "displayName": "REST API Connector Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "workspace/engines/aegis-api/dist/ApiEngine.js",
+      "manifest": "workspace/engines/aegis-api/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-16T16:00:59.263Z"
+    },
+    {
+      "id": "aegis-federated-learning",
+      "displayName": "Federated Learning Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "workspace/engines/aegis-federated-learning/workspace/engines/aegis-federated-learning/dist/index.js",
+      "manifest": "workspace/engines/aegis-federated-learning/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-15T03:35:26.513Z"
+    },
+    {
+      "id": "aegis-swarm-learning",
+      "displayName": "Swarm Learning Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "workspace/engines/aegis-swarm-learning/workspace/engines/aegis-swarm-learning/dist/index.js",
+      "manifest": "workspace/engines/aegis-swarm-learning/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-15T03:35:26.560Z"
+    },
+    {
+      "id": "aegis-distributed-inference",
+      "displayName": "Distributed Inference Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "workspace/engines/aegis-distributed-inference/workspace/engines/aegis-distributed-inference/dist/index.js",
+      "manifest": "workspace/engines/aegis-distributed-inference/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-15T03:35:26.638Z"
+    },
+    {
+      "id": "aegis-knowledge-sync",
+      "displayName": "Knowledge Synchronization Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "workspace/engines/aegis-knowledge-sync/workspace/engines/aegis-knowledge-sync/dist/index.js",
+      "manifest": "workspace/engines/aegis-knowledge-sync/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-15T03:35:26.686Z"
+    },
+    {
+      "id": "aegis-distributed-learning",
+      "displayName": "Distributed Learning Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "workspace/engines/aegis-distributed-learning/workspace/engines/aegis-distributed-learning/dist/index.js",
+      "manifest": "workspace/engines/aegis-distributed-learning/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-15T03:35:26.882Z"
+    },
+    {
+      "id": "aegis-data",
+      "displayName": "AEGIS Data Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "workspace/engines/aegis-data/dist/DataEngine.js",
+      "manifest": "workspace/engines/aegis-data/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-07-15T03:35:26.954Z"
+    }
+  ]
+}

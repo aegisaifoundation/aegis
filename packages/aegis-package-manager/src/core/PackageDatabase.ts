@@ -9,7 +9,7 @@ export class PackageDatabase {
     transactionHistory: []
   };
 
-  constructor(private dbPath: string) {
+  constructor(private dbPath: string, private enginesDir?: string) {
     this.load();
   }
 
@@ -30,6 +30,16 @@ export class PackageDatabase {
       this.schema.packages = this.schema.packages || {};
       this.schema.repositories = this.schema.repositories || [];
       this.schema.transactionHistory = this.schema.transactionHistory || [];
+
+      // Resolve relative paths back to absolute
+      if (this.enginesDir) {
+        for (const key of Object.keys(this.schema.packages)) {
+          const pkg = this.schema.packages[key];
+          if (pkg.installationPath && !path.isAbsolute(pkg.installationPath)) {
+            pkg.installationPath = path.resolve(this.enginesDir, pkg.installationPath);
+          }
+        }
+      }
     } catch {
       console.warn(`[PackageDatabase] Database file corrupted, initializing fresh registry.`);
       this.schema = { packages: {}, repositories: [], transactionHistory: [] };
@@ -39,8 +49,20 @@ export class PackageDatabase {
 
   public save(): void {
     this.ensureDirectoriesExist();
+    
+    // Create a clone of the schema to avoid mutating the in-memory object
+    const schemaToSave = JSON.parse(JSON.stringify(this.schema));
+    if (this.enginesDir) {
+      for (const key of Object.keys(schemaToSave.packages)) {
+        const pkg = schemaToSave.packages[key];
+        if (pkg.installationPath && path.isAbsolute(pkg.installationPath)) {
+          pkg.installationPath = path.relative(this.enginesDir, pkg.installationPath).replace(/\\/g, '/');
+        }
+      }
+    }
+
     const tempPath = this.dbPath + '.tmp';
-    fs.writeFileSync(tempPath, JSON.stringify(this.schema, null, 2), 'utf8');
+    fs.writeFileSync(tempPath, JSON.stringify(schemaToSave, null, 2), 'utf8');
     fs.renameSync(tempPath, this.dbPath);
   }
 

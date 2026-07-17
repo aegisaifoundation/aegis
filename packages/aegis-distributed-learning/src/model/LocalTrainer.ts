@@ -1,7 +1,7 @@
 import type { TrainingProgress, TrainingMetrics, LoRAConfig } from '../types/index.js';
 import type { LoRAManager } from './LoRAManager.js';
 import type { LearningCheckpointManager } from '../manager/LearningCheckpointManager.js';
-import { serviceRegistry } from '@aegis/runtime';
+import { serviceRegistry, eventBus } from '@aegis/runtime';
 import { ITrainingBackend } from './ITrainingBackend.js';
 import { PyTorchBackend } from './backends/PyTorchBackend.js';
 import { LlamaCppBackend } from './backends/LlamaCppBackend.js';
@@ -32,9 +32,10 @@ export class LocalTrainer {
 
   constructor(
     private readonly loraManager: LoRAManager,
-    private readonly checkpointManager: LearningCheckpointManager
+    private readonly checkpointManager: LearningCheckpointManager,
+    private readonly workspacePath?: string
   ) {
-    this.backends.set('pytorch', new PyTorchBackend());
+    this.backends.set('pytorch', new PyTorchBackend(workspacePath));
     this.backends.set('llamacpp', new LlamaCppBackend());
     this.backends.set('ollama', new OllamaBackend());
     this.backends.set('future', new FutureBackend());
@@ -162,7 +163,7 @@ export class LocalTrainer {
    */
   async trainLoRA(
     modelId: string,
-    loraConfig: LoRAConfig,
+    loraConfig: any,
     epochs = 3
   ): Promise<{ adapterId: string; metrics: TrainingMetrics }> {
     this.isRunning = true;
@@ -172,21 +173,34 @@ export class LocalTrainer {
     const dataset = await this.getPreparedDataset(modelId);
     const backend = this.getBackend();
 
-    const result = await backend.train(modelId, dataset, {
-      epochs,
-      onProgress: (progress) => {
-        if (this.isCancelled) {
-          progress.cancelled = true;
+    try {
+      const result = await backend.train(modelId, dataset, {
+        epochs,
+        learningRate: loraConfig.learningRate,
+        batchSize: loraConfig.batchSize,
+        rank: loraConfig.rank,
+        alpha: loraConfig.alpha,
+        validationThreshold: loraConfig.validationThreshold,
+        onProgress: (progress) => {
+          if (this.isCancelled) {
+            progress.cancelled = true;
+          }
+          this.progress = progress;
+          eventBus.emit('training_progress', { modelId, adapterId: adapter.id, ...progress });
         }
-        this.progress = progress;
-      }
-    });
+      });
 
-    this.loraManager.updateAdapterWeights(adapter.id, result.weights);
-    this.isRunning = false;
+      this.loraManager.updateAdapterWeights(adapter.id, result.weights);
+      this.isRunning = false;
 
-    console.log(`[LocalTrainer] LoRA training complete. Adapter: ${adapter.id}, accuracy=${result.metrics.accuracy.toFixed(4)}`);
-    return { adapterId: adapter.id, metrics: result.metrics };
+      console.log(`[LocalTrainer] LoRA training complete. Adapter: ${adapter.id}, accuracy=${result.metrics.accuracy.toFixed(4)}`);
+      eventBus.emit('training_completed', { modelId, adapterId: adapter.id, metrics: result.metrics });
+      return { adapterId: adapter.id, metrics: result.metrics };
+    } catch (err: any) {
+      this.isRunning = false;
+      eventBus.emit('training_error', { modelId, adapterId: adapter.id, error: err.message });
+      throw err;
+    }
   }
 
   /** Evaluate a model against a simulated dataset */

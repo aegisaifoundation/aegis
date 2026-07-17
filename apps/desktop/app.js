@@ -39,6 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initProviderSelector();
   initUnifiedActions();
   initSidebarToggles();
+  initLocalTraining();
 
   // Initial load
   loadSessions();
@@ -83,6 +84,8 @@ function initNavigation() {
         loadSessionsIndex();
       } else if (targetId === "page-trash-stub") {
         loadTrash();
+      } else if (targetId === "page-models-stub") {
+        loadTrainModels();
       } else {
         loadCapabilities();
       }
@@ -1374,4 +1377,176 @@ function initSidebarToggles() {
       localStorage.setItem("right_sidebar_collapsed", isCollapsed);
     });
   }
+}
+
+/* ==========================================================================
+   7. NEURAL MODELS & LOCAL TRAINING PAGE
+   ========================================================================== */
+async function loadTrainModels() {
+  const select = document.getElementById("train-model-select");
+  if (!select) return;
+
+  try {
+    select.innerHTML = '<option value="" disabled selected>Loading models...</option>';
+    const response = await fetch(`${API_BASE}/models`);
+    if (!response.ok) throw new Error("Failed to load models");
+    const { models } = await response.json();
+
+    select.innerHTML = '';
+    if (models.length === 0) {
+      select.innerHTML = '<option value="" disabled>No models found in models/ directory</option>';
+      return;
+    }
+
+    models.forEach(model => {
+      const opt = document.createElement("option");
+      opt.value = model;
+      opt.textContent = model;
+      select.appendChild(opt);
+    });
+  } catch (err) {
+    console.error(err);
+    select.innerHTML = '<option value="" disabled>Error loading models</option>';
+  }
+}
+
+function initLocalTraining() {
+  const btnStart = document.getElementById("btn-start-training");
+  if (!btnStart) return;
+
+  btnStart.addEventListener("click", async () => {
+    const modelId = document.getElementById("train-model-select").value;
+    const epochs = parseInt(document.getElementById("train-epochs").value, 10);
+    const learningRate = parseFloat(document.getElementById("train-lr").value);
+    const batchSize = parseInt(document.getElementById("train-batch-size").value, 10);
+    const validationThreshold = parseFloat(document.getElementById("train-validation").value);
+    const rank = parseInt(document.getElementById("train-rank").value, 10);
+    const alpha = parseInt(document.getElementById("train-alpha").value, 10);
+
+    if (!modelId) {
+      alert("Please select a base model first.");
+      return;
+    }
+
+    // Set UI states
+    btnStart.disabled = true;
+    
+    const statusBox = document.getElementById("training-status-box");
+    const statusIcon = document.getElementById("training-status-icon");
+    const statusLabel = document.getElementById("training-status-label");
+    const statusSub = document.getElementById("training-status-sub");
+    const progressContainer = document.getElementById("training-progress-container");
+    const progressBar = document.getElementById("training-progress-bar");
+    const progressEpoch = document.getElementById("training-progress-epoch");
+    const progressPercent = document.getElementById("training-progress-percent");
+    const progressLoss = document.getElementById("training-progress-loss");
+    const progressAccuracy = document.getElementById("training-progress-accuracy");
+
+    statusBox.style.border = "1px solid var(--border-color)";
+    statusIcon.textContent = "⚙️";
+    statusLabel.textContent = "Preparing data & initializing PyTorch...";
+    statusSub.textContent = "Setting up PEFT LoRA layers...";
+    progressContainer.classList.remove("hidden");
+    progressBar.style.width = "0%";
+    progressEpoch.textContent = `Epoch 0 / ${epochs}`;
+    progressPercent.textContent = "0%";
+    progressLoss.textContent = "—";
+    progressAccuracy.textContent = "—";
+
+    try {
+      statusLabel.textContent = "Ingesting and scrubbing session logs...";
+      statusSub.textContent = "Scrubbing sensitive general PII metrics...";
+
+      const response = await fetch(`${API_BASE}/train`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          modelId,
+          epochs,
+          learningRate,
+          batchSize,
+          rank,
+          alpha,
+          validationThreshold
+        })
+      });
+
+      if (!response.ok) {
+        const errObj = await response.json().catch(() => ({}));
+        throw new Error(errObj.error || "Training failed to start.");
+      }
+
+      // Read SSE stream
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop(); // keep last incomplete line
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith("event: ")) {
+            const eventType = trimmed.slice(7).trim();
+            // Optional: handle event types
+          } else if (trimmed.startsWith("data: ")) {
+            const dataStr = trimmed.slice(5).trim();
+            if (!dataStr) continue;
+
+            try {
+              const parsed = JSON.parse(dataStr);
+              if (parsed.error) {
+                throw new Error(parsed.error);
+              }
+
+              if (parsed.message) {
+                statusLabel.textContent = "Preparing Dataset...";
+                statusSub.textContent = parsed.message;
+                continue;
+              }
+
+              // Update progress metrics
+              const epoch = parsed.epoch || 0;
+              const total = parsed.totalEpochs || epochs;
+              const loss = parsed.loss !== undefined ? parsed.loss : null;
+              const accuracy = parsed.accuracy !== undefined ? parsed.accuracy : null;
+
+              progressEpoch.textContent = `Epoch ${epoch} / ${total}`;
+              const pct = total > 0 ? Math.round((epoch / total) * 100) : 0;
+              progressPercent.textContent = `${pct}%`;
+              progressBar.style.width = `${pct}%`;
+
+              if (loss !== null) progressLoss.textContent = loss.toFixed(4);
+              if (accuracy !== null) progressAccuracy.textContent = `${(accuracy * 100).toFixed(2)}%`;
+
+              statusLabel.textContent = `Training Epoch ${epoch} of ${total}...`;
+              statusSub.textContent = `Current Step Loss: ${loss !== null ? loss.toFixed(4) : "—"}`;
+            } catch (e) {
+              // ignore parse errors
+            }
+          }
+        }
+      }
+
+      // Success
+      statusIcon.textContent = "🏆";
+      statusLabel.textContent = "Training Completed Successfully!";
+      statusSub.textContent = `LoRA adapter generated and saved.`;
+      statusBox.style.borderColor = "var(--accent-green)";
+      
+    } catch (err) {
+      console.error(err);
+      statusIcon.textContent = "❌";
+      statusLabel.textContent = "Training Session Failed";
+      statusSub.textContent = err.message;
+      statusBox.style.borderColor = "var(--accent-red)";
+    } finally {
+      btnStart.disabled = false;
+    }
+  });
 }

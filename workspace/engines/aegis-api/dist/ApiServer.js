@@ -439,6 +439,119 @@ export async function startApiServer() {
                 });
                 return;
             }
+            // Endpoint: GET /api/models
+            if (pathname === '/api/models' && req.method === 'GET') {
+                const projectRoot = path.resolve(workspaceManager.getWorkspacePath(), '..');
+                const modelsPath = path.join(projectRoot, 'models');
+                const modelDirs = [];
+                if (existsSync(modelsPath)) {
+                    const entries = await fs.readdir(modelsPath, { withFileTypes: true });
+                    for (const entry of entries) {
+                        if (entry.isDirectory() && !entry.name.startsWith('.')) {
+                            modelDirs.push(entry.name);
+                        }
+                    }
+                }
+                res.setHeader('Content-Type', 'application/json');
+                res.writeHead(200);
+                res.end(JSON.stringify({ models: modelDirs }));
+                return;
+            }
+            // Endpoint: POST /api/train
+            if (pathname === '/api/train' && req.method === 'POST') {
+                const { modelId, epochs, learningRate, batchSize, rank, alpha, validationThreshold } = parsedBody;
+                if (!modelId) {
+                    res.setHeader('Content-Type', 'application/json');
+                    res.writeHead(400);
+                    res.end(JSON.stringify({ error: 'modelId is required' }));
+                    return;
+                }
+                const dlEngine = serviceRegistry.has('distributed-learning')
+                    ? serviceRegistry.get('distributed-learning')
+                    : null;
+                if (!dlEngine) {
+                    res.setHeader('Content-Type', 'application/json');
+                    res.writeHead(503);
+                    res.end(JSON.stringify({ error: 'Distributed Learning Engine is not loaded/registered.' }));
+                    return;
+                }
+                res.setHeader('Content-Type', 'text/event-stream');
+                res.setHeader('Cache-Control', 'no-cache');
+                res.setHeader('Connection', 'keep-alive');
+                res.writeHead(200);
+                const sendEvent = (event, data) => {
+                    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+                };
+                // Prepare dataset via Aegis Data Engine (ADE) dynamically
+                const dataEngine = serviceRegistry.has('aegis-data')
+                    ? serviceRegistry.get('aegis-data')
+                    : null;
+                if (dataEngine) {
+                    try {
+                        sendEvent('preparing_data', { message: 'Collecting and scrubbing session logs...' });
+                        // Register session history source
+                        await dataEngine.RegisterSource('session_history_source', 'Session History', 'Conversation', { enabled: true });
+                        // Import session memories dataset configuration if not registered
+                        const datasets = dataEngine.ListDatasets();
+                        if (!datasets.find((d) => d.datasetId === 'session_memories')) {
+                            await dataEngine.ImportDataset('session_memories', 'Session Memories Dataset', 'system', 'Conversation', 'private', { allowTraining: true, allowInference: true });
+                        }
+                        // Execute dataset preparation (connects, collects, cleans, redacts PII)
+                        await dataEngine.PrepareDataset('session_memories', { redactPII: true, clean: true, normalize: true });
+                        sendEvent('preparing_data_done', { message: 'Scrubbed session logs dataset prepared.' });
+                    }
+                    catch (err) {
+                        console.warn('[ApiServer] Failed to prepare dataset:', err.message);
+                        sendEvent('preparing_data_warning', { message: `Dataset preparation warning: ${err.message}` });
+                    }
+                }
+                const onProgress = (envelope) => {
+                    if (envelope && envelope.payload && envelope.payload.modelId === modelId) {
+                        sendEvent('progress', envelope.payload);
+                    }
+                };
+                const onCompleted = (envelope) => {
+                    if (envelope && envelope.payload && envelope.payload.modelId === modelId) {
+                        sendEvent('completed', envelope.payload);
+                        cleanup();
+                        res.end();
+                    }
+                };
+                const onError = (envelope) => {
+                    if (envelope && envelope.payload && envelope.payload.modelId === modelId) {
+                        sendEvent('error', { error: envelope.payload.error });
+                        cleanup();
+                        res.end();
+                    }
+                };
+                eventBus.on('training_progress', onProgress);
+                eventBus.on('training_completed', onCompleted);
+                eventBus.on('training_error', onError);
+                const cleanup = () => {
+                    eventBus.off('training_progress', onProgress);
+                    eventBus.off('training_completed', onCompleted);
+                    eventBus.off('training_error', onError);
+                };
+                const trainer = dlEngine.getLocalTrainer();
+                const configParams = {
+                    rank: rank || 8,
+                    alpha: alpha || 16,
+                    learningRate: learningRate || 2e-4,
+                    batchSize: batchSize || 2,
+                    validationThreshold: validationThreshold || 2.0,
+                    targetModules: ["q_proj", "v_proj"],
+                    dropout: 0.05
+                };
+                trainer.trainLoRA(modelId, configParams, epochs || 3).catch((err) => {
+                    sendEvent('error', { error: err.message || String(err) });
+                    cleanup();
+                    res.end();
+                });
+                req.on('close', () => {
+                    cleanup();
+                });
+                return;
+            }
             // Default 404 handler
             res.setHeader('Content-Type', 'application/json');
             res.writeHead(404);

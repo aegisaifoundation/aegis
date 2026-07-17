@@ -1,0 +1,20 @@
+{
+  "name": "@aegis/collaboration",
+  "version": "1.0.0",
+  "description": "AEGIS Secure Collaboration & Collective Intelligence Protocol (ASCIP) Engine",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/test/CollaborationEngine.test.js dist/test/AonEngine.test.js"
+  },
+  "dependencies": {
+    "@aegis/sdk": "*",
+    "@aegis/runtime": "*",
+    "@aegis/package-manager": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

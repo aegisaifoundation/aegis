@@ -22,12 +22,12 @@ export declare class AggregationManager {
      * @param contributors Ordered list of node IDs matching weightSets
      * @param algorithm  Aggregation algorithm (default: 'fedavg')
      */
-    aggregateWeights(roundId: string, roundNumber: number, weightSets: Record<string, number[]>[], contributors: string[], algorithm?: 'fedavg' | 'fedprox' | string): Promise<AggregationResult>;
+    aggregateWeights(roundId: string, roundNumber: number, weightSets: Record<string, number[]>[], contributors: string[], algorithm?: 'fedavg' | 'fedprox' | string, options?: Record<string, any>): Promise<AggregationResult>;
     /**
      * Aggregate a set of LoRA delta tensor sets (same mechanism as weight aggregation
      * but semantically specific to LoRA adapters).
      */
-    aggregateLoRA(roundId: string, roundNumber: number, loraDeltas: Record<string, number[]>[], contributors: string[]): Promise<AggregationResult>;
+    aggregateLoRA(roundId: string, roundNumber: number, loraDeltas: Record<string, number[]>[], contributors: string[], algorithm?: string, options?: Record<string, any>): Promise<AggregationResult>;
     /**
      * Mark a contributor's update as invalid — it will be excluded from aggregation.
      * The rejection is logged immutably.
@@ -56,6 +56,8 @@ export declare class AggregationManager {
      * improving convergence in heterogeneous data environments.
      */
     private _fedProx;
+    /** Weighted Averaging based on variable node weighting (e.g. sample size, trust, performance) */
+    private _weightedAvg;
     private _hashWeights;
     private _auditRecord;
 }

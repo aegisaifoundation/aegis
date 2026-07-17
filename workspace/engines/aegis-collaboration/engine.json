@@ -1,0 +1,15 @@
+{
+  "id": "aegis-collaboration",
+  "displayName": "AEGIS Secure Collaboration Engine",
+  "version": "1.0.0",
+  "kernelApiVersion": "1.0.0",
+  "entrypoint": "dist/CollaborationEngine.js",
+  "dependencies": [],
+  "priority": 10,
+  "autoStart": true,
+  "singleton": true,
+  "permissions": [
+    "fs:read",
+    "fs:write"
+  ]
+}

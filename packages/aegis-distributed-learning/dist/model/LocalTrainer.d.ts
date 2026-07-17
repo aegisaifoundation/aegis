@@ -1,4 +1,4 @@
-import type { TrainingProgress, TrainingMetrics, LoRAConfig } from '../types/index.js';
+import type { TrainingProgress, TrainingMetrics } from '../types/index.js';
 import type { LoRAManager } from './LoRAManager.js';
 import type { LearningCheckpointManager } from '../manager/LearningCheckpointManager.js';
 import { ITrainingBackend } from './ITrainingBackend.js';
@@ -12,12 +12,13 @@ import { ITrainingBackend } from './ITrainingBackend.js';
 export declare class LocalTrainer {
     private readonly loraManager;
     private readonly checkpointManager;
+    private readonly workspacePath?;
     private isRunning;
     private isCancelled;
     private progress;
     private backends;
     private activeBackendId;
-    constructor(loraManager: LoRAManager, checkpointManager: LearningCheckpointManager);
+    constructor(loraManager: LoRAManager, checkpointManager: LearningCheckpointManager, workspacePath?: string | undefined);
     setBackend(backendId: string): void;
     getBackend(): ITrainingBackend;
     /**
@@ -39,7 +40,7 @@ export declare class LocalTrainer {
     /**
      * Fine-tune a LoRA adapter for the specified model.
      */
-    trainLoRA(modelId: string, loraConfig: LoRAConfig, epochs?: number): Promise<{
+    trainLoRA(modelId: string, loraConfig: any, epochs?: number): Promise<{
         adapterId: string;
         metrics: TrainingMetrics;
     }>;
