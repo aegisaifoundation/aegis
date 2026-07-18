@@ -4,3 +4,6 @@ export * from './types/Engine.js';
 export * from './types/Runtime.js';
 export * from './context/Context.js';
 export * from './api/IKernelAPI.js';
+export * from './types/syscall.js';
+export * from './errors/SdkErrors.js';
+export * from './client/AegisSDK.js';
