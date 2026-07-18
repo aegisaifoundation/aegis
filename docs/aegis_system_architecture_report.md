@@ -3,9 +3,7 @@
 
 ---
 
-## 1. Executive Summary
-
-**AEGIS** (Advanced Enterprise General Intelligence System) is a full-stack, privacy-preserving AI platform engineered as an enterprise operating system for distributed AI workloads. It is domain-applied to clinical/medical use cases via its local GGUF model integration and medical tooling, but the architecture is entirely domain-agnostic and extensible.
+**AEGIS** (Advanced Enterprise General Intelligence System) is a full-stack, privacy-preserving AI platform engineered as an enterprise operating system for distributed AI workloads. It provides local model integration and custom tooling, with an architecture that is entirely domain-agnostic, secure, and extensible.
 
 The system is structured in three clear layers:
 

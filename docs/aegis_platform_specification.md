@@ -332,17 +332,17 @@ The C++ runtime is managed as a child process by the TypeScript adapter, communi
 
 ---
 
-## 10. Domain Application: Clinical AI
+## 10. Domain Application Template: Enterprise Workflow Automation
 
-While the AEGIS platform is domain-agnostic, its current tooling and GGUF provider configuration is applied to clinical medicine:
+While the AEGIS platform is domain-agnostic, its tooling and GGUF provider configuration can be tailored to custom enterprise workflows:
 
-- **GGUF Model**: Local medical LLM loaded via llama-cpp-python
-- **LoRA Adapters**: Domain-specific fine-tunes for clinical tasks
-- **Skills**: Patient history summarization, timeline building, follow-up recommendations, lifestyle advice
-- **Tools**: PatientDataTool for structured clinical data extraction
-- **System Prompt**: Configured as "Aegis Core Agent, a helpful clinical medical assistant"
+- **GGUF Model**: Local LLM loaded via llama-cpp-python
+- **LoRA Adapters**: Domain-specific fine-tunes for custom tasks
+- **Skills**: Document summarization, timeline building, and workflow recommendations
+- **Tools**: DataExtractionTool for structured information extraction
+- **System Prompt**: Configured to direct the agent's reasoning pattern
 
-This domain layer is fully swappable — changing the system prompt, tools, and skills re-targets AEGIS to any domain.
+This domain layer is fully swappable — changing the system prompt, tools, and skills re-targets AEGIS to any target domain.
 
 ---
 

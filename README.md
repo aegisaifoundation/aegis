@@ -21,7 +21,7 @@ It is not a single AI model. It is the operating environment where:
 - AI models are interchangeable **Providers** (local GGUF, Ollama, remote API)
 - Distributed computing is powered by a **native C++20 runtime**
 
-Current domain application: **Clinical AI** — with local GGUF model inference and medical tooling.
+Current domain application: **General-Purpose Enterprise AI** — with local model inference and custom tooling.
 
 ---
 
