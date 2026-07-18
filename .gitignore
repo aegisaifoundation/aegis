@@ -8,3 +8,25 @@ workspace/logs/
 workspace/memory/
 workspace/runtime/checkpoints/
 workspace/shared/logs/
+
+# AEGIS Workspace dynamic data
+.aegis/
+logs/
+scratch/
+
+# Build & Test Artifacts
+release/
+test-release/
+.test-platform-sim/
+.test-aegis-training/
+
+# Package Manager Transactions & Backups
+packages/aegis-runtime/src/config/package-manager/transactions/
+packages/aegis-runtime/src/config/package-manager/backups/
+packages/aegis-runtime/dist/config/package-manager/transactions/
+packages/aegis-runtime/dist/config/package-manager/backups/
+
+# Registry History Snapshots & Generated Manifests
+workspace/registry/history/
+packages/*/manifest.json
+workspace/engines/*/manifest.json
