@@ -17,7 +17,7 @@ export class TrainingEngineAdapter {
         displayName: 'AEGIS Training Engine',
         version: '1.0.0',
         kernelApiVersion: '1.0.0',
-        dependencies: ['aegis-data', 'distributed-inference'],
+        dependencies: ['aegis-data', 'aegis-distributed-inference'],
         priority: 12,
         autoStart: true,
         singleton: true,

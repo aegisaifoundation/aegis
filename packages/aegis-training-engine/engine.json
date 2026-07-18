@@ -5,6 +5,6 @@
   "kernelApiVersion": "1.0.0",
   "entrypoint": "dist/index.js",
   "autoStart": true,
-  "dependencies": ["aegis-data", "distributed-inference"],
+  "dependencies": ["aegis-data", "aegis-distributed-inference"],
   "permissions": ["fs:read", "fs:write", "process:spawn"]
 }
