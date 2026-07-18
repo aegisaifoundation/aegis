@@ -1,0 +1,12 @@
+{
+  "id": "aegis-unified-platform",
+  "displayName": "AEGIS Unified Intelligence Platform (AUIP)",
+  "version": "1.0.0",
+  "kernelApiVersion": "1.0.0",
+  "entrypoint": "dist/index.js",
+  "dependencies": [],
+  "priority": 10,
+  "autoStart": true,
+  "singleton": true,
+  "permissions": []
+}

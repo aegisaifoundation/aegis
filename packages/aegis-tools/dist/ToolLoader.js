@@ -118,8 +118,13 @@ export class ToolLoader {
                     // Input is not JSON or could not be parsed
                 }
                 const actionKeys = Object.keys(actions);
-                if (actionName && actions[actionName]) {
-                    return await actions[actionName](parsed, context);
+                if (actionName) {
+                    if (actions[actionName]) {
+                        return await actions[actionName](parsed, context);
+                    }
+                    else {
+                        throw new Error(`Action '${actionName}' not found on tool '${manifest.name}'. Available actions: [${actionKeys.join(', ')}].`);
+                    }
                 }
                 else if (actionKeys.length === 1) {
                     const singleAction = actionKeys[0];

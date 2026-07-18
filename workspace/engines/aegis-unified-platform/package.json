@@ -1,0 +1,19 @@
+{
+  "name": "@aegis/unified-platform",
+  "version": "1.0.0",
+  "description": "AEGIS Unified Intelligence Platform (AUIP)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@aegis/sdk": "*",
+    "@aegis/runtime": "*",
+    "@aegis/package-manager": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

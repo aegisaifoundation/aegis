@@ -1,5 +1,7 @@
+import { serviceRegistry } from '@aegis/runtime';
 import { EngineLifecycle } from '../lifecycle/EngineLifecycle.js';
 import { EngineState } from '../state/EngineState.js';
+import { DiscoveryService, MessagingService, TransportService, ExecutionService, CapabilityService, ResourceService, TrustService, SchedulerService, EventService } from '../services/index.js';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -19,6 +21,18 @@ export class DistributedIntelligenceEngine {
     };
     lifecycle = new EngineLifecycle();
     context;
+    discoveryService = new DiscoveryService(this);
+    messagingService = new MessagingService(this);
+    transportService = new TransportService(this);
+    executionService = new ExecutionService(this);
+    capabilityService = new CapabilityService(this);
+    resourceService = new ResourceService(this);
+    trustService = new TrustService(this);
+    schedulerService = new SchedulerService(this);
+    eventService = new EventService(this);
+    getIpcManager() {
+        return this.lifecycle.getIpcManager();
+    }
     async initialize(context) {
         this.context = context;
         const executablePath = this.resolveExecutable();
@@ -32,6 +46,12 @@ export class DistributedIntelligenceEngine {
                 this.context.getEventBus()?.emit('engine:ready', { engineId: this.metadata.id });
             }
         });
+        // Register inside service registry
+        serviceRegistry.register('distributed-intelligence', this);
+        serviceRegistry.register('distributed-intelligence:discovery', this.discoveryService);
+        serviceRegistry.register('distributed-intelligence:messaging', this.messagingService);
+        serviceRegistry.register('distributed-intelligence:execution', this.executionService);
+        serviceRegistry.register('distributed-intelligence:trust', this.trustService);
         await this.lifecycle.initialize(context, executablePath);
     }
     async configure(config) {

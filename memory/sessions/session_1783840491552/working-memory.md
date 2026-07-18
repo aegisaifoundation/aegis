@@ -1,8 +1,10 @@
-- goal: None
-- current objective: None
+- goal: create a folder named sdfas
+- current objective: Successfully create a folder named sdfas.
 
 available tools:
-- None
+- memory-read
+- FolderTool
+- FileTool
 
 available skills:
-- None
+- summarize skill

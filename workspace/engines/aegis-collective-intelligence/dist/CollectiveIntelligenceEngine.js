@@ -21,7 +21,7 @@ export class CollectiveIntelligenceEngine {
         displayName: 'Collective Intelligence Engine',
         version: '1.0.0',
         kernelApiVersion: '1.0.0',
-        dependencies: ['collaboration'],
+        dependencies: ['aegis-collaboration'],
         priority: 40,
         autoStart: true,
         singleton: true,

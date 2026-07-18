@@ -8,9 +8,11 @@ export class ServiceRegistry {
         return globalThis[REGISTRY_SYMBOL];
     }
     register(name, service) {
+        console.log(`[ServiceRegistry] Registering service: ${name}`);
         this.services.set(name, service);
     }
     get(name) {
+        console.log(`[ServiceRegistry] Getting service: ${name}. Available: [${Array.from(this.services.keys()).join(', ')}]`);
         const service = this.services.get(name);
         if (!service) {
             throw new Error(`Service '${name}' not found in registry.`);

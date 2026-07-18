@@ -1,6 +1,6 @@
 import { IEngine, IEngineMetadata, IRuntimeContext_v1, EngineHealthReport } from '@aegis/sdk';
 import { providerManager, providerRegistry, providerLoader } from '@aegis/providers';
-import { serviceRegistry } from '@aegis/runtime';
+import { serviceRegistry, capabilityManager, CapabilityType } from '@aegis/runtime';
 import { agent } from './Agent.js';
 import { toolRegistry, toolLoader } from '@aegis/tools';
 import { skillRegistry, skillLoader } from '@aegis/skills';
@@ -47,6 +47,57 @@ export class AgentEngine implements IEngine {
   async configure(config: Record<string, any>): Promise<void> {}
   
   async start(): Promise<void> {
+    const config = this.context.getConfig();
+    this.context.getLogger().info(`AgentEngine starting. Retrieved config: ${JSON.stringify(config)}`, 'agent');
+    
+    // Autoload Tools
+    if (Array.isArray(config.autoloadTools)) {
+      for (const tool of config.autoloadTools) {
+        try {
+          this.context.getLogger().info(`AgentEngine: Autoloading tool ${tool}...`, 'agent');
+          await capabilityManager.add(CapabilityType.TOOL, tool);
+        } catch (err: any) {
+          this.context.getLogger().error(`AgentEngine: Failed to autoload tool ${tool}: ${err.message}`, 'agent');
+        }
+      }
+    }
+
+    // Autoload Skills
+    if (Array.isArray(config.autoloadSkills)) {
+      for (const skill of config.autoloadSkills) {
+        try {
+          this.context.getLogger().info(`AgentEngine: Autoloading skill ${skill}...`, 'agent');
+          await capabilityManager.add(CapabilityType.SKILL, skill);
+        } catch (err: any) {
+          this.context.getLogger().error(`AgentEngine: Failed to autoload skill ${skill}: ${err.message}`, 'agent');
+        }
+      }
+    }
+
+    // Autoload Plugins
+    if (Array.isArray(config.autoloadPlugins)) {
+      for (const plugin of config.autoloadPlugins) {
+        try {
+          this.context.getLogger().info(`AgentEngine: Autoloading plugin ${plugin}...`, 'agent');
+          await capabilityManager.add(CapabilityType.PLUGIN, plugin);
+        } catch (err: any) {
+          this.context.getLogger().error(`AgentEngine: Failed to autoload plugin ${plugin}: ${err.message}`, 'agent');
+        }
+      }
+    }
+
+    // Autoload Providers
+    if (Array.isArray(config.autoloadProviders)) {
+      for (const provider of config.autoloadProviders) {
+        try {
+          this.context.getLogger().info(`AgentEngine: Autoloading provider ${provider}...`, 'agent');
+          await capabilityManager.add(CapabilityType.PROVIDER, provider);
+        } catch (err: any) {
+          this.context.getLogger().error(`AgentEngine: Failed to autoload provider ${provider}: ${err.message}`, 'agent');
+        }
+      }
+    }
+
     this.context.getLogger().info('AgentEngine started successfully.', 'agent');
   }
   

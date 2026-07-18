@@ -1,10 +1,16 @@
 import os
 import sys
+import io
 import json
 import argparse
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import LoraConfig, get_peft_model, TaskType
+
+# Set output encoding to UTF-8 to prevent encoding errors on Windows when printing emojis
+if sys.platform.startswith('win'):
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
 def parse_args():
     parser = argparse.ArgumentParser(description="AEGIS Local PEFT Trainer")

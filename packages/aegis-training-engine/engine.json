@@ -1,0 +1,10 @@
+{
+  "id": "aegis-training-engine",
+  "displayName": "AEGIS Training Engine",
+  "version": "1.0.0",
+  "kernelApiVersion": "1.0.0",
+  "entrypoint": "dist/index.js",
+  "autoStart": true,
+  "dependencies": ["aegis-data", "distributed-inference"],
+  "permissions": ["fs:read", "fs:write", "process:spawn"]
+}

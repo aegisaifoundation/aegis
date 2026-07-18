@@ -1,0 +1,20 @@
+{
+  "id": "aegis-training-engine",
+  "name": "AEGIS Training Engine",
+  "version": "1.0.0",
+  "type": "Engine",
+  "entrypoint": "dist/index.js",
+  "kernelApiVersion": "1.0.0",
+  "sdkVersion": "1.0.0",
+  "permissions": [
+    "fs:read",
+    "fs:write",
+    "process:spawn"
+  ],
+  "dependencies": {},
+  "supportedPlatforms": [
+    "win32",
+    "linux",
+    "darwin"
+  ]
+}

@@ -13,11 +13,15 @@
     "aegis-distributed-learning",
     "aegis-data",
     "aegis-collaboration",
-    "aegis-collective-intelligence"
+    "aegis-collective-intelligence",
+    "aegis-training-engine",
+    "aegis-unified-platform"
   ],
   "defaultProvider": "local/ollama",
   "autoloadTools": [
-    "shared/memory-read"
+    "shared/memory-read",
+    "shared/FolderTool",
+    "shared/FileTool"
   ],
   "autoloadSkills": [
     "shared/summarize"

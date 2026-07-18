@@ -37,7 +37,7 @@ function getRepositoryRoot(): string {
 
 const repoRoot = getRepositoryRoot();
 const configPath = path.resolve(repoRoot, 'packages/aegis-runtime/src/config/runtime.json');
-const enginesDir = path.resolve(repoRoot, 'engines');
+const enginesDir = path.resolve(repoRoot, 'workspace/engines');
 
 // Helper to ensure config dir exists
 const configDir = path.dirname(configPath);

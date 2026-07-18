@@ -11,10 +11,12 @@ export class ServiceRegistry {
   }
 
   register(name: string, service: any): void {
+    console.log(`[ServiceRegistry] Registering service: ${name}`);
     this.services.set(name, service);
   }
 
   get<T>(name: string): T {
+    console.log(`[ServiceRegistry] Getting service: ${name}. Available: [${Array.from(this.services.keys()).join(', ')}]`);
     const service = this.services.get(name);
     if (!service) {
       throw new Error(`Service '${name}' not found in registry.`);

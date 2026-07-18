@@ -1,0 +1,47 @@
+{
+  "txId": "7f2f2c4f-30aa-487e-bf9e-93f2c6cc3130",
+  "state": "COMMITTED",
+  "timestamp": "2026-07-17T15:04:13.232Z",
+  "packageId": "distributed-intelligence",
+  "action": "install",
+  "backups": [
+    {
+      "originalPath": "C:\\aegis\\workspace\\engines\\distributed-intelligence",
+      "backupPath": "C:\\aegis\\packages\\aegis-runtime\\src\\config\\package-manager\\backups\\7f2f2c4f-30aa-487e-bf9e-93f2c6cc3130\\231e42ef-5b5d-4901-8646-168a699811e8"
+    }
+  ],
+  "addedFiles": [
+    "C:\\aegis\\workspace\\engines\\distributed-intelligence\\engine.json"
+  ],
+  "addedDirs": [],
+  "originalConfig": {
+    "version": "1.0.0",
+    "requireSignature": false,
+    "autoloadEngines": [
+      "distributed-intelligence",
+      "aegis-memory",
+      "aegis-agent",
+      "aegis-api",
+      "aegis-federated-learning",
+      "aegis-swarm-learning",
+      "aegis-distributed-inference",
+      "aegis-knowledge-sync",
+      "aegis-distributed-learning",
+      "aegis-data",
+      "aegis-collaboration",
+      "aegis-collective-intelligence"
+    ],
+    "defaultProvider": "local/ollama",
+    "autoloadTools": [
+      "shared/memory-read",
+      "shared/FolderTool",
+      "shared/FileTool"
+    ],
+    "autoloadSkills": [
+      "shared/summarize"
+    ],
+    "autoloadPlugins": [
+      "shared/logging"
+    ]
+  }
+}

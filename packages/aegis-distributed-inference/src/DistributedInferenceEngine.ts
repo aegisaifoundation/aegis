@@ -69,7 +69,6 @@ export class DistributedInferenceEngine implements IEngine {
     // Register this engine under standard keys
     serviceRegistry.register('distributed-inference', this);
     serviceRegistry.register('ai-runtime', this);
-    serviceRegistry.register('providerManager', this); // Backwards compatibility override
 
     console.log('[DistributedInferenceEngine] AI Runtime v2 (AIR v2) initialized successfully.');
   }

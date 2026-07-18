@@ -66,7 +66,7 @@ export class NodeManager {
         // Pointing to existing monorepo configs by default
         const projectRoot = path.resolve(this.workspacePath, '..');
         const runtimeConfigPath = path.resolve(projectRoot, 'packages/aegis-runtime/src/config/runtime.json');
-        const enginesDir = path.resolve(projectRoot, 'engines');
+        const enginesDir = path.resolve(projectRoot, 'workspace/engines');
         this.orchestrator = new PackageOrchestrator(runtimeConfigPath, enginesDir);
         this.nodeRegistry = new NodeRegistry(this.orchestrator.getUnderlyingManager());
         this.capabilityRegistry = new CapabilityRegistry(this.nodeRegistry, identity.nodeId);

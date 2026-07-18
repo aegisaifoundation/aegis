@@ -1,0 +1,13 @@
+{
+  "id": "aegis-unified-platform",
+  "name": "AEGIS Unified Intelligence Platform (AUIP)",
+  "version": "1.0.0",
+  "type": "Engine",
+  "sdkVersion": "1.0.0",
+  "dependencies": {},
+  "supportedPlatforms": [
+    "win32",
+    "linux",
+    "darwin"
+  ]
+}
