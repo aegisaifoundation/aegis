@@ -194,15 +194,23 @@ Swarm Learning removes the single-point-of-failure Coordinator. Instead, nodes p
 ## How to Run AEGIS
 
 1. **Start the Daemon (Core Runtime)**:
+   You can start the background runtime daemon using the official AEGIS CLI:
    ```bash
-   node --import tsx --experimental-specifier-resolution=node --no-warnings packages/aegis-runtime/src/daemon.ts
+   node .\apps\aegis-cli\dist\index.js runtime start
+   ```
+   *This initializes the bootloader, audits available package dependencies, and starts the background runtime daemon.*
+
+2. **Verify Engine Health**:
+   Query active engine statuses to verify all modules loaded successfully:
+   ```bash
+   node .\apps\aegis-cli\dist\index.js engine list
    ```
 
-2. **Start the Desktop Application UI**:
+3. **Start the Desktop Application UI**:
    ```bash
    python apps/desktop/main.py
    ```
-   *Open your web browser and navigate to **`http://localhost:5001`** to access the Aegis console.*
+   *Navigate your browser to **`http://localhost:5001`** to open the user interface console.*
 
 ---
 
@@ -348,18 +356,25 @@ The REST API runs on **Port 3005** (localhost only):
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [aegis_system_architecture_report.md](./aegis_system_architecture_report.md) | Full architecture with diagrams, data flows, and folder structure |
-| [aegis_platform_specification.md](./aegis_platform_specification.md) | Platform concepts, APIs, and technology stack |
-| [aegis_core_runtime_specification.md](./aegis_core_runtime_specification.md) | Runtime Kernel deep-dive and specifications |
-| [aegis_memory_subsystem_report.md](./aegis_memory_subsystem_report.md) | Memory system design, data models, and APIs |
-| [aegis_event_bus_report.md](./aegis_event_bus_report.md) | Complete event type reference |
-| [aegis_federated_learning_report.md](./aegis_federated_learning_report.md) | Distributed Intelligence Engine (C++20) reference |
-| [aegis_cognitive_memory_redesign.md](./aegis_cognitive_memory_redesign.md) | Memory architecture design decisions |
-| [aegis_modular_refactoring_blueprint.md](./aegis_modular_refactoring_blueprint.md) | Package structure and module boundaries |
-| [aegis_architecture_review.md](./aegis_architecture_review.md) | Architectural patterns and analysis |
-| [aegis_project_status_report.md](./aegis_project_status_report.md) | Component status and development roadmap |
+### Core Specifications
+* [System Architecture Report](./docs/aegis_system_architecture_report.md) — Full architecture diagrams, data flows, and folder structure.
+* [Platform Specification](./docs/aegis_platform_specification.md) — Platform concepts, APIs, and technology stack.
+* [Runtime Kernel Deep-Dive](./docs/aegis_core_runtime_specification.md) — Boot phases, Engine loading sequence, and state machine.
+* [Memory Subsystem Design](./docs/aegis_memory_subsystem_report.md) — ACID constraints, file structure, and projection mechanisms.
+* [Event Bus Specification](./docs/docs/aegis_event_bus_report.md) — Type event envelopes and session/correlation contexts.
+
+### Phases 10-13 Implementation Specs
+* [Phase 10: Training Engine (ATE)](./docs/phase10_aegis_training_engine.md) — Local optimizers, scheduling, and LoRA export configurations.
+* [Phase 11: Production Builder (AEB)](./docs/phase11_aegis_builder.md) — Signer, Topo builder, release targets, and SBOM generation.
+* [Phase 12: Unified Platform (AUIP)](./docs/phase12_aegis_unified_intelligence_platform.md) — Live State Sync, hot-swap hooks, and dynamic Capability registries.
+* [Phase 13: Software Development Kit (ASDK)](./docs/phase13_aegis_sdk_and_aisci.md) — Unified Syscalls, transport classes, and standard exceptions.
+
+### Developer Guides & FAQ
+* [How to Enable Local Model Training](./docs/guide_local_training.md) — Step-by-step dataset ingest and training optimizer execution.
+* [How to Implement a New Engine](./docs/guide_new_engine_implementation.md) — Developing and registering custom plugin engines.
+* [Swarm Cluster Participants](./docs/concepts_cluster_participants.md) — Client vs Aggregator vs Server node capability scopes.
+* [Packages & Transactional Rollbacks](./docs/concepts_packages_and_transactions.md) — Dynamic package installations and integrity rollback caches.
+* [Interactive Developer FAQ](./docs/faq.md) — Troubleshooting guides, transport choices, and local file storage maps.
 
 ---
 
