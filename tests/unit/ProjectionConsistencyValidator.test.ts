@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { projectionConsistencyValidator } from '../../aegis-core/src/memory/ProjectionConsistencyValidator.js';
-import { SessionState } from '../../aegis-core/src/memory/interfaces/MemoryTypes.js';
+import { projectionConsistencyValidator } from '../../packages/aegis-memory/src/ProjectionConsistencyValidator.js';
+import { SessionState } from '../../packages/aegis-memory/src/interfaces/MemoryTypes.js';
 
 test('ProjectionConsistencyValidator - working-memory verification', () => {
   const state: SessionState = {

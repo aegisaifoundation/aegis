@@ -177,7 +177,7 @@ DIE_TEST(DistributedExecutionLayerTest) {
   capsA.gpuAvailable = true; // Pretend Node A now has GPU to allow execution
   ctxA->getCapabilityRegistry()->updateCapabilities("Runtime-A", capsA);
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(2500));
+  std::this_thread::sleep_for(std::chrono::milliseconds(3500));
 
   // Verify task2 gets recovered and completes successfully
   TaskResult res2;

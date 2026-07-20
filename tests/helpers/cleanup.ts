@@ -1,8 +1,8 @@
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
-import { workspaceManager } from '../../aegis-core/src/runtime/WorkspaceManager.js';
-import { runtimeStateManager } from '../../aegis-core/src/runtime/RuntimeStateManager.js';
+import { workspaceManager } from '../../packages/aegis-runtime/src/workspace/WorkspaceManager.js';
+import { runtimeStateManager } from '../../packages/aegis-runtime/src/services/RuntimeStateManager.js';
 
 export async function cleanupTestEnvironment() {
   const wsRoot = path.dirname(workspaceManager.getWorkspacePath());

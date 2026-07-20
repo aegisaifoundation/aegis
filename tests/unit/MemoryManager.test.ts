@@ -1,12 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { memoryManager } from '../../aegis-core/src/memory/MemoryManager.js';
-import { memoryGateway } from '../../aegis-core/src/memory/MemoryGateway.js';
-import { serviceRegistry } from '../../aegis-core/src/runtime/ServiceRegistry.js';
-import { eventBus } from '../../aegis-core/src/runtime/EventBus.js';
-import { workspaceManager } from '../../aegis-core/src/runtime/WorkspaceManager.js';
-import { loadEnvironment } from '../../aegis-core/src/utils/environment.js';
-import { readMemoryFile } from '../../aegis-core/src/memory/utils/MemoryFileHelpers.js';
+import { memoryManager } from '../../packages/aegis-memory/src/MemoryManager.js';
+import { memoryGateway } from '../../packages/aegis-memory/src/MemoryGateway.js';
+import { serviceRegistry } from '../../packages/aegis-runtime/src/registry/ServiceRegistry.js';
+import { eventBus } from '../../packages/aegis-runtime/src/eventbus/EventBus.js';
+import { workspaceManager } from '../../packages/aegis-runtime/src/workspace/WorkspaceManager.js';
+import { loadEnvironment } from '../../packages/aegis-runtime/src/utils/environment.js';
+import { readMemoryFile } from '../../packages/aegis-memory/src/utils/MemoryFileHelpers.js';
 import path from 'path';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
@@ -78,7 +78,7 @@ test('MemoryManager - full lifecycle and validation suite', async () => {
   assert.ok(snaps.length >= 2, "Created working and session memory snapshots before compression");
 
   // 8. Transactions & Rollback
-  const { memoryTransactionManager } = await import('../../aegis-core/src/memory/transactions/MemoryTransactionManager.js');
+  const { memoryTransactionManager } = await import('../../packages/aegis-memory/src/transactions/MemoryTransactionManager.js');
   const txId = 'test-tx-fail';
   memoryTransactionManager.beginTransaction(txId);
   

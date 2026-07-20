@@ -6,9 +6,9 @@ import {
   RuntimeMode,
   MemoryLifecycleState,
   SessionLifecycleState,
-  MemoryQuotas,
-  SessionMetadata,
-  SessionState
+  type MemoryQuotas,
+  type SessionMetadata,
+  type SessionState
 } from '@aegis/sdk';
 
 export {
@@ -19,9 +19,9 @@ export {
   RuntimeMode,
   MemoryLifecycleState,
   SessionLifecycleState,
-  MemoryQuotas,
-  SessionMetadata,
-  SessionState
+  type MemoryQuotas,
+  type SessionMetadata,
+  type SessionState
 };
 
 export enum MemoryType {

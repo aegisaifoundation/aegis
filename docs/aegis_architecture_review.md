@@ -152,15 +152,11 @@ User clicks "New Session"
 
 ### 6.1 C++ Binary Compilation
 
-**Issue:** The `die-service` binary must be compiled on the target machine. The TypeScript adapter is complete, but if the binary doesn't exist, the DIE engine will fail to start (boot enters SAFE_MODE for this engine only).
-
-**Recommendation:** Add a pre-build step in `install.ps1` to compile the C++ binary automatically.
+**Status:** ✅ **Resolved.** The `die-service` executable is compiled via `build.ps1` into `dist/die-service.exe` and supervised automatically by the TypeScript `DistributedIntelligenceEngine`.
 
 ### 6.2 AIR and DIS Implementations
 
-**Issue:** The C++ AI Runtime (AIR) and Distributed Inference Service (DIS) have complete interface declarations and structure, but most implementation files are stubs (101-byte placeholders).
-
-**Recommendation:** This is the next major development priority. The interfaces are well-designed; the implementations follow naturally.
+**Status:** ✅ **Resolved.** The C++ AI Runtime (`aegis::air`) and Distributed Inference Service (`aegis::dis`) implementations are fully functional, integrated with DIR scheduler, and validated via native test suites and benchmarks.
 
 ### 6.3 Plugin System
 

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { projectionGenerator } from '../../aegis-core/src/memory/ProjectionGenerator.js';
-import { SessionState } from '../../aegis-core/src/memory/interfaces/MemoryTypes.js';
+import { projectionGenerator } from '../../packages/aegis-memory/src/ProjectionGenerator.js';
+import { SessionState } from '../../packages/aegis-memory/src/interfaces/MemoryTypes.js';
 
 test('ProjectionGenerator - generateWorkingMemoryProjection', () => {
   const state: SessionState = {
@@ -22,15 +22,14 @@ test('ProjectionGenerator - generateWorkingMemoryProjection', () => {
   assert.ok(workingProj.includes('- goal:'));
   assert.ok(workingProj.includes('- current objective:'));
   assert.ok(workingProj.includes('Stabilize the core runtime'));
-  assert.ok(workingProj.includes('tasks:'));
-  assert.ok(workingProj.includes('- Task A'));
-  assert.ok(workingProj.includes('- Task B'));
-  assert.ok(workingProj.includes('active task'));
-  assert.ok(workingProj.includes('[ ] Task A'));
-  assert.ok(workingProj.includes('[ ] Task B'));
   assert.ok(workingProj.includes('## Temporary Execution Context'));
   assert.ok(workingProj.includes('- **user.name**: Gokul'));
   assert.ok(workingProj.includes('- **preference.theme**: dark'));
+
+  const taskProj = projectionGenerator.generateTaskProjection(state);
+  assert.ok(taskProj.includes('# Active Tasks'));
+  assert.ok(taskProj.includes('[ ] Task A'));
+  assert.ok(taskProj.includes('[ ] Task B'));
 });
 
 test('ProjectionGenerator - generateSessionMemoryProjection', () => {

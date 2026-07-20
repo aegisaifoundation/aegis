@@ -127,10 +127,10 @@ AEGIS is a full-stack distributed AI operating system built as a Node.js + C++20
 | C++ Registry | ✅ Complete | RegistryImpls.cpp |
 | C++ Resource Manager | ✅ Complete | ResourceManager + 7 sub-modules |
 | C++ Lifecycle Manager | ✅ Complete | StateTransition.cpp, LifecycleManager.cpp |
-| C++ AI Runtime (AIR) | 🔶 Structure Ready | AIRuntime.hpp/cpp — components declared, impl stubs |
-| C++ Distributed Inference (DIS) | 🔶 Structure Ready | InferenceComponents.hpp — interfaces defined, impl stubs |
+| C++ AI Runtime (AIR) | ✅ Complete | AIRuntime.hpp/cpp, AgentOrchestrator, WorkflowEngine, ToolRuntime |
+| C++ Distributed Inference (DIS) | ✅ Complete | DistributedInferenceService, PlacementResolver, TokenStreamer |
 | CMake Build System | ✅ Complete | 29 modular targets defined |
-| Binary compilation | 🔶 Pending Build | die-service.exe not yet compiled |
+| Binary compilation | ✅ Complete | die-service.exe & die-tests.exe compiled & verified |
 
 ### 2.9 Tools (`tools/shared/`) — ✅ COMPLETE
 

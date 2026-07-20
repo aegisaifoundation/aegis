@@ -1,5 +1,5 @@
-import { RuntimeLockState, BootMode, CheckoutStage, RuntimeHealthStatus, RuntimeMode, MemoryLifecycleState, SessionLifecycleState, MemoryQuotas, SessionMetadata, SessionState } from '@aegis/sdk';
-export { RuntimeLockState, BootMode, CheckoutStage, RuntimeHealthStatus, RuntimeMode, MemoryLifecycleState, SessionLifecycleState, MemoryQuotas, SessionMetadata, SessionState };
+import { RuntimeLockState, BootMode, CheckoutStage, RuntimeHealthStatus, RuntimeMode, MemoryLifecycleState, SessionLifecycleState, type MemoryQuotas, type SessionMetadata, type SessionState } from '@aegis/sdk';
+export { RuntimeLockState, BootMode, CheckoutStage, RuntimeHealthStatus, RuntimeMode, MemoryLifecycleState, SessionLifecycleState, type MemoryQuotas, type SessionMetadata, type SessionState };
 export declare enum MemoryType {
     SESSION = "SESSION",
     WORKING = "WORKING"
