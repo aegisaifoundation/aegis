@@ -33,7 +33,7 @@ Current domain application: **General-Purpose Enterprise Intelligent Infrastruct
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│              DISTRIBUTED INTELLIGENT INFRASTRUCTURE (DII)              │
+│              DISTRIBUTED INTELLIGENT INFRASTRUCTURE (DII)               │
 │  • P2P Encrypted Mesh Network (AON Overlay & STUN Hole Punching)        │
 │  • Distributed Model Inference & Scheduling (DIS)                       │
 │  • Federated & Swarm Learning Engines (FedAvg / Gossip Consensus)       │
