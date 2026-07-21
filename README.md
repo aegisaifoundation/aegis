@@ -1,9 +1,13 @@
 # AEGIS
-### Enterprise AI Operating System
+### Advanced Enterprise General Intelligence System
+
+> **Building Intelligence Through Connection.**  
+> *A High-Assurance Distributed Intelligent Infrastructure connected and orchestrated by an OS-like kernel layer.*  
+> *"No raw data moves. Only intelligence moves."*
 
 ![Build](https://img.shields.io/badge/BUILD-ACTIVE-brightgreen)
 ![License](https://img.shields.io/badge/LICENSE-MIT-green)
-![Architecture](https://img.shields.io/badge/ARCHITECTURE-Distributed-orange)
+![Architecture](https://img.shields.io/badge/ARCHITECTURE-Distributed%20Infrastructure-orange)
 ![Runtime](https://img.shields.io/badge/Runtime-TypeScript%20%2B%20C%2B%2B20-blue)
 ![UI](https://img.shields.io/badge/UI-Desktop%20SPA-purple)
 
@@ -11,42 +15,55 @@
 
 ## What is AEGIS?
 
-**AEGIS** is an **Enterprise AI Operating System** — a complete platform for running, managing, and orchestrating AI agents, models, tools, and distributed computing workloads.
+**AEGIS** (**A**dvanced **E**nterprise **G**eneral **I**ntelligence **S**ystem) is a **High-Assurance Distributed Intelligent Infrastructure** designed for sovereign compute, privacy-preserving multi-node intelligence, federated model training, and peer-to-peer mesh execution.
 
-It is not a single AI model. It is the operating environment where:
+AEGIS is not just a single AI model or a simple cloud API wrapper. It is a distributed intelligent infrastructure connected, orchestrated, and governed by an **OS-like Microkernel Runtime & Native C++ Engine**. This OS connection layer provides the operating environment where:
 
-- AI agents run as managed **Engines** with full lifecycles
-- Memory is a durable, structured **subsystem** with integrity guarantees
-- Tools, Skills, and Plugins are **hot-swappable capabilities**
-- AI models are interchangeable **Providers** (local GGUF, Ollama, remote API)
-- Distributed computing is powered by a **native C++20 runtime**
+- **Distributed Compute Nodes** form encrypted peer-to-peer mesh overlays (AON) without requiring central coordination
+- **AI Subsystems & Workflows** run as managed **Engines** with contract-driven lifecycles
+- **Cognitive Memory** operates as a durable, transactionally consistent subsystem
+- **AI Models** serve as interchangeable, hot-swappable **Providers** (local GGUF, Ollama, remote API)
+- **Capability Workflows** (Tools, Skills, Plugins) execute in isolated, sandboxed environments
 
-Current domain application: **General-Purpose Enterprise AI** — with local model inference and custom tooling.
+Current domain application: **General-Purpose Enterprise Intelligent Infrastructure** — with local model inference, federated learning, and custom tooling.
+
+---
+
+## System Architecture & 4-Stage Intelligence Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│              DISTRIBUTED INTELLIGENT INFRASTRUCTURE (DII)              │
+│  • P2P Encrypted Mesh Network (AON Overlay & STUN Hole Punching)        │
+│  • Distributed Model Inference & Scheduling (DIS)                       │
+│  • Federated & Swarm Learning Engines (FedAvg / Gossip Consensus)       │
+│  • Cognitive Memory System & Transactional Storage Stores               │
+├─────────────────────────────────────────────────────────────────────────┤
+│                 OS CONNECTION LAYER (Orchestration Kernel)              │
+│  • TypeScript Microkernel Core (Bootloader, EngineManager, EventBus)    │
+│  • Native C++20 DIE Supervisor (Socket Transport, Discovery, Telemetry) │
+│  • Sandboxed Workspace, Capability Security & IPC/REST API Gateways     │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### The 4-Stage Flow of Intelligence
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│  STAGE 01    │ ──► │  STAGE 02    │ ──► │  STAGE 03    │ ──► │  STAGE 04    │
+│  Agents      │     │  Nodes       │     │  Aggregators │     │  AEGIS Core  │
+├──────────────┤     ├──────────────┤     ├──────────────┤     ├──────────────┤
+│ ReAct loops  │     │ Sovereign    │     │ Zero-Knowl.  │     │ Consensus &  │
+│ & tools      │     │ local GPU/FS │     │ weight pool  │     │ sync layers  │
+└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
+```
+1. **Stage 01: Agents** — Orchestrate local reasoning flows, tool usage, and sub-agent execution.
+2. **Stage 02: Nodes** — Compute locally using private data sources and GPUs (*zero raw data exposure*).
+3. **Stage 03: Aggregators** — Compile zero-knowledge mathematical updates (FedAvg / Swarm weight pooling).
+4. **Stage 04: AEGIS Core** — Execute global consensus and synchronize network intelligence layers.
 
 ---
 
-## System Architecture
-
-```
-┌─────────────────────────────────────────────────────────┐
-│              Desktop UI (Port 5001)                      │
-│   3-column SPA · Session management · Chat streaming    │
-├─────────────────────────────────────────────────────────┤
-│              REST API Server (Port 3005)                  │
-│   Sessions · Chat/SSE · Capabilities · Providers        │
-├─────────────────────────────────────────────────────────┤
-│             TypeScript Runtime Kernel                    │
-│   Bootloader · EngineManager · EventBus · SessionMgr    │
-├──────────────────┬──────────────────┬───────────────────┤
-│  Memory Engine   │  AI Agent Engine │  REST API Engine  │
-│  (priority: 5)   │  (priority: 10)  │  (priority: 20)   │
-├─────────────────────────────────────────────────────────┤
-│          C++20 Distributed Intelligence Engine           │
-│   Node · Discovery · Heartbeat · AIR · DIS · Resources  │
-└─────────────────────────────────────────────────────────┘
-```
-
----
+## System Components & Layer Overview
 
 ## Quick Start
 
