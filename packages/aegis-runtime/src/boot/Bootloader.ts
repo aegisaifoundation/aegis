@@ -80,6 +80,27 @@ export class Bootloader {
     // Stage 4: Workspace Discovery
     workspaceManager.initialize();
 
+    // Auto-generate node config & identity if they don't exist
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const workspacePath = workspaceManager.getWorkspacePath();
+      const dotAegisPath = path.resolve(workspacePath, '../.aegis');
+
+      const identityFile = path.join(dotAegisPath, 'identity', 'identity.json');
+      const nodeJsonFile = path.join(dotAegisPath, 'node.json');
+
+      if (!fs.existsSync(identityFile) || !fs.existsSync(nodeJsonFile)) {
+        console.log('[Bootloader] Auto-initializing Aegis Node configuration and credentials...');
+        const { NodeManager } = await import('@aegis/node');
+        const nodeManager = new NodeManager(dotAegisPath);
+        nodeManager.initialize();
+        console.log('[Bootloader] Node configuration auto-generated successfully.');
+      }
+    } catch (nodeErr: any) {
+      console.warn('[Bootloader] Failed to auto-initialize node config:', nodeErr.message);
+    }
+
     console.log('[Bootloader] Initiating Phase 2: Configuration & Logging...');
     
     // Stage 5: Configuration Loading

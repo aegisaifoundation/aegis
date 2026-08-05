@@ -3,14 +3,22 @@ export interface IEngineIpcHost {
 }
 export declare class DiscoveryService {
     private host;
+    private localPeers;
     constructor(host: IEngineIpcHost);
     discoverNodes(): Promise<string[]>;
     registerNode(nodeId: string, host: string, port: number): Promise<void>;
+    getLocalPeer(nodeId: string): {
+        host: string;
+        port: number;
+    } | undefined;
 }
 export declare class MessagingService {
     private host;
+    private localServer;
     constructor(host: IEngineIpcHost);
+    private startLocalServer;
     sendMessage(targetNodeId: string, messageType: string, payload: Record<string, any>): Promise<void>;
+    private sendDirect;
     onMessage(messageType: string, callback: (payload: any, senderId: string) => void | Promise<void>): void;
 }
 export declare class TransportService {

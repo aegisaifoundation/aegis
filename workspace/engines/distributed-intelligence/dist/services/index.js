@@ -1,38 +1,116 @@
 import { MessageType } from '../ipc/MessageTypes.js';
+import net from 'net';
 export class DiscoveryService {
     host;
+    localPeers = new Map();
     constructor(host) {
         this.host = host;
     }
     async discoverNodes() {
         try {
             const res = await this.host.getIpcManager().request(MessageType.REQUEST, { action: 'discover_nodes' });
-            return res?.nodes || [];
+            const nativeNodes = res?.nodes || [];
+            return Array.from(new Set([...nativeNodes, ...Array.from(this.localPeers.keys())]));
         }
         catch {
-            return [];
+            return Array.from(this.localPeers.keys());
         }
     }
     async registerNode(nodeId, host, port) {
-        await this.host.getIpcManager().request(MessageType.REQUEST, {
-            action: 'register_node',
-            nodeId,
-            host,
-            port
-        });
+        this.localPeers.set(nodeId, { host, port });
+        try {
+            await this.host.getIpcManager().request(MessageType.REQUEST, {
+                action: 'register_node',
+                nodeId,
+                host,
+                port
+            });
+        }
+        catch (err) {
+            console.log(`[DiscoveryService] Native IPC register_node timed out: ${err.message}. Registered '${nodeId}' at ${host}:${port} in JS transport fallback.`);
+        }
+    }
+    getLocalPeer(nodeId) {
+        return this.localPeers.get(nodeId);
     }
 }
 export class MessagingService {
     host;
+    localServer = null;
     constructor(host) {
         this.host = host;
+        this.startLocalServer();
+    }
+    startLocalServer() {
+        const msgPort = 9902;
+        this.localServer = net.createServer((socket) => {
+            let dataBuffer = '';
+            socket.on('data', (chunk) => {
+                dataBuffer += chunk.toString();
+                const lines = dataBuffer.split('\n');
+                dataBuffer = lines.pop() ?? '';
+                for (const line of lines) {
+                    try {
+                        const parsed = JSON.parse(line);
+                        if (parsed.messageType && parsed.senderId) {
+                            const packet = {
+                                messageType: MessageType.EVENT,
+                                payload: {
+                                    type: 'peer_message',
+                                    messageType: parsed.messageType,
+                                    senderId: parsed.senderId,
+                                    payload: parsed.payload
+                                }
+                            };
+                            this.host.getIpcManager().emit('packet', packet);
+                        }
+                    }
+                    catch { }
+                }
+            });
+            socket.on('error', () => { });
+        });
+        this.localServer.listen(msgPort, '0.0.0.0', () => {
+            console.log(`[MessagingService] TS P2P Message Server listening on port ${msgPort} (JS fallback)`);
+        });
+        this.localServer.on('error', () => { });
     }
     async sendMessage(targetNodeId, messageType, payload) {
+        // 1. Try JS P2P direct fallback
+        const discovery = this.host.discoveryService;
+        const peer = discovery?.getLocalPeer(targetNodeId);
+        if (peer) {
+            try {
+                // Use port + 1 (9902) for the message service fallback
+                await this.sendDirect(peer.host, peer.port + 1, messageType, payload);
+                return;
+            }
+            catch (err) {
+                console.warn(`[MessagingService] Direct TS P2P send to ${peer.host}:${peer.port + 1} failed: ${err.message}. Trying native send...`);
+            }
+        }
+        // 2. Try native C++ send
         await this.host.getIpcManager().request(MessageType.REQUEST, {
             action: 'send_message',
             targetNodeId,
             messageType,
             payload
+        });
+    }
+    sendDirect(host, port, messageType, payload) {
+        return new Promise((resolve, reject) => {
+            const client = net.connect(port, host, () => {
+                const msg = JSON.stringify({
+                    messageType,
+                    senderId: this.host.context?.runtimeId || 'my-node',
+                    payload
+                }) + '\n';
+                client.write(msg, () => {
+                    client.end();
+                    resolve();
+                });
+            });
+            client.on('error', reject);
         });
     }
     onMessage(messageType, callback) {
