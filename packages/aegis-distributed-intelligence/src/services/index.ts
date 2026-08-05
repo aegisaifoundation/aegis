@@ -47,7 +47,8 @@ export class MessagingService {
   }
 
   private startLocalServer() {
-    const msgPort = 9902;
+    const localPort = (this.host as any).lifecycle?.getConfigurationManager()?.get()?.port || 9901;
+    const msgPort = localPort + 1;
     this.localServer = net.createServer((socket) => {
       let dataBuffer = '';
       socket.on('data', (chunk) => {
