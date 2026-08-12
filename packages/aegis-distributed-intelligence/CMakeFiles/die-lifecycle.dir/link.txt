@@ -1,0 +1,2 @@
+C:\msys64\ucrt64\bin\ar.exe qc libdie-lifecycle.a "CMakeFiles/die-lifecycle.dir/cpp/src/lifecycle/StateTransition.cpp.obj" "CMakeFiles/die-lifecycle.dir/cpp/src/lifecycle/LifecycleManager.cpp.obj"
+C:\msys64\ucrt64\bin\ranlib.exe libdie-lifecycle.a

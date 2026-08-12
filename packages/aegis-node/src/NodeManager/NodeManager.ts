@@ -76,7 +76,28 @@ export class NodeManager {
 
     // Setup package orchestrator pointing to runtime configurations
     // Pointing to existing monorepo configs by default
-    const projectRoot = path.resolve(this.workspacePath, '..');
+    let projectRoot = path.resolve(this.workspacePath, '..');
+    const seen = new Set<string>();
+    let current = this.workspacePath;
+    while (true) {
+      const packageJson = path.join(current, 'package.json');
+      if (fs.existsSync(packageJson)) {
+        try {
+          const pkg = JSON.parse(fs.readFileSync(packageJson, 'utf8'));
+          if (pkg.name === 'aegis-monorepo') {
+            projectRoot = current;
+            break;
+          }
+        } catch (e) {}
+      }
+      const parent = path.dirname(current);
+      if (parent === current || seen.has(parent)) {
+        break;
+      }
+      seen.add(current);
+      current = parent;
+    }
+
     const runtimeConfigPath = path.resolve(projectRoot, 'packages/aegis-runtime/src/config/runtime.json');
     const enginesDir = path.resolve(projectRoot, 'workspace/engines');
     

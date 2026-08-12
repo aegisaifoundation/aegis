@@ -1,0 +1,43 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/die-tests.dir/cpp/tests/TestRunner.cpp.obj"
+  "CMakeFiles/die-tests.dir/cpp/tests/TestRunner.cpp.obj.d"
+  "CMakeFiles/die-tests.dir/cpp/tests/common/TypesTest.cpp.obj"
+  "CMakeFiles/die-tests.dir/cpp/tests/common/TypesTest.cpp.obj.d"
+  "CMakeFiles/die-tests.dir/cpp/tests/demo/LocalNetworkDemo.cpp.obj"
+  "CMakeFiles/die-tests.dir/cpp/tests/demo/LocalNetworkDemo.cpp.obj.d"
+  "CMakeFiles/die-tests.dir/cpp/tests/execution/DistributedExecutionTest.cpp.obj"
+  "CMakeFiles/die-tests.dir/cpp/tests/execution/DistributedExecutionTest.cpp.obj.d"
+  "CMakeFiles/die-tests.dir/cpp/tests/kernel/KernelTest.cpp.obj"
+  "CMakeFiles/die-tests.dir/cpp/tests/kernel/KernelTest.cpp.obj.d"
+  "CMakeFiles/die-tests.dir/cpp/tests/lifecycle/LifecycleTest.cpp.obj"
+  "CMakeFiles/die-tests.dir/cpp/tests/lifecycle/LifecycleTest.cpp.obj.d"
+  "CMakeFiles/die-tests.dir/cpp/tests/membership/MembershipTest.cpp.obj"
+  "CMakeFiles/die-tests.dir/cpp/tests/membership/MembershipTest.cpp.obj.d"
+  "CMakeFiles/die-tests.dir/cpp/tests/messaging/MessagingTest.cpp.obj"
+  "CMakeFiles/die-tests.dir/cpp/tests/messaging/MessagingTest.cpp.obj.d"
+  "CMakeFiles/die-tests.dir/cpp/tests/node/NodeTest.cpp.obj"
+  "CMakeFiles/die-tests.dir/cpp/tests/node/NodeTest.cpp.obj.d"
+  "CMakeFiles/die-tests.dir/cpp/tests/policy/PolicyTest.cpp.obj"
+  "CMakeFiles/die-tests.dir/cpp/tests/policy/PolicyTest.cpp.obj.d"
+  "CMakeFiles/die-tests.dir/cpp/tests/resource-manager/ResourceManagerTest.cpp.obj"
+  "CMakeFiles/die-tests.dir/cpp/tests/resource-manager/ResourceManagerTest.cpp.obj.d"
+  "CMakeFiles/die-tests.dir/cpp/tests/resource-manager/ResourceSyncDemo.cpp.obj"
+  "CMakeFiles/die-tests.dir/cpp/tests/resource-manager/ResourceSyncDemo.cpp.obj.d"
+  "CMakeFiles/die-tests.dir/cpp/tests/runtime/RuntimeTest.cpp.obj"
+  "CMakeFiles/die-tests.dir/cpp/tests/runtime/RuntimeTest.cpp.obj.d"
+  "CMakeFiles/die-tests.dir/cpp/tests/serialization/SerializationTest.cpp.obj"
+  "CMakeFiles/die-tests.dir/cpp/tests/serialization/SerializationTest.cpp.obj.d"
+  "CMakeFiles/die-tests.dir/cpp/tests/state/StateTest.cpp.obj"
+  "CMakeFiles/die-tests.dir/cpp/tests/state/StateTest.cpp.obj.d"
+  "CMakeFiles/die-tests.dir/cpp/tests/transport/TransportTest.cpp.obj"
+  "CMakeFiles/die-tests.dir/cpp/tests/transport/TransportTest.cpp.obj.d"
+  "die-tests.exe"
+  "die-tests.exe.manifest"
+  "die-tests.pdb"
+  "libdie-tests.dll.a"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/die-tests.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

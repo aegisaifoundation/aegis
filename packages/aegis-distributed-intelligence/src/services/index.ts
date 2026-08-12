@@ -1,28 +1,43 @@
 import { MessageType } from '../ipc/MessageTypes.js';
+import net from 'net';
 
 export interface IEngineIpcHost {
   getIpcManager(): any;
+  getContext?(): any;
+  getService?(token: string): any;
 }
 
 export class DiscoveryService {
+  private registeredPeers = new Map<string, { host: string; port: number }>();
+
   constructor(private host: IEngineIpcHost) {}
 
   async discoverNodes(): Promise<string[]> {
     try {
       const res = await this.host.getIpcManager().request(MessageType.REQUEST, { action: 'discover_nodes' });
-      return res?.nodes || [];
-    } catch {
-      return [];
-    }
+      if (res?.nodes && res.nodes.length > 0) {
+        return res.nodes;
+      }
+    } catch {}
+    return Array.from(this.registeredPeers.keys());
   }
 
   async registerNode(nodeId: string, host: string, port: number): Promise<void> {
-    await this.host.getIpcManager().request(MessageType.REQUEST, {
-      action: 'register_node',
-      nodeId,
-      host,
-      port
-    });
+    this.registeredPeers.set(nodeId, { host, port });
+    try {
+      await this.host.getIpcManager().request(MessageType.REQUEST, {
+        action: 'register_node',
+        nodeId,
+        host,
+        port
+      });
+    } catch (err: any) {
+      console.warn(`[DiscoveryService] Register node via IPC timed out or failed: ${err.message}. Peer registered locally in JS fallback.`);
+    }
+  }
+
+  getPeerAddress(nodeId: string): { host: string; port: number } | undefined {
+    return this.registeredPeers.get(nodeId);
   }
 }
 
@@ -30,11 +45,45 @@ export class MessagingService {
   constructor(private host: IEngineIpcHost) {}
 
   async sendMessage(targetNodeId: string, messageType: string, payload: Record<string, any>): Promise<void> {
-    await this.host.getIpcManager().request(MessageType.REQUEST, {
-      action: 'send_message',
-      targetNodeId,
-      messageType,
-      payload
+    try {
+      await this.host.getIpcManager().request(MessageType.REQUEST, {
+        action: 'send_message',
+        targetNodeId,
+        messageType,
+        payload
+      });
+      return;
+    } catch (err: any) {
+      console.warn(`[MessagingService] Send message via IPC failed: ${err.message}. Attempting direct TCP P2P fallback...`);
+    }
+
+    // Direct TCP P2P send fallback
+    const discovery = (this.host as any).discoveryService;
+    const peer = discovery?.getPeerAddress(targetNodeId);
+    if (!peer) {
+      throw new Error(`[MessagingService] Target node ${targetNodeId} not found in discovery registry.`);
+    }
+
+    await new Promise<void>((resolve, reject) => {
+      const client = net.connect(peer.port, peer.host, () => {
+        // C++ TcpTransport structure expects length-prefixed payload:
+        // 4 bytes length (uint32_t big endian) + string payload
+        const serialized = JSON.stringify({
+          type: 'peer_message',
+          senderId: this.host.getContext?.()?.runtimeId || 'local-node',
+          messageType,
+          payload
+        });
+        const lenBuf = Buffer.alloc(4);
+        lenBuf.writeUInt32BE(serialized.length, 0);
+        client.write(Buffer.concat([lenBuf, Buffer.from(serialized)]));
+        client.end();
+        resolve();
+      });
+
+      client.on('error', (err) => {
+        reject(new Error(`Direct TCP P2P connection to ${targetNodeId} (${peer.host}:${peer.port}) failed: ${err.message}`));
+      });
     });
   }
 
@@ -105,10 +154,14 @@ export class CapabilityService {
   constructor(private host: IEngineIpcHost) {}
 
   async advertiseCapabilities(caps: any[]): Promise<void> {
-    await this.host.getIpcManager().request(MessageType.REQUEST, {
-      action: 'advertise_capabilities',
-      capabilities: caps
-    });
+    try {
+      await this.host.getIpcManager().request(MessageType.REQUEST, {
+        action: 'advertise_capabilities',
+        capabilities: caps
+      });
+    } catch (err: any) {
+      console.warn(`[CapabilityService] Failed to advertise capabilities: ${err.message}`);
+    }
   }
 
   async getRemoteCapabilities(nodeId: string): Promise<any[]> {

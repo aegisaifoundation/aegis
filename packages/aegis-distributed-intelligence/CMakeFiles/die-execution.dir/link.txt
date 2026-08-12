@@ -1,0 +1,2 @@
+C:\msys64\ucrt64\bin\ar.exe qc libdie-execution.a "CMakeFiles/die-execution.dir/cpp/src/execution/WorkerRuntime.cpp.obj" "CMakeFiles/die-execution.dir/cpp/src/execution/CheckpointManager.cpp.obj" "CMakeFiles/die-execution.dir/cpp/src/execution/ResultManager.cpp.obj" "CMakeFiles/die-execution.dir/cpp/src/execution/DistributedExecutionService.cpp.obj"
+C:\msys64\ucrt64\bin\ranlib.exe libdie-execution.a

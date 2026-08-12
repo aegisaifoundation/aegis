@@ -23,7 +23,7 @@ export class ConfigurationManager {
     buildCliArgs() {
         const args = [];
         args.push('--node-name', this.config.nodeName);
-        args.push('--port', this.config.port.toString());
+        args.push('--port', (this.config.port + 1000).toString());
         // The native C++ Main accepts discovery args if needed in the future
         return args;
     }

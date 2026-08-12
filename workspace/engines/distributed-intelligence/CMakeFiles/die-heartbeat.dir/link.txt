@@ -1,0 +1,2 @@
+C:\msys64\ucrt64\bin\ar.exe qc libdie-heartbeat.a "CMakeFiles/die-heartbeat.dir/cpp/src/heartbeat/HeartbeatManagerImpl.cpp.obj"
+C:\msys64\ucrt64\bin\ranlib.exe libdie-heartbeat.a

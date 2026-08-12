@@ -1,0 +1,2 @@
+C:\msys64\ucrt64\bin\ar.exe qc libdie-capabilities.a "CMakeFiles/die-capabilities.dir/cpp/src/capabilities/NodeCapabilities.cpp.obj"
+C:\msys64\ucrt64\bin\ranlib.exe libdie-capabilities.a

@@ -1,11 +1,18 @@
 export interface IEngineIpcHost {
     getIpcManager(): any;
+    getContext?(): any;
+    getService?(token: string): any;
 }
 export declare class DiscoveryService {
     private host;
+    private registeredPeers;
     constructor(host: IEngineIpcHost);
     discoverNodes(): Promise<string[]>;
     registerNode(nodeId: string, host: string, port: number): Promise<void>;
+    getPeerAddress(nodeId: string): {
+        host: string;
+        port: number;
+    } | undefined;
 }
 export declare class MessagingService {
     private host;

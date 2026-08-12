@@ -1,0 +1,2 @@
+C:\msys64\ucrt64\bin\ar.exe qc libdie-registry.a "CMakeFiles/die-registry.dir/cpp/src/registry/RegistryImpls.cpp.obj"
+C:\msys64\ucrt64\bin\ranlib.exe libdie-registry.a

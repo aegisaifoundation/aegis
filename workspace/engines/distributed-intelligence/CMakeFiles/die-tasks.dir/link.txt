@@ -1,0 +1,2 @@
+C:\msys64\ucrt64\bin\ar.exe qc libdie-tasks.a "CMakeFiles/die-tasks.dir/cpp/src/tasks/DistributedTask.cpp.obj" "CMakeFiles/die-tasks.dir/cpp/src/tasks/DistributedTaskQueue.cpp.obj"
+C:\msys64\ucrt64\bin\ranlib.exe libdie-tasks.a

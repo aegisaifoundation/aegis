@@ -34,7 +34,29 @@ export class PyTorchBackend implements ITrainingBackend {
     // Output adapter directory
     const outputDir = path.join(wPath, 'lora', `lora-${modelId}-adapter`);
     
-    const scriptPath = path.join(cwd, 'packages', 'aegis-distributed-learning', 'python', 'train.py');
+    let repoRoot = cwd;
+    const seen = new Set<string>();
+    let current = cwd;
+    while (true) {
+      const packageJson = path.join(current, 'package.json');
+      if (fs.existsSync(packageJson)) {
+        try {
+          const pkg = JSON.parse(fs.readFileSync(packageJson, 'utf8'));
+          if (pkg.name === 'aegis-monorepo') {
+            repoRoot = current;
+            break;
+          }
+        } catch (e) {}
+      }
+      const parent = path.dirname(current);
+      if (parent === current || seen.has(parent)) {
+        break;
+      }
+      seen.add(current);
+      current = parent;
+    }
+
+    const scriptPath = path.join(repoRoot, 'packages', 'aegis-distributed-learning', 'python', 'train.py');
 
     console.log(`[PyTorchBackend] Spawning Python PEFT trainer...`);
     console.log(`[PyTorchBackend] Script: ${scriptPath}`);

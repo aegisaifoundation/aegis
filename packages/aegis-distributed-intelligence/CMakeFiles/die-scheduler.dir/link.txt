@@ -1,0 +1,2 @@
+C:\msys64\ucrt64\bin\ar.exe qc libdie-scheduler.a "CMakeFiles/die-scheduler.dir/cpp/src/scheduler/CapabilityScheduler.cpp.obj" "CMakeFiles/die-scheduler.dir/cpp/src/scheduler/WorkerPool.cpp.obj"
+C:\msys64\ucrt64\bin\ranlib.exe libdie-scheduler.a

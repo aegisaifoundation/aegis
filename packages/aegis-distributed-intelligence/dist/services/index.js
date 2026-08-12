@@ -1,25 +1,37 @@
 import { MessageType } from '../ipc/MessageTypes.js';
+import net from 'net';
 export class DiscoveryService {
     host;
+    registeredPeers = new Map();
     constructor(host) {
         this.host = host;
     }
     async discoverNodes() {
         try {
             const res = await this.host.getIpcManager().request(MessageType.REQUEST, { action: 'discover_nodes' });
-            return res?.nodes || [];
+            if (res?.nodes && res.nodes.length > 0) {
+                return res.nodes;
+            }
         }
-        catch {
-            return [];
-        }
+        catch { }
+        return Array.from(this.registeredPeers.keys());
     }
     async registerNode(nodeId, host, port) {
-        await this.host.getIpcManager().request(MessageType.REQUEST, {
-            action: 'register_node',
-            nodeId,
-            host,
-            port
-        });
+        this.registeredPeers.set(nodeId, { host, port });
+        try {
+            await this.host.getIpcManager().request(MessageType.REQUEST, {
+                action: 'register_node',
+                nodeId,
+                host,
+                port
+            });
+        }
+        catch (err) {
+            console.warn(`[DiscoveryService] Register node via IPC timed out or failed: ${err.message}. Peer registered locally in JS fallback.`);
+        }
+    }
+    getPeerAddress(nodeId) {
+        return this.registeredPeers.get(nodeId);
     }
 }
 export class MessagingService {
@@ -28,11 +40,43 @@ export class MessagingService {
         this.host = host;
     }
     async sendMessage(targetNodeId, messageType, payload) {
-        await this.host.getIpcManager().request(MessageType.REQUEST, {
-            action: 'send_message',
-            targetNodeId,
-            messageType,
-            payload
+        try {
+            await this.host.getIpcManager().request(MessageType.REQUEST, {
+                action: 'send_message',
+                targetNodeId,
+                messageType,
+                payload
+            });
+            return;
+        }
+        catch (err) {
+            console.warn(`[MessagingService] Send message via IPC failed: ${err.message}. Attempting direct TCP P2P fallback...`);
+        }
+        // Direct TCP P2P send fallback
+        const discovery = this.host.discoveryService;
+        const peer = discovery?.getPeerAddress(targetNodeId);
+        if (!peer) {
+            throw new Error(`[MessagingService] Target node ${targetNodeId} not found in discovery registry.`);
+        }
+        await new Promise((resolve, reject) => {
+            const client = net.connect(peer.port, peer.host, () => {
+                // C++ TcpTransport structure expects length-prefixed payload:
+                // 4 bytes length (uint32_t big endian) + string payload
+                const serialized = JSON.stringify({
+                    type: 'peer_message',
+                    senderId: this.host.getContext?.()?.runtimeId || 'local-node',
+                    messageType,
+                    payload
+                });
+                const lenBuf = Buffer.alloc(4);
+                lenBuf.writeUInt32BE(serialized.length, 0);
+                client.write(Buffer.concat([lenBuf, Buffer.from(serialized)]));
+                client.end();
+                resolve();
+            });
+            client.on('error', (err) => {
+                reject(new Error(`Direct TCP P2P connection to ${targetNodeId} (${peer.host}:${peer.port}) failed: ${err.message}`));
+            });
         });
     }
     onMessage(messageType, callback) {
@@ -104,10 +148,15 @@ export class CapabilityService {
         this.host = host;
     }
     async advertiseCapabilities(caps) {
-        await this.host.getIpcManager().request(MessageType.REQUEST, {
-            action: 'advertise_capabilities',
-            capabilities: caps
-        });
+        try {
+            await this.host.getIpcManager().request(MessageType.REQUEST, {
+                action: 'advertise_capabilities',
+                capabilities: caps
+            });
+        }
+        catch (err) {
+            console.warn(`[CapabilityService] Failed to advertise capabilities: ${err.message}`);
+        }
     }
     async getRemoteCapabilities(nodeId) {
         try {

@@ -1,0 +1,2 @@
+C:\msys64\ucrt64\bin\ar.exe qc libdie-membership.a "CMakeFiles/die-membership.dir/cpp/src/membership/MembershipManagerImpl.cpp.obj"
+C:\msys64\ucrt64\bin\ranlib.exe libdie-membership.a

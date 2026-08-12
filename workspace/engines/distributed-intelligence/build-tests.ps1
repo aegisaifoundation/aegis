@@ -100,7 +100,9 @@ $sources = @(
     "cpp/tests/execution/DistributedExecutionTest.cpp",
     "cpp/tests/demo/LocalNetworkDemo.cpp",
     "cpp/tests/resource-manager/ResourceManagerTest.cpp",
-    "cpp/tests/resource-manager/ResourceSyncDemo.cpp"
+    "cpp/tests/resource-manager/ResourceSyncDemo.cpp",
+    "cpp/tests/air-dis/AIRDISTest.cpp",
+    "cpp/tests/benchmarks/BenchmarkRunner.cpp"
 )
 
 $fullSources = $sources | ForEach-Object { Join-Path $PackageRoot $_ }

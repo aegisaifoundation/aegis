@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"D:/aegis/packages/aegis-distributed-intelligence/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

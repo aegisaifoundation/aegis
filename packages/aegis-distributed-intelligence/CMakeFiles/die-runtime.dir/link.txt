@@ -1,0 +1,2 @@
+C:\msys64\ucrt64\bin\ar.exe qc libdie-runtime.a "CMakeFiles/die-runtime.dir/cpp/src/runtime/DistributedRuntime.cpp.obj" "CMakeFiles/die-runtime.dir/cpp/src/runtime/NodeRuntime.cpp.obj"
+C:\msys64\ucrt64\bin\ranlib.exe libdie-runtime.a

@@ -9,6 +9,9 @@ import { pluginRegistry } from '@aegis/plugins';
 import { providerManager, providerRegistry } from '@aegis/providers';
 const getMemoryGateway = () => serviceRegistry.get('memoryGateway');
 const PORT = 3005;
+const getDiscovery = () => serviceRegistry.get('distributed-intelligence:discovery');
+const getMessaging = () => serviceRegistry.get('distributed-intelligence:messaging');
+const incomingMessages = [];
 export async function startApiServer() {
     console.log('[ApiServer] Kernel is already booted. Starting server loop...');
     const server = http.createServer(async (req, res) => {
@@ -372,6 +375,67 @@ export async function startApiServer() {
                 }
                 return;
             }
+            // Endpoint: GET /api/peers
+            if (pathname === '/api/peers' && req.method === 'GET') {
+                const disc = getDiscovery();
+                const peers = disc ? await disc.discoverNodes() : [];
+                res.setHeader('Content-Type', 'application/json');
+                res.writeHead(200);
+                res.end(JSON.stringify({ success: true, peers }));
+                return;
+            }
+            // Endpoint: POST /api/peers/register
+            if (pathname === '/api/peers/register' && req.method === 'POST') {
+                const { nodeId, host, port } = parsedBody;
+                if (!nodeId || !host || !port) {
+                    res.setHeader('Content-Type', 'application/json');
+                    res.writeHead(400);
+                    res.end(JSON.stringify({ error: 'nodeId, host, and port are required' }));
+                    return;
+                }
+                const disc = getDiscovery();
+                if (!disc) {
+                    res.setHeader('Content-Type', 'application/json');
+                    res.writeHead(500);
+                    res.end(JSON.stringify({ error: 'Distributed Intelligence discovery service is not active' }));
+                    return;
+                }
+                await disc.registerNode(nodeId, host, Number(port));
+                res.setHeader('Content-Type', 'application/json');
+                res.writeHead(200);
+                res.end(JSON.stringify({ success: true, message: `Node "${nodeId}" registered successfully` }));
+                return;
+            }
+            // Endpoint: POST /api/peers/message
+            if (pathname === '/api/peers/message' && req.method === 'POST') {
+                const { targetNodeId, messageType, payload } = parsedBody;
+                if (!targetNodeId || !messageType || !payload) {
+                    res.setHeader('Content-Type', 'application/json');
+                    res.writeHead(400);
+                    res.end(JSON.stringify({ error: 'targetNodeId, messageType, and payload are required' }));
+                    return;
+                }
+                const msgService = getMessaging();
+                if (!msgService) {
+                    res.setHeader('Content-Type', 'application/json');
+                    res.writeHead(500);
+                    res.end(JSON.stringify({ error: 'Distributed Intelligence messaging service is not active' }));
+                    return;
+                }
+                await msgService.sendMessage(targetNodeId, messageType, payload);
+                res.setHeader('Content-Type', 'application/json');
+                res.writeHead(200);
+                res.end(JSON.stringify({ success: true, message: `Message sent to target "${targetNodeId}" successfully` }));
+                return;
+            }
+            // Endpoint: GET /api/peers/messages
+            if (pathname === '/api/peers/messages' && req.method === 'GET') {
+                res.setHeader('Content-Type', 'application/json');
+                res.writeHead(200);
+                res.end(JSON.stringify({ success: true, messages: [...incomingMessages] }));
+                incomingMessages.length = 0; // Clear after reading
+                return;
+            }
             // Endpoint: POST /api/chat
             if (pathname === '/api/chat' && req.method === 'POST') {
                 const { message } = parsedBody;
@@ -567,5 +631,30 @@ export async function startApiServer() {
     // Bind explicitly to 127.0.0.1 loopback to guarantee IPv4 access
     server.listen(PORT, '127.0.0.1', () => {
         console.log(`[API Server] AEGIS HTTP API is listening on http://127.0.0.1:${PORT}`);
+        // Set up P2P Incoming Message Listener
+        const msgService = getMessaging();
+        if (msgService) {
+            console.log('[ApiServer] Subscribed to P2P incoming messages.');
+            const handleIncomingMessage = (payload, senderId, messageType) => {
+                incomingMessages.push({
+                    senderId,
+                    messageType,
+                    timestamp: new Date().toISOString(),
+                    text: payload.text || String(payload)
+                });
+            };
+            msgService.onMessage('hello_p2p', (payload, senderId) => {
+                console.log(`\n🎉 [P2P Incoming Message] received from ${senderId}:`, payload);
+                handleIncomingMessage(payload, senderId, 'hello_p2p');
+                // Auto-reply to confirm receipt
+                msgService.sendMessage(senderId, 'reply_p2p', {
+                    text: `Hello ${senderId}, Node A received your message successfully!`
+                }).catch((err) => console.error('[P2P Reply Failed]', err.message));
+            });
+            msgService.onMessage('reply_p2p', (payload, senderId) => {
+                console.log(`\n🎉 [P2P Reply Message] received from ${senderId}:`, payload);
+                handleIncomingMessage(payload, senderId, 'reply_p2p');
+            });
+        }
     });
 }

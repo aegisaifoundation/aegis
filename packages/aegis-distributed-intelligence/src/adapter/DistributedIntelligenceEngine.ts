@@ -17,6 +17,8 @@ import {
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import net from 'net';
+import { MessageType } from '../ipc/MessageTypes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,6 +38,7 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
 
   private lifecycle = new EngineLifecycle();
   private context!: IRuntimeContext_v1;
+  private tcpServer: net.Server | null = null;
 
   readonly discoveryService = new DiscoveryService(this);
   readonly messagingService = new MessagingService(this);
@@ -83,6 +86,53 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
 
   async start(): Promise<void> {
     await this.lifecycle.start();
+
+    // Start local P2P TCP server fallback on the configured port
+    const config = this.lifecycle.getConfigurationManager().get();
+    const port = config.port || 9900;
+    const host = config.host || '0.0.0.0';
+
+    this.tcpServer = net.createServer((socket) => {
+      let buffer = Buffer.alloc(0);
+      socket.on('data', (chunk) => {
+        buffer = Buffer.concat([buffer, chunk]);
+        while (buffer.length >= 4) {
+          const payloadLen = buffer.readUInt32BE(0);
+          if (buffer.length >= 4 + payloadLen) {
+            const payloadStr = buffer.subarray(4, 4 + payloadLen).toString('utf8');
+            buffer = buffer.subarray(4 + payloadLen);
+            
+            // Parse payload string as TYPE|BODY
+            const pipe = payloadStr.indexOf('|');
+            if (pipe !== -1) {
+              const type = payloadStr.substring(0, pipe);
+              const bodyStr = payloadStr.substring(pipe + 1);
+              try {
+                const body = JSON.parse(bodyStr);
+                // Forward the packet as MessageType.EVENT to our local IPC manager
+                this.getIpcManager().emit('packet', {
+                  messageType: MessageType.EVENT,
+                  payload: {
+                    type: 'peer_message',
+                    messageType: type,
+                    senderId: body.senderId || 'remote-node',
+                    payload: body.payload || body
+                  }
+                });
+              } catch {}
+            }
+          } else {
+            break;
+          }
+        }
+      });
+
+      socket.on('error', () => {});
+    });
+
+    this.tcpServer.listen(port, host, () => {
+      console.log(`[DistributedIntelligenceEngine] P2P TCP Server listening on ${host}:${port}`);
+    });
   }
 
   async pause(): Promise<void> {
@@ -105,6 +155,10 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
   }
 
   async shutdown(): Promise<void> {
+    if (this.tcpServer) {
+      this.tcpServer.close();
+      this.tcpServer = null;
+    }
     await this.lifecycle.shutdown();
   }
 

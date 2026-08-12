@@ -1,0 +1,2 @@
+C:\msys64\ucrt64\bin\ar.exe qc libdie-events.a "CMakeFiles/die-events.dir/cpp/src/events/EventDispatcher.cpp.obj"
+C:\msys64\ucrt64\bin\ranlib.exe libdie-events.a

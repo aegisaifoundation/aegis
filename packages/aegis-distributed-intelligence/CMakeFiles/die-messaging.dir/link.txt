@@ -1,0 +1,2 @@
+C:\msys64\ucrt64\bin\ar.exe qc libdie-messaging.a "CMakeFiles/die-messaging.dir/cpp/src/messaging/MessageBus.cpp.obj"
+C:\msys64\ucrt64\bin\ranlib.exe libdie-messaging.a

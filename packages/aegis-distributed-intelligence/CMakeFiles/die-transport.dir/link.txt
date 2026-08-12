@@ -1,0 +1,2 @@
+C:\msys64\ucrt64\bin\ar.exe qc libdie-transport.a "CMakeFiles/die-transport.dir/cpp/src/transport/TcpTransport.cpp.obj"
+C:\msys64\ucrt64\bin\ranlib.exe libdie-transport.a
