@@ -12,7 +12,8 @@ import {
   TrustService,
   SchedulerService,
   EventService,
-  IEngineIpcHost
+  IEngineIpcHost,
+  activeEngines
 } from '../services/index.js';
 import path from 'path';
 import fs from 'fs';
@@ -36,6 +37,9 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
 
   private lifecycle = new EngineLifecycle();
   private context!: IRuntimeContext_v1;
+
+  public nodeName = 'aegis-die-node';
+  public port = 9900;
 
   readonly discoveryService = new DiscoveryService(this);
   readonly messagingService = new MessagingService(this);
@@ -78,7 +82,10 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
   }
 
   async configure(config: Record<string, any>): Promise<void> {
+    if (config.nodeName) this.nodeName = config.nodeName;
+    if (config.port) this.port = config.port;
     await this.lifecycle.configure(config);
+    activeEngines.set(this.nodeName, this);
   }
 
   async start(): Promise<void> {

@@ -1,0 +1,15 @@
+{
+  "workspace": "C:\\aegis\\workspace",
+  "installMode": "Standard",
+  "version": "1.0.0",
+  "autoloadEngines": [
+    "aegis-agent",
+    "aegis-memory",
+    "aegis-api"
+  ],
+  "hardware": {
+    "cudaEnabled": true,
+    "cpu": "AMD Ryzen 7 6800H with Radeon Graphics         ",
+    "ram": 16
+  }
+}

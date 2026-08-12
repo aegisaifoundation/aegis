@@ -1,4 +1,17 @@
 {
-  "messages": [],
+  "messages": [
+    {
+      "id": "2d28ca0c-cfa2-4c2f-af09-49ab962f6816",
+      "role": "user",
+      "content": "hi",
+      "createdAt": "2026-07-22T09:36:21.988Z"
+    },
+    {
+      "id": "9075aa29-92ef-4f43-995b-0a20c4b0e7bd",
+      "role": "assistant",
+      "content": "Hello! How can I assist you today?",
+      "createdAt": "2026-07-22T09:36:35.678Z"
+    }
+  ],
   "memoryVersion": "1.0.0"
 }

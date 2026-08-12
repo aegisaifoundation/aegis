@@ -1,17 +1,25 @@
 export interface IEngineIpcHost {
     getIpcManager(): any;
 }
+export declare const activeEngines: Map<string, any>;
 export declare class DiscoveryService {
     private host;
+    private localPeers;
+    peerAddresses: Map<string, {
+        host: string;
+        port: number;
+    }>;
     constructor(host: IEngineIpcHost);
     discoverNodes(): Promise<string[]>;
     registerNode(nodeId: string, host: string, port: number): Promise<void>;
 }
 export declare class MessagingService {
     private host;
+    private listeners;
     constructor(host: IEngineIpcHost);
     sendMessage(targetNodeId: string, messageType: string, payload: Record<string, any>): Promise<void>;
     onMessage(messageType: string, callback: (payload: any, senderId: string) => void | Promise<void>): void;
+    deliverMessage(messageType: string, payload: any, senderId: string): void;
 }
 export declare class TransportService {
     private host;

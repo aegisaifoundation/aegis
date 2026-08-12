@@ -1,41 +1,104 @@
 import { MessageType } from '../ipc/MessageTypes.js';
+import net from 'net';
+export const activeEngines = new Map();
 export class DiscoveryService {
     host;
+    localPeers = new Set();
+    peerAddresses = new Map();
     constructor(host) {
         this.host = host;
     }
     async discoverNodes() {
         try {
             const res = await this.host.getIpcManager().request(MessageType.REQUEST, { action: 'discover_nodes' });
-            return res?.nodes || [];
+            const nativeNodes = res?.nodes || [];
+            const allNodes = new Set([...nativeNodes, ...this.localPeers]);
+            return Array.from(allNodes);
         }
         catch {
-            return [];
+            return Array.from(this.localPeers);
         }
     }
     async registerNode(nodeId, host, port) {
-        await this.host.getIpcManager().request(MessageType.REQUEST, {
-            action: 'register_node',
-            nodeId,
-            host,
-            port
-        });
+        this.localPeers.add(nodeId);
+        this.peerAddresses.set(nodeId, { host, port });
+        try {
+            await this.host.getIpcManager().request(MessageType.REQUEST, {
+                action: 'register_node',
+                nodeId,
+                host,
+                port
+            });
+        }
+        catch (err) {
+            // Legacy C++ engine doesn't support the register_node command. Fall back to local registry.
+            console.warn(`[DiscoveryService] Failed to register node natively (expected in legacy mode): ${err.message}`);
+        }
     }
 }
 export class MessagingService {
     host;
+    listeners = new Map();
     constructor(host) {
         this.host = host;
     }
     async sendMessage(targetNodeId, messageType, payload) {
-        await this.host.getIpcManager().request(MessageType.REQUEST, {
-            action: 'send_message',
-            targetNodeId,
-            messageType,
-            payload
-        });
+        // 1. In-process check: if target is running in the same process, deliver message directly
+        const targetEngine = activeEngines.get(targetNodeId);
+        if (targetEngine) {
+            const ourNodeName = this.host.nodeName || 'unknown';
+            targetEngine.messagingService.deliverMessage(messageType, payload, ourNodeName);
+            return;
+        }
+        // 2. Direct TCP connection to target port if peerAddress is known (P2P Remote Fallback)
+        const peerAddr = this.host.discoveryService?.peerAddresses?.get(targetNodeId);
+        if (peerAddr) {
+            try {
+                await new Promise((resolve, reject) => {
+                    // Construct native C++ P2P wrapper message
+                    const type = 'TASK_DISPATCH';
+                    const body = JSON.stringify({
+                        taskId: 'aegis-msg-' + Math.floor(Math.random() * 100000),
+                        sourceNode: this.host.nodeName || 'node-local',
+                        taskType: messageType,
+                        payload
+                    });
+                    const payloadStr = `${type}|${body}`;
+                    const payloadBuffer = Buffer.from(payloadStr, 'utf8');
+                    const lengthBuffer = Buffer.alloc(4);
+                    lengthBuffer.writeUInt32BE(payloadBuffer.length, 0);
+                    const client = net.connect({ host: peerAddr.host, port: peerAddr.port, timeout: 3000 }, () => {
+                        client.write(lengthBuffer);
+                        client.write(payloadBuffer);
+                        client.end();
+                        resolve();
+                    });
+                    client.on('error', reject);
+                });
+                return;
+            }
+            catch (err) {
+                console.warn(`[MessagingService] Direct TCP send to ${targetNodeId} (${peerAddr.host}:${peerAddr.port}) failed: ${err.message}`);
+            }
+        }
+        // 3. Native fall-through
+        try {
+            await this.host.getIpcManager().request(MessageType.REQUEST, {
+                action: 'send_message',
+                targetNodeId,
+                messageType,
+                payload
+            });
+        }
+        catch (err) {
+            console.warn(`[MessagingService] Failed to send native message to ${targetNodeId}: ${err.message}`);
+        }
     }
     onMessage(messageType, callback) {
+        if (!this.listeners.has(messageType)) {
+            this.listeners.set(messageType, new Set());
+        }
+        this.listeners.get(messageType).add(callback);
         this.host.getIpcManager().on('packet', (packet) => {
             if (packet.messageType === MessageType.EVENT && packet.payload?.type === 'peer_message') {
                 const msg = packet.payload;
@@ -44,6 +107,17 @@ export class MessagingService {
                 }
             }
         });
+    }
+    // Deliver in-memory messages directly
+    deliverMessage(messageType, payload, senderId) {
+        const callbacks = this.listeners.get(messageType);
+        if (callbacks) {
+            for (const callback of callbacks) {
+                Promise.resolve(callback(payload, senderId)).catch(err => {
+                    console.error(`Error in onMessage callback for ${messageType}:`, err);
+                });
+            }
+        }
     }
 }
 export class TransportService {

@@ -1,5 +1,8 @@
-## Current Tasks
+- goal: None
+- current objective: None
 
-## Intermediate Conclusions
+available tools:
+- None
 
-## Temporary Execution Context
+available skills:
+- None

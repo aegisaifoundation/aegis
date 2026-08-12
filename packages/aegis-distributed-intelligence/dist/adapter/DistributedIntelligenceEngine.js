@@ -1,7 +1,7 @@
 import { serviceRegistry } from '@aegis/runtime';
 import { EngineLifecycle } from '../lifecycle/EngineLifecycle.js';
 import { EngineState } from '../state/EngineState.js';
-import { DiscoveryService, MessagingService, TransportService, ExecutionService, CapabilityService, ResourceService, TrustService, SchedulerService, EventService } from '../services/index.js';
+import { DiscoveryService, MessagingService, TransportService, ExecutionService, CapabilityService, ResourceService, TrustService, SchedulerService, EventService, activeEngines } from '../services/index.js';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -21,6 +21,8 @@ export class DistributedIntelligenceEngine {
     };
     lifecycle = new EngineLifecycle();
     context;
+    nodeName = 'aegis-die-node';
+    port = 9900;
     discoveryService = new DiscoveryService(this);
     messagingService = new MessagingService(this);
     transportService = new TransportService(this);
@@ -55,7 +57,12 @@ export class DistributedIntelligenceEngine {
         await this.lifecycle.initialize(context, executablePath);
     }
     async configure(config) {
+        if (config.nodeName)
+            this.nodeName = config.nodeName;
+        if (config.port)
+            this.port = config.port;
         await this.lifecycle.configure(config);
+        activeEngines.set(this.nodeName, this);
     }
     async start() {
         await this.lifecycle.start();

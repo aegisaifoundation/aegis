@@ -4,6 +4,8 @@ export declare class DistributedIntelligenceEngine implements IEngine, IEngineIp
     readonly metadata: IEngineMetadata;
     private lifecycle;
     private context;
+    nodeName: string;
+    port: number;
     readonly discoveryService: DiscoveryService;
     readonly messagingService: MessagingService;
     readonly transportService: TransportService;
