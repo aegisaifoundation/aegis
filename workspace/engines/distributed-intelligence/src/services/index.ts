@@ -1,5 +1,6 @@
 import { MessageType } from '../ipc/MessageTypes.js';
 import net from 'net';
+import fs from 'fs';
 
 export interface IEngineIpcHost {
   getIpcManager(): any;

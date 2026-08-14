@@ -1,5 +1,6 @@
 import { MessageType } from '../ipc/MessageTypes.js';
 import net from 'net';
+import fs from 'fs';
 export const activeEngines = new Map();
 export class DiscoveryService {
     host;
@@ -65,16 +66,27 @@ export class MessagingService {
         const msgPort = localPort + 1;
         this.localServer = net.createServer((socket) => {
             let buffer = Buffer.alloc(0);
+            const logDebug = (msg) => {
+                try {
+                    fs.appendFileSync('workspace/logs/p2p_debug.log', `[${new Date().toISOString()}] [Socket ${socket.remoteAddress}:${socket.remotePort}] ${msg}\n`, 'utf8');
+                }
+                catch { }
+            };
+            logDebug('Connection received');
             socket.on('data', (chunk) => {
+                logDebug(`Received chunk of size ${chunk.length}`);
                 buffer = Buffer.concat([buffer, chunk]);
                 while (buffer.length >= 4) {
                     const payloadLen = buffer.readUInt32BE(0);
+                    logDebug(`Reading expected payload length: ${payloadLen}. Accumulator size: ${buffer.length}`);
                     if (buffer.length >= 4 + payloadLen) {
                         const payloadStr = buffer.subarray(4, 4 + payloadLen).toString('utf8');
                         buffer = buffer.subarray(4 + payloadLen);
+                        logDebug(`Received complete payload of size ${payloadLen}: ${payloadStr}`);
                         try {
                             const parsed = JSON.parse(payloadStr);
                             if (parsed.messageType && parsed.senderId) {
+                                logDebug(`Successfully parsed packet. messageType=${parsed.messageType}, senderId=${parsed.senderId}`);
                                 const packet = {
                                     messageType: MessageType.EVENT,
                                     payload: {
@@ -87,19 +99,30 @@ export class MessagingService {
                                 // Emit to local IPC
                                 this.host.getIpcManager().emit('packet', packet);
                                 // Also trigger local event callbacks directly if registered
+                                logDebug(`Delivering message to local listeners...`);
                                 this.deliverMessage(parsed.messageType, parsed.payload, parsed.senderId);
+                            }
+                            else {
+                                logDebug(`Parsed packet missing messageType or senderId: ${payloadStr}`);
                             }
                         }
                         catch (err) {
+                            logDebug(`Failed to parse json: ${err.message}`);
                             console.error('[MessagingService] Failed to parse JS fallback packet:', err);
                         }
                     }
                     else {
+                        logDebug(`Waiting for more data. Need ${4 + payloadLen} bytes, currently have ${buffer.length}`);
                         break;
                     }
                 }
             });
-            socket.on('error', () => { });
+            socket.on('end', () => {
+                logDebug('Socket connection closed by client');
+            });
+            socket.on('error', (err) => {
+                logDebug(`Socket error: ${err.message}`);
+            });
         });
         this.localServer.listen(msgPort, '0.0.0.0', () => {
             console.log(`[MessagingService] TS P2P Message Server listening on port ${msgPort} (JS fallback)`);
