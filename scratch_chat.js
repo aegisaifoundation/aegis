@@ -62,11 +62,16 @@ rl.on('line', (line) => {
   const text = line.trim();
   if (text.length > 0) {
     try {
-      // Escape quotes in message string for shell invocation
       const escapedText = text.replace(/"/g, '\\"');
-      execSync(`node apps/aegis-cli/dist/index.js node send-message "${targetNodeId}" "${escapedText}"`, { stdio: 'ignore' });
+      const out = execSync(`node apps/aegis-cli/dist/index.js node send-message "${targetNodeId}" "${escapedText}"`, { encoding: 'utf8' });
+      if (out.includes('Failed')) {
+        console.log(`\n[AEGIS CLI Error Output]:\n${out.trim()}`);
+      }
     } catch (err) {
-      console.error(`\n[Failed to send message via AEGIS]: Daemon might be stopped.`);
+      console.error(`\n[Failed to send message via AEGIS]:`);
+      console.error(err.message);
+      if (err.stdout) console.error(`CLI Output: ${err.stdout.trim()}`);
+      if (err.stderr) console.error(`CLI Error: ${err.stderr.trim()}`);
     }
   }
   rl.prompt();
