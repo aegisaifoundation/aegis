@@ -160,6 +160,15 @@ export class IpcServer {
               result = { success: true, requests };
               break;
             }
+            case 'node:clear-requests': {
+              const engine = serviceRegistry.get<any>('distributed-intelligence');
+              if (!engine) {
+                throw new Error('DistributedIntelligenceEngine is not loaded in serviceRegistry');
+              }
+              await engine.clearConnectionRequests();
+              result = { success: true, message: 'All connection requests cleared successfully.' };
+              break;
+            }
             case 'node:accept': {
               if (!req.payload || !req.payload.requestId) {
                 throw new Error('Missing requestId in payload');

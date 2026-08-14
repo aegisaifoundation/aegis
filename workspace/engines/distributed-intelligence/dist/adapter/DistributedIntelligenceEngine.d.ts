@@ -1,5 +1,6 @@
 import { IEngine, IEngineMetadata, IRuntimeContext_v1, EngineHealthReport } from '@aegis/sdk';
 import { DiscoveryService, MessagingService, TransportService, ExecutionService, CapabilityService, ResourceService, TrustService, SchedulerService, EventService, IEngineIpcHost } from '../services/index.js';
+export declare function getLocalIpAddress(): string;
 export declare class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
     readonly metadata: IEngineMetadata;
     private lifecycle;
@@ -35,6 +36,7 @@ export declare class DistributedIntelligenceEngine implements IEngine, IEngineIp
     private saveConnectionRequests;
     requestConnection(targetNodeId: string): Promise<void>;
     acceptConnectionRequest(requestId: string): Promise<void>;
+    clearConnectionRequests(): Promise<void>;
     private handleIncomingConnectionRequest;
     private handleIncomingConnectionApproval;
     private resolveExecutable;

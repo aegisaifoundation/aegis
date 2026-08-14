@@ -6,8 +6,35 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
+import os from 'os';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+export function getLocalIpAddress() {
+    const interfaces = os.networkInterfaces();
+    for (const name of Object.keys(interfaces)) {
+        const ifaceInfo = interfaces[name];
+        if (ifaceInfo) {
+            for (const netInfo of ifaceInfo) {
+                if (netInfo.family === 'IPv4' && !netInfo.internal) {
+                    if (name.toLowerCase().includes('wi-fi') || name.toLowerCase().includes('wireless') || name.toLowerCase().includes('ethernet') || name.toLowerCase().includes('local area')) {
+                        return netInfo.address;
+                    }
+                }
+            }
+        }
+    }
+    for (const name of Object.keys(interfaces)) {
+        const ifaceInfo = interfaces[name];
+        if (ifaceInfo) {
+            for (const netInfo of ifaceInfo) {
+                if (netInfo.family === 'IPv4' && !netInfo.internal) {
+                    return netInfo.address;
+                }
+            }
+        }
+    }
+    return '127.0.0.1';
+}
 export class DistributedIntelligenceEngine {
     metadata = {
         id: 'distributed-intelligence',
@@ -144,12 +171,13 @@ export class DistributedIntelligenceEngine {
         if (!peer) {
             throw new Error(`Node "${targetNodeId}" is not registered locally. Use registerNode first.`);
         }
+        const localIp = getLocalIpAddress();
         const requests = await this.getConnectionRequests();
         const requestId = crypto.randomUUID();
         const newRequest = {
             requestId,
             senderNodeId: this.nodeName,
-            senderHost: '127.0.0.1',
+            senderHost: localIp,
             senderPort: this.port,
             targetNodeId,
             status: 'pending',
@@ -160,7 +188,7 @@ export class DistributedIntelligenceEngine {
         // Send connection request via messagingService
         await this.messagingService.sendMessage(targetNodeId, 'connection_request', {
             requestId,
-            senderHost: '127.0.0.1',
+            senderHost: localIp,
             senderPort: this.port
         });
     }
@@ -174,12 +202,22 @@ export class DistributedIntelligenceEngine {
         await this.saveConnectionRequests(requests);
         // Register peer in discoveryService
         await this.discoveryService.registerNode(req.senderNodeId, req.senderHost, req.senderPort);
+        const localIp = getLocalIpAddress();
         // Send connection approval back to the sender
         await this.messagingService.sendMessage(req.senderNodeId, 'connection_accepted', {
             requestId,
-            targetHost: '127.0.0.1',
+            targetHost: localIp,
             targetPort: this.port
         });
+    }
+    async clearConnectionRequests() {
+        const filePath = this.getRequestsFilePath();
+        if (fs.existsSync(filePath)) {
+            try {
+                fs.writeFileSync(filePath, JSON.stringify([], null, 2), 'utf8');
+            }
+            catch { }
+        }
     }
     async handleIncomingConnectionRequest(payload, senderId) {
         const requests = await this.getConnectionRequests();

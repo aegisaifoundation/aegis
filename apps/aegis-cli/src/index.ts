@@ -628,6 +628,20 @@ nodeCmd
   });
 
 nodeCmd
+  .command('clear-requests')
+  .description('Clear all stored connection requests')
+  .action(async () => {
+    try {
+      console.log('[CLI] Clearing connection requests...');
+      const result = await sendIpcCommand('node:clear-requests');
+      console.log(`[CLI] ${result.message}`);
+    } catch (err: any) {
+      console.error(`[CLI] Failed to clear connection requests: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+nodeCmd
   .command('accept <requestId>')
   .description('Accept an incoming connection request by ID')
   .action(async (requestId) => {
