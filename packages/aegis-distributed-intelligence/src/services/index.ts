@@ -36,6 +36,16 @@ export class DiscoveryService {
     }
   }
 
+  async removeNode(nodeId: string): Promise<void> {
+    this.localPeers.delete(nodeId);
+    try {
+      await this.host.getIpcManager().request(MessageType.REQUEST, {
+        action: 'unregister_node',
+        nodeId
+      });
+    } catch {}
+  }
+
   getLocalPeer(nodeId: string) {
     return this.localPeers.get(nodeId);
   }

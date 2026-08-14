@@ -114,6 +114,22 @@ export class IpcServer {
               result = { success: true, message: `Node "${req.payload.nodeId}" registered successfully.` };
               break;
             }
+            case 'node:unregister': {
+              if (!req.payload || !req.payload.nodeId) {
+                throw new Error('Missing nodeId in payload');
+              }
+              const disc = serviceRegistry.get<any>('distributed-intelligence:discovery');
+              if (!disc) {
+                throw new Error('DiscoveryService is not loaded in serviceRegistry');
+              }
+              if (disc.removeNode) {
+                await disc.removeNode(req.payload.nodeId);
+              } else {
+                (disc as any).localPeers?.delete(req.payload.nodeId);
+              }
+              result = { success: true, message: `Node "${req.payload.nodeId}" unregistered successfully.` };
+              break;
+            }
             case 'node:list': {
               const disc = serviceRegistry.get<any>('distributed-intelligence:discovery');
               if (!disc) {

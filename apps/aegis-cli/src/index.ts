@@ -553,6 +553,20 @@ nodeCmd
   });
 
 nodeCmd
+  .command('unregister <nodeId>')
+  .description('Unregister a peer node')
+  .action(async (nodeId) => {
+    try {
+      console.log(`[CLI] Dispatching node:unregister for "${nodeId}"...`);
+      const result = await sendIpcCommand('node:unregister', { nodeId });
+      console.log(`[CLI] ${result.message}`);
+    } catch (err: any) {
+      console.error(`[CLI] Failed to unregister node: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
+nodeCmd
   .command('list')
   .description('List all registered remote nodes')
   .action(async () => {

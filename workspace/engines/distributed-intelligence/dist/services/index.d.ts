@@ -8,6 +8,7 @@ export declare class DiscoveryService {
     constructor(host: IEngineIpcHost);
     discoverNodes(): Promise<string[]>;
     registerNode(nodeId: string, host: string, port: number): Promise<void>;
+    removeNode(nodeId: string): Promise<void>;
     getLocalPeer(nodeId: string): {
         host: string;
         port: number;

@@ -31,6 +31,16 @@ export class DiscoveryService {
             console.log(`[DiscoveryService] Native IPC register_node timed out: ${err.message}. Registered '${nodeId}' at ${host}:${port} in JS transport fallback.`);
         }
     }
+    async removeNode(nodeId) {
+        this.localPeers.delete(nodeId);
+        try {
+            await this.host.getIpcManager().request(MessageType.REQUEST, {
+                action: 'unregister_node',
+                nodeId
+            });
+        }
+        catch { }
+    }
     getLocalPeer(nodeId) {
         return this.localPeers.get(nodeId);
     }

@@ -31,6 +31,16 @@ export class DiscoveryService {
             console.log(`[DiscoveryService] Native IPC register_node timed out: ${err.message}. Registered '${nodeId}' at ${host}:${port} in JS transport fallback.`);
         }
     }
+    async removeNode(nodeId) {
+        this.localPeers.delete(nodeId);
+        try {
+            await this.host.getIpcManager().request(MessageType.REQUEST, {
+                action: 'unregister_node',
+                nodeId
+            });
+        }
+        catch { }
+    }
     getLocalPeer(nodeId) {
         return this.localPeers.get(nodeId);
     }
@@ -116,7 +126,8 @@ export class MessagingService {
                 return;
             }
             catch (err) {
-                console.warn(`[MessagingService] Direct TS P2P send to ${peer.host}:${peer.port + 1} failed: ${err.message}. Trying native send...`);
+                console.warn(`[MessagingService] Direct TS P2P send to ${peer.host}:${peer.port + 1} failed: ${err.message}`);
+                throw new Error(`Target node "${targetNodeId}" is unreachable: ${err.message}`);
             }
         }
         // 3. Try native C++ send
