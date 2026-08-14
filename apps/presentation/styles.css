@@ -1,0 +1,1185 @@
+/* ==========================================================================
+   CSS Design Tokens & Core Setup
+   ========================================================================== */
+
+:root {
+  /* Harmonious Color Palette */
+  --bg-charcoal: #111315;
+  --bg-gradient-top: #1c1e21;
+  --accent-copper: #B87333;
+  --accent-copper-glow: rgba(184, 115, 51, 0.4);
+  --accent-copper-muted: rgba(184, 115, 51, 0.08);
+  --accent-emerald: #10B981;
+  --accent-emerald-glow: rgba(16, 185, 129, 0.3);
+  --accent-emerald-muted: rgba(16, 185, 129, 0.08);
+  
+  /* Text Colors */
+  --text-primary: #F5F5F7;      /* Clean off-white */
+  --text-secondary: #86868B;    /* Muted gray */
+  --text-muted: #515154;        /* Darker gray */
+  
+  /* Layout Constants */
+  --slide-width: 1920px;
+  --slide-height: 1080px;
+  --slide-ratio: 1.7777777778; /* 16:9 Widescreen */
+  
+  /* Borders and Shadows */
+  --border-thin: rgba(255, 255, 255, 0.06);
+  --border-bright: rgba(255, 255, 255, 0.12);
+  --border-copper: rgba(184, 115, 51, 0.3);
+  --shadow-subtle: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --shadow-glow: 0 0 30px rgba(184, 115, 51, 0.15);
+  
+  /* Animation Timings */
+  --transition-slow: 0.8s cubic-bezier(0.16, 1, 0.3, 1); /* EaseOutExpo */
+  --transition-medium: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  --transition-fast: 0.2s ease;
+}
+
+/* Base Styles reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-charcoal);
+  color: var(--text-primary);
+  font-family: 'Inter', 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow: hidden;
+}
+
+/* Background Canvas Layer */
+.background-visual-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 0%, var(--bg-gradient-top) 0%, var(--bg-charcoal) 100%);
+}
+
+#networkCanvas {
+  width: 100%;
+  height: 100%;
+  opacity: 0.85;
+}
+
+/* Widescreen Scaling System */
+.presentation-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.presentation-container {
+  width: var(--slide-width);
+  height: var(--slide-height);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
+  background: transparent;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   Slide Base & Transition Layouts
+   ========================================================================== */
+
+.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-slow), visibility var(--transition-slow);
+  z-index: 5;
+  padding: 100px 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+/* Active Slide state */
+.slide.active {
+  opacity: 1;
+  visibility: visible;
+  z-index: 10;
+}
+
+/* Content wrapper inside slide */
+.slide-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Slide Header standard */
+.slide-header {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 40px;
+}
+
+.slide-number {
+  font-family: 'Sora', sans-serif;
+  font-size: 2.2rem;
+  color: var(--accent-copper);
+  font-weight: 700;
+  margin-right: 20px;
+  letter-spacing: 0.1em;
+}
+
+.slide-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+/* ==========================================================================
+   Slide 1: Title Layout Styles
+   ========================================================================== */
+
+.title-layout {
+  justify-content: center;
+  height: 100%;
+  padding-left: 20px;
+  padding-bottom: 50px;
+}
+
+.project-tag {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  color: var(--accent-copper);
+  margin-bottom: 25px;
+}
+
+.main-heading {
+  font-family: 'Sora', sans-serif;
+  font-size: 5.6rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  margin-bottom: 30px;
+}
+
+.main-subtitle {
+  font-size: 1.8rem;
+  font-weight: 300;
+  color: var(--text-secondary);
+  max-width: 1100px;
+  line-height: 1.5;
+  margin-bottom: 60px;
+}
+
+.divider-line {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent-copper) 0%, var(--border-thin) 50%, transparent 100%);
+  margin-bottom: 50px;
+}
+
+.title-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 100px;
+  max-width: 1400px;
+}
+
+.detail-label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 15px;
+}
+
+.presenters-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 40px;
+}
+
+.presenters-list li {
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.guide-name {
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.guide-dept, .guide-college {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   Slide 2: Abstract Layout Styles
+   ========================================================================== */
+
+.abstract-layout {
+  justify-content: flex-start;
+}
+
+.abstract-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 80px;
+  height: calc(100% - 120px);
+  align-items: center;
+}
+
+.abstract-text {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.abstract-paragraph {
+  font-size: 1.55rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.abstract-paragraph strong {
+  color: var(--accent-copper);
+  font-weight: 600;
+}
+
+.highlight-lead {
+  font-size: 1.9rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  font-weight: 300;
+  border-left: 3px solid var(--accent-copper);
+  padding-left: 25px;
+}
+
+.card-inner-graphic {
+  width: 100%;
+  height: 480px;
+  background-color: var(--accent-copper-muted);
+  border: 1px solid var(--border-copper);
+  border-radius: 16px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  box-shadow: var(--shadow-subtle), var(--shadow-glow);
+}
+
+#abstract-graphic-container {
+  background-color: rgba(20, 22, 24, 0.6);
+  border: 1px solid var(--border-thin);
+}
+
+.graphic-label-center {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-bright);
+  padding: 12px 24px;
+  border-radius: 30px;
+  background-color: var(--bg-charcoal);
+  z-index: 10;
+}
+
+/* ==========================================================================
+   Slide 3: Problem Statement Layout
+   ========================================================================== */
+
+.problem-layout {
+  justify-content: flex-start;
+}
+
+.split-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  height: calc(100% - 200px);
+  align-items: center;
+}
+
+.column-heading {
+  font-family: 'Sora', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 40px;
+  position: relative;
+  display: inline-block;
+}
+
+.column-heading::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 50px;
+  height: 2px;
+  background-color: var(--accent-copper);
+}
+
+.challenges-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.challenge-item {
+  display: flex;
+  align-items: flex-start;
+}
+
+.item-bullet {
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent-copper);
+  border-radius: 50%;
+  margin-top: 10px;
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+
+.item-text {
+  font-size: 1.45rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.nodes-container-card {
+  width: 100%;
+  height: 480px;
+  background-color: rgba(20, 22, 24, 0.4);
+  border: 1px solid var(--border-thin);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-subtle);
+}
+
+.node-label {
+  position: absolute;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: var(--bg-charcoal);
+  border: 1px solid var(--border-thin);
+  padding: 8px 18px;
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 10;
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Positions of labels around the isolated screen */
+.pos-hospital { top: 20%; left: 15%; }
+.pos-lab { top: 15%; right: 15%; }
+.pos-uni { top: 50%; left: 45%; }
+.pos-ind { bottom: 20%; left: 20%; }
+.pos-gov { bottom: 18%; right: 20%; }
+
+.graphic-overlay-status {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #EF4444; /* Alert red */
+  background-color: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 6px 14px;
+  border-radius: 6px;
+}
+
+.bottom-quote {
+  width: 100%;
+  text-align: center;
+  margin-top: 40px;
+  padding-top: 25px;
+  border-top: 1px solid var(--border-thin);
+}
+
+.bottom-quote p {
+  font-size: 1.55rem;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   Slide 4: Proposed Solution Layout
+   ========================================================================== */
+
+.solution-layout {
+  justify-content: flex-start;
+}
+
+.solution-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 80px;
+  height: calc(100% - 200px);
+  align-items: center;
+}
+
+.solution-subtitle {
+  font-family: 'Sora', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--accent-copper);
+  display: block;
+  margin-bottom: 15px;
+}
+
+.solution-heading {
+  font-family: 'Sora', sans-serif;
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+}
+
+.solution-description {
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin-bottom: 35px;
+}
+
+.solution-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.solution-features li {
+  display: flex;
+  align-items: center;
+  font-size: 1.35rem;
+  color: var(--text-primary);
+}
+
+.solution-features li strong {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.feature-marker {
+  width: 6px;
+  height: 6px;
+  background-color: var(--accent-copper);
+  border-radius: 50%;
+  margin-right: 18px;
+}
+
+#connected-nodes-card {
+  background-color: var(--accent-copper-muted);
+  border: 1px solid var(--border-copper);
+}
+
+.central-core-label {
+  font-family: 'Sora', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-primary);
+  border: 1px solid var(--accent-copper);
+  padding: 10px 20px;
+  border-radius: 30px;
+  background-color: var(--bg-charcoal);
+  box-shadow: 0 0 20px rgba(184, 115, 51, 0.3);
+  z-index: 10;
+}
+
+.copper-quote p {
+  color: var(--accent-copper);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  font-style: normal;
+}
+
+/* ==========================================================================
+   Slide 5: Implementation Plan (Timeline)
+   ========================================================================== */
+
+.implementation-layout {
+  justify-content: flex-start;
+}
+
+.timeline-container {
+  position: relative;
+  width: 100%;
+  margin-top: 140px;
+  padding: 0 20px;
+}
+
+.timeline-line {
+  position: absolute;
+  top: 45px;
+  left: 50px;
+  right: 50px;
+  height: 2px;
+  background-color: var(--border-thin);
+  z-index: 1;
+}
+
+.timeline-progress-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-copper) 0%, var(--accent-copper-glow) 100%);
+  transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.timeline-stages {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px;
+  z-index: 2;
+}
+
+.timeline-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.slide.active .timeline-stage {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Incremental animation delay for stages */
+.slide.active .timeline-stage.stage-1 { transition-delay: 0.2s; }
+.slide.active .timeline-stage.stage-2 { transition-delay: 0.5s; }
+.slide.active .timeline-stage.stage-3 { transition-delay: 0.8s; }
+.slide.active .timeline-stage.stage-4 { transition-delay: 1.1s; }
+
+.stage-icon-wrapper {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background-color: var(--bg-charcoal);
+  border: 2px solid var(--border-thin);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 35px;
+  color: var(--text-secondary);
+  transition: border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.timeline-stage:hover .stage-icon-wrapper,
+.slide.active .timeline-stage.stage-1 .stage-icon-wrapper,
+.slide.active .timeline-stage.stage-2 .stage-icon-wrapper,
+.slide.active .timeline-stage.stage-3 .stage-icon-wrapper,
+.slide.active .timeline-stage.stage-4 .stage-icon-wrapper {
+  border-color: var(--accent-copper);
+  color: var(--text-primary);
+  box-shadow: 0 0 25px rgba(184, 115, 51, 0.2);
+}
+
+.stage-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.stage-meta {
+  max-width: 320px;
+}
+
+.stage-num {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent-copper);
+  letter-spacing: 0.15em;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.stage-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 15px;
+}
+
+.stage-desc {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   Slide 6: Target Users & Expected Impact
+   ========================================================================== */
+
+.target-layout {
+  justify-content: flex-start;
+}
+
+.target-layout .split-columns {
+  height: calc(100% - 240px);
+}
+
+.header-copper::after {
+  background-color: var(--accent-copper);
+}
+
+.header-emerald::after {
+  background-color: var(--accent-emerald);
+}
+
+.users-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 15px;
+}
+
+.user-card {
+  display: flex;
+  align-items: flex-start;
+  background-color: rgba(20, 22, 24, 0.3);
+  border: 1px solid var(--border-thin);
+  border-radius: 12px;
+  padding: 18px 24px;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.user-card:hover {
+  border-color: rgba(184, 115, 51, 0.25);
+  background-color: rgba(20, 22, 24, 0.6);
+}
+
+.card-bullet {
+  width: 6px;
+  height: 6px;
+  background-color: var(--accent-copper);
+  border-radius: 50%;
+  margin-top: 8px;
+  margin-right: 18px;
+  flex-shrink: 0;
+}
+
+.card-card-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.card-card-desc {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.impact-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.impact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.impact-icon-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--accent-emerald-muted);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.impact-icon-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.impact-item-title {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.impact-item-desc {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.bottom-infographic {
+  width: 100%;
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.network-connector-line {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--border-thin) 20%, var(--accent-copper) 50%, var(--border-thin) 80%, transparent 100%);
+  position: relative;
+}
+
+.connector-pulse {
+  position: absolute;
+  top: -4px;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  background-color: var(--accent-copper);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--accent-copper);
+  animation: pulse-flow 6s infinite linear;
+}
+
+@keyframes pulse-flow {
+  0% { left: 10%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { left: 90%; opacity: 0; }
+}
+
+.infographic-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 80px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.infographic-labels .label-accent {
+  color: var(--accent-copper);
+}
+
+/* ==========================================================================
+   Slide 7: Conclusion Layout
+   ========================================================================== */
+
+.conclusion-layout {
+  justify-content: flex-start;
+}
+
+.conclusion-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 100px;
+  height: calc(100% - 120px);
+  align-items: center;
+}
+
+.conclusion-points {
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+}
+
+.conclusion-lead {
+  font-size: 2.1rem;
+  line-height: 1.6;
+  font-weight: 300;
+  color: var(--text-primary);
+  border-left: 4px solid var(--accent-copper);
+  padding-left: 30px;
+}
+
+.conclusion-body {
+  font-size: 1.55rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.conclusion-body strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.conclusion-quote-block {
+  position: relative;
+  background-color: rgba(20, 22, 24, 0.4);
+  border: 1px solid var(--border-thin);
+  padding: 60px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-subtle);
+}
+
+.conclusion-quote {
+  font-family: 'Sora', sans-serif;
+  font-size: 2.1rem;
+  line-height: 1.6;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-style: italic;
+  position: relative;
+  z-index: 2;
+}
+
+.quote-accent-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  background-color: var(--accent-copper);
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+}
+
+/* ==========================================================================
+   Controls & Overlay GUI Styles
+   ========================================================================== */
+
+/* Minimalist floating navigation controls */
+.presentation-controls {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  background: rgba(17, 19, 21, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-thin);
+  border-radius: 30px;
+  padding: 10px 24px;
+  gap: 25px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.presentation-controls.autohide {
+  opacity: 0.08;
+}
+
+.presentation-controls.autohide:hover {
+  opacity: 1;
+}
+
+.controls-left, .controls-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.control-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.control-btn:hover {
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.slide-indicator {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 4px;
+}
+
+.indicator-separator {
+  color: var(--text-muted);
+}
+
+.total-slides-num {
+  color: var(--text-secondary);
+}
+
+.controls-center {
+  width: 250px;
+  display: flex;
+  align-items: center;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 3px;
+  background-color: var(--border-thin);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  width: 14.28%; /* 1/7 of slide width */
+  height: 100%;
+  background-color: var(--accent-copper);
+  transition: width var(--transition-medium);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Overview Modal Overlay styling */
+.overview-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(17, 19, 21, 0.95);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-medium), visibility var(--transition-medium);
+}
+
+.overview-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.overview-modal-content {
+  width: 90%;
+  max-width: 1400px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.overview-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.overview-modal-header h3 {
+  font-family: 'Sora', sans-serif;
+  font-size: 2.2rem;
+  color: var(--text-primary);
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 2.5rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  color: var(--text-primary);
+}
+
+.overview-grid-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 25px;
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
+/* Individual Slide Card Preview */
+.slide-preview-card {
+  aspect-ratio: 16/9;
+  background-color: rgba(25, 27, 29, 0.8);
+  border: 1px solid var(--border-thin);
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: border-color var(--transition-fast), transform var(--transition-medium), box-shadow var(--transition-medium);
+}
+
+.slide-preview-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent-copper);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(184, 115, 51, 0.1);
+}
+
+.slide-preview-card.active {
+  border-color: var(--accent-copper);
+  box-shadow: 0 0 20px rgba(184, 115, 51, 0.2);
+}
+
+.preview-num {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.95rem;
+  color: var(--accent-copper);
+  font-weight: 700;
+}
+
+.preview-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.15rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-top: 5px;
+}
+
+.preview-thumbnail-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+/* ==========================================================================
+   Print Optimization & Export Settings
+   ========================================================================== */
+
+@media print {
+  @page {
+    size: 16in 9in; /* Standard presentation ratio page dimensions */
+    margin: 0;
+  }
+  
+  html, body {
+    width: 100% !important;
+    height: 100% !important;
+    background-color: #111315 !important;
+    color: #F5F5F7 !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .presentation-wrapper {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+  }
+  
+  .presentation-container {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+  }
+  
+  .slide {
+    position: relative !important;
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    width: 16in !important;
+    height: 9in !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    padding: 100px 120px !important;
+    background: radial-gradient(circle at 50% 0%, #1c1e21 0%, #111315 100%) !important;
+    box-sizing: border-box !important;
+    top: auto !important;
+    left: auto !important;
+  }
+  
+  /* Hide interactive control components during printing */
+  .presentation-controls,
+  .background-visual-layer,
+  .overview-modal-overlay {
+    display: none !important;
+  }
+  
+  /* Retain grid and layout positions during printing */
+  .title-layout { display: flex !important; }
+  .abstract-grid { display: grid !important; }
+  .split-columns { display: grid !important; }
+  .solution-grid { display: grid !important; }
+  .timeline-container { display: block !important; }
+  .timeline-stages { display: grid !important; }
+  .conclusion-grid { display: grid !important; }
+  
+  /* Force timeline transitions to be visible on prints */
+  .timeline-stage {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  
+  .timeline-progress-fill {
+    width: 100% !important;
+  }
+}

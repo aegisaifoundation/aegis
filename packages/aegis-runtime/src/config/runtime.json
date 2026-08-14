@@ -15,7 +15,8 @@
     "aegis-collaboration",
     "aegis-collective-intelligence",
     "aegis-training-engine",
-    "aegis-unified-platform"
+    "aegis-unified-platform",
+    "aegis-hello-world"
   ],
   "defaultProvider": "local/ollama",
   "autoloadTools": [

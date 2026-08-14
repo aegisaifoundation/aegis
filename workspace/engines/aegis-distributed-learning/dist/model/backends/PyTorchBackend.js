@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import path from 'path';
+import fs from 'fs';
 export class PyTorchBackend {
     workspacePath;
     id = 'pytorch';
@@ -12,7 +13,10 @@ export class PyTorchBackend {
         // Resolve dataset processed jsonl path
         const wPath = this.workspacePath || path.join(cwd, 'workspace');
         const datasetId = dataset?.datasetId || 'default-dataset';
-        const datasetPath = path.join(wPath, 'datasets', datasetId, 'processed', 'dataset.jsonl');
+        let datasetPath = path.join(wPath, '.aegis', 'datasets', datasetId, 'processed', 'dataset.jsonl');
+        if (!fs.existsSync(datasetPath)) {
+            datasetPath = path.join(wPath, 'datasets', datasetId, 'processed', 'dataset.jsonl');
+        }
         // Output adapter directory
         const outputDir = path.join(wPath, 'lora', `lora-${modelId}-adapter`);
         const scriptPath = path.join(cwd, 'packages', 'aegis-distributed-learning', 'python', 'train.py');

@@ -237,16 +237,27 @@
       "updateChannel": "stable",
       "healthState": "HEALTHY",
       "enabled": true
+    },
+    "aegis-hello-world": {
+      "id": "aegis-hello-world",
+      "name": "Hello World Engine",
+      "version": "1.0.0",
+      "type": "Engine",
+      "installationDate": "2026-08-08T18:23:55.741Z",
+      "installationPath": "aegis-hello-world",
+      "dependencies": {},
+      "reverseDependencies": [],
+      "checksum": "",
+      "signatureStatus": "UNSIGNED",
+      "repositorySource": "local",
+      "installationState": "INSTALLED",
+      "updateChannel": "stable",
+      "healthState": "HEALTHY",
+      "enabled": true
     }
   },
   "repositories": [],
   "transactionHistory": [
-    {
-      "txId": "c58da303-362e-43df-bdfc-93b9bee64172",
-      "action": "install",
-      "timestamp": "2026-07-17T14:54:22.681Z",
-      "status": "COMMITTED"
-    },
     {
       "txId": "6a6df40b-ae53-4e73-850f-776a760f8613",
       "action": "install",
@@ -839,6 +850,12 @@
       "txId": "5cc17093-c9ca-4c44-962d-15344cf4417d",
       "action": "install",
       "timestamp": "2026-07-18T16:59:53.533Z",
+      "status": "COMMITTED"
+    },
+    {
+      "txId": "504b6459-cd01-4e7c-93f8-d954964a0f77",
+      "action": "install",
+      "timestamp": "2026-08-08T18:23:55.751Z",
       "status": "COMMITTED"
     }
   ]

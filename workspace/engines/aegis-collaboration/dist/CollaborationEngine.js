@@ -70,14 +70,19 @@ export class CollaborationEngine {
             ? serviceRegistry.get('distributed-intelligence')
             : null;
         if (dis?.capabilityService) {
-            await dis.capabilityService.advertiseCapabilities([
-                'secure_collaboration',
-                'distributed_reasoning',
-                'capability_discovery',
-                'consensus_voting'
-            ]);
+            try {
+                await dis.capabilityService.advertiseCapabilities([
+                    'secure_collaboration',
+                    'distributed_reasoning',
+                    'capability_discovery',
+                    'consensus_voting'
+                ]);
+                console.log('[CollaborationEngine] Capabilities advertised to network.');
+            }
+            catch (err) {
+                console.warn(`[CollaborationEngine] Failed to advertise capabilities: ${err.message}`);
+            }
         }
-        console.log('[CollaborationEngine] Started.');
     }
     async pause() { }
     async resume() { }

@@ -165,16 +165,20 @@ export class DistributedLearningEngine implements IEngine {
       ? serviceRegistry.get<any>('distributed-intelligence')
       : null;
     if (dis?.capabilityService) {
-      await dis.capabilityService.advertiseCapabilities([
-        'distributed_learning',
-        'lora_training',
-        'federated_learning',
-        'swarm_learning',
-        'secure_aggregation',
-        'model_versioning',
-        'checkpoint_recovery'
-      ]);
-      console.log('[DistributedLearningEngine] Capabilities advertised to network.');
+      try {
+        await dis.capabilityService.advertiseCapabilities([
+          'distributed_learning',
+          'lora_training',
+          'federated_learning',
+          'swarm_learning',
+          'secure_aggregation',
+          'model_versioning',
+          'checkpoint_recovery'
+        ]);
+        console.log('[DistributedLearningEngine] Capabilities advertised to network.');
+      } catch (err: any) {
+        console.warn(`[DistributedLearningEngine] Failed to advertise capabilities: ${err.message}`);
+      }
     }
 
     // Activate simulation mode if DI is unavailable and policy allows

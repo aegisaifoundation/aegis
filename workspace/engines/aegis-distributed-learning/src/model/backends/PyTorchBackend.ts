@@ -29,7 +29,10 @@ export class PyTorchBackend implements ITrainingBackend {
     // Resolve dataset processed jsonl path
     const wPath = this.workspacePath || path.join(cwd, 'workspace');
     const datasetId = dataset?.datasetId || 'default-dataset';
-    const datasetPath = path.join(wPath, 'datasets', datasetId, 'processed', 'dataset.jsonl');
+    let datasetPath = path.join(wPath, '.aegis', 'datasets', datasetId, 'processed', 'dataset.jsonl');
+    if (!fs.existsSync(datasetPath)) {
+      datasetPath = path.join(wPath, 'datasets', datasetId, 'processed', 'dataset.jsonl');
+    }
     
     // Output adapter directory
     const outputDir = path.join(wPath, 'lora', `lora-${modelId}-adapter`);

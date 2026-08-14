@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "generatedBy": "@aegis/package-manager",
-  "generatedAt": "2026-08-05T06:00:15.015Z",
+  "generatedAt": "2026-08-08T18:27:23.197Z",
   "engines": [
     {
       "id": "distributed-intelligence",
@@ -156,6 +156,17 @@
       "runtimeApi": "1.0.0",
       "sdkVersion": "1.0.0",
       "installedAt": "2026-07-18T16:59:53.517Z"
+    },
+    {
+      "id": "aegis-hello-world",
+      "displayName": "Hello World Engine",
+      "version": "1.0.0",
+      "enabled": true,
+      "entry": "workspace/engines/aegis-hello-world/dist/index.js",
+      "manifest": "workspace/engines/aegis-hello-world/engine.json",
+      "runtimeApi": "1.0.0",
+      "sdkVersion": "1.0.0",
+      "installedAt": "2026-08-08T18:23:55.741Z"
     }
   ]
 }

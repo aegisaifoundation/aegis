@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connecting Intelligence Across Organizations - Presentation</title>
+  
+  <!-- Premium Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Presentation Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Dynamic Interactive Background Layer -->
+  <div class="background-visual-layer">
+    <canvas id="networkCanvas"></canvas>
+  </div>
+
+  <!-- Main Presentation Container (Constrained to 16:9 Widescreen) -->
+  <div class="presentation-wrapper">
+    <div id="presentation" class="presentation-container">
+
+      <!-- ==========================================
+           SLIDE 1: TITLE SLIDE
+           ========================================== -->
+      <section class="slide slide-title active" id="slide-1" data-slide-index="1">
+        <div class="slide-content title-layout">
+          <div class="project-tag">B.TECH FINAL YEAR PROJECT PRESENTATION</div>
+          <h1 class="main-heading">Connecting Intelligence<br>Across Organizations</h1>
+          <p class="main-subtitle">A Distributed Intelligence Infrastructure for Secure AI Collaboration</p>
+          
+          <div class="divider-line"></div>
+          
+          <div class="title-details-grid">
+            <div class="presenters-group">
+              <span class="detail-label">Presented By</span>
+              <ul class="presenters-list">
+                <li>Gokul S</li>
+                <li>Gautham Krishna R Nair</li>
+                <li>Sreenidhi V</li>
+                <li>T Maheswaran</li>
+              </ul>
+            </div>
+            
+            <div class="guide-group">
+              <span class="detail-label">Project Guide</span>
+              <p class="guide-name">Assistant Professor Nisha Soman</p>
+              <p class="guide-dept">Dept. of Artificial Intelligence & Machine Learning</p>
+              <p class="guide-college">Marian Engineering College, Thiruvananthapuram</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           SLIDE 2: ABSTRACT
+           ========================================== -->
+      <section class="slide slide-abstract" id="slide-2" data-slide-index="2">
+        <div class="slide-content abstract-layout">
+          <div class="slide-header">
+            <span class="slide-number">02</span>
+            <h2 class="slide-title">Abstract</h2>
+          </div>
+          
+          <div class="abstract-grid">
+            <div class="abstract-text">
+              <p class="abstract-paragraph highlight-lead">
+                Artificial Intelligence is transforming industries through intelligent decision-making and automation. 
+                However, AI systems developed by different organizations often work independently because of privacy, security, and ownership concerns.
+              </p>
+              <p class="abstract-paragraph">
+                This project proposes a <strong>Distributed Intelligence Infrastructure</strong> that enables AI systems to collaborate securely without compromising organizational control. The objective is to improve collaboration, accelerate innovation, and establish a connected AI ecosystem.
+              </p>
+            </div>
+            
+            <div class="abstract-visual-card">
+              <!-- Placeholder for visual layer interactive nodes overlay -->
+              <div class="card-inner-graphic" id="abstract-graphic-container">
+                <span class="graphic-label-center">Central Collaboration Layer</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           SLIDE 3: PROBLEM STATEMENT
+           ========================================== -->
+      <section class="slide slide-problem" id="slide-3" data-slide-index="3">
+        <div class="slide-content problem-layout">
+          <div class="slide-header">
+            <span class="slide-number">03</span>
+            <h2 class="slide-title">Problem Statement</h2>
+          </div>
+          
+          <div class="split-columns">
+            <!-- Left Column: Challenges -->
+            <div class="column-left">
+              <h3 class="column-heading">Current Challenges</h3>
+              <ul class="challenges-list">
+                <li class="challenge-item">
+                  <span class="item-bullet"></span>
+                  <div class="item-text">AI systems operate independently and in complete isolation.</div>
+                </li>
+                <li class="challenge-item">
+                  <span class="item-bullet"></span>
+                  <div class="item-text">Organizations cannot easily collaborate or pool insights.</div>
+                </li>
+                <li class="challenge-item">
+                  <span class="item-bullet"></span>
+                  <div class="item-text">Strict privacy and data residency laws prevent direct data sharing.</div>
+                </li>
+                <li class="challenge-item">
+                  <span class="item-bullet"></span>
+                  <div class="item-text">Redundant and similar AI models are repeatedly developed.</div>
+                </li>
+                <li class="challenge-item">
+                  <span class="item-bullet"></span>
+                  <div class="item-text">No common standard or infrastructure exists for cross-org AI coordination.</div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Right Column: Interactive nodes representation -->
+            <div class="column-right">
+              <div class="nodes-container-card" id="isolated-nodes-card">
+                <!-- SVG overlays for labels -->
+                <div class="node-label pos-hospital">Hospital</div>
+                <div class="node-label pos-lab">Research Lab</div>
+                <div class="node-label pos-uni">University</div>
+                <div class="node-label pos-ind">Industry</div>
+                <div class="node-label pos-gov">Government</div>
+                
+                <span class="graphic-overlay-status">ISOLATED SILOS</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bottom-quote">
+            <p>"The next challenge in AI is enabling independent AI systems to collaborate securely."</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           SLIDE 4: PROPOSED SOLUTION
+           ========================================== -->
+      <section class="slide slide-solution" id="slide-4" data-slide-index="4">
+        <div class="slide-content solution-layout">
+          <div class="slide-header">
+            <span class="slide-number">04</span>
+            <h2 class="slide-title">Proposed Solution</h2>
+          </div>
+          
+          <div class="solution-grid">
+            <div class="solution-info">
+              <span class="solution-subtitle">THE NEW PARADIGM</span>
+              <h3 class="solution-heading">Distributed Intelligence Infrastructure</h3>
+              <p class="solution-description">
+                A secure, decentralized collaboration layer allowing independent AI models and agents to interact directly without sharing underlying raw data.
+              </p>
+              
+              <ul class="solution-features">
+                <li>
+                  <span class="feature-marker"></span>
+                  <strong>Communicate Securely</strong> via encrypted protocols
+                </li>
+                <li>
+                  <span class="feature-marker"></span>
+                  <strong>Coordinate Tasks</strong> using decentralized orchestration
+                </li>
+                <li>
+                  <span class="feature-marker"></span>
+                  <strong>Share Capabilities</strong> dynamically based on active requests
+                </li>
+                <li>
+                  <span class="feature-marker"></span>
+                  <strong>Preserve Ownership</strong> of proprietary models and code
+                </li>
+                <li>
+                  <span class="feature-marker"></span>
+                  <strong>Maintain Privacy</strong> through local execution & zero-knowledge sharing
+                </li>
+              </ul>
+            </div>
+            
+            <div class="solution-visual-card">
+              <div class="card-inner-graphic" id="connected-nodes-card">
+                <span class="central-core-label">DII Infrastructure Core</span>
+                <!-- Connection overlays -->
+              </div>
+            </div>
+          </div>
+
+          <div class="bottom-quote copper-quote">
+            <p>Connecting intelligence without compromising trust.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           SLIDE 5: IMPLEMENTATION PLAN
+           ========================================== -->
+      <section class="slide slide-implementation" id="slide-5" data-slide-index="5">
+        <div class="slide-content implementation-layout">
+          <div class="slide-header">
+            <span class="slide-number">05</span>
+            <h2 class="slide-title">Implementation Plan</h2>
+          </div>
+          
+          <div class="timeline-container">
+            <div class="timeline-line">
+              <div class="timeline-progress-fill" id="timeline-progress"></div>
+            </div>
+            
+            <div class="timeline-stages">
+              <!-- Stage 1 -->
+              <div class="timeline-stage stage-1" data-stage="1">
+                <div class="stage-icon-wrapper">
+                  <!-- Research Icon: Search/Document -->
+                  <svg class="stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="11" cy="11" r="7" />
+                    <line x1="21" y1="21" x2="16" y2="16" />
+                    <path d="M8 11h6M11 8v6" />
+                  </svg>
+                </div>
+                <div class="stage-meta">
+                  <span class="stage-num">STAGE 01</span>
+                  <h3 class="stage-title">Research</h3>
+                  <p class="stage-desc">Study state-of-the-art AI collaboration, secure MPC, and federated learning approaches.</p>
+                </div>
+              </div>
+              
+              <!-- Stage 2 -->
+              <div class="timeline-stage stage-2" data-stage="2">
+                <div class="stage-icon-wrapper">
+                  <!-- Design Icon: Architecture/Blueprint -->
+                  <svg class="stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <path d="M9 3v18M15 3v18M3 9h18M3 15h18" />
+                    <circle cx="12" cy="12" r="3" fill="#B87333" fill-opacity="0.2" />
+                  </svg>
+                </div>
+                <div class="stage-meta">
+                  <span class="stage-num">STAGE 02</span>
+                  <h3 class="stage-title">Design</h3>
+                  <p class="stage-desc">Design secure communication protocols, orchestration topology, and privacy-preserving API interfaces.</p>
+                </div>
+              </div>
+              
+              <!-- Stage 3 -->
+              <div class="timeline-stage stage-3" data-stage="3">
+                <div class="stage-icon-wrapper">
+                  <!-- Development Icon: Code/System -->
+                  <svg class="stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <polyline points="16 18 22 12 16 6" />
+                    <polyline points="8 6 2 12 8 18" />
+                    <line x1="14" y1="4" x2="10" y2="20" />
+                  </svg>
+                </div>
+                <div class="stage-meta">
+                  <span class="stage-num">STAGE 03</span>
+                  <h3 class="stage-title">Development</h3>
+                  <p class="stage-desc">Develop a working prototype of the distributed infrastructure, network nodes, and secure connector SDK.</p>
+                </div>
+              </div>
+              
+              <!-- Stage 4 -->
+              <div class="timeline-stage stage-4" data-stage="4">
+                <div class="stage-icon-wrapper">
+                  <!-- Evaluation Icon: Testing/Scale -->
+                  <svg class="stage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    <path d="M9 11l2 2 4-4" />
+                  </svg>
+                </div>
+                <div class="stage-meta">
+                  <span class="stage-num">STAGE 04</span>
+                  <h3 class="stage-title">Evaluation</h3>
+                  <p class="stage-desc">Test distributed task coordination, measure latency overhead, verify data boundaries, and evaluate scalability.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           SLIDE 6: TARGET USERS & EXPECTED IMPACT
+           ========================================== -->
+      <section class="slide slide-target" id="slide-6" data-slide-index="6">
+        <div class="slide-content target-layout">
+          <div class="slide-header">
+            <span class="slide-number">06</span>
+            <h2 class="slide-title">Target Users & Expected Impact</h2>
+          </div>
+          
+          <div class="split-columns">
+            <!-- Left Column: Target Users -->
+            <div class="column-left">
+              <h3 class="column-heading header-copper">Target Users</h3>
+              <div class="users-grid">
+                <div class="user-card">
+                  <span class="card-bullet"></span>
+                  <div>
+                    <h4 class="card-card-title">Educational Institutions</h4>
+                    <p class="card-card-desc">Cross-university student projects & compute aggregation.</p>
+                  </div>
+                </div>
+                <div class="user-card">
+                  <span class="card-bullet"></span>
+                  <div>
+                    <h4 class="card-card-title">Research Organizations</h4>
+                    <p class="card-card-desc">Secure sharing of large model checkpoints & benchmark data.</p>
+                  </div>
+                </div>
+                <div class="user-card">
+                  <span class="card-bullet"></span>
+                  <div>
+                    <h4 class="card-card-title">Healthcare Providers</h4>
+                    <p class="card-card-desc">Collaborative clinical diagnosis modeling without data leaks.</p>
+                  </div>
+                </div>
+                <div class="user-card">
+                  <span class="card-bullet"></span>
+                  <div>
+                    <h4 class="card-card-title">Government & Enterprises</h4>
+                    <p class="card-card-desc">Cross-department operations under strict compliance requirements.</p>
+                  </div>
+                </div>
+                <div class="user-card">
+                  <span class="card-bullet"></span>
+                  <div>
+                    <h4 class="card-card-title">AI Developers</h4>
+                    <p class="card-card-desc">Building composite workflows across multi-tenant API engines.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Right Column: Expected Impact -->
+            <div class="column-right">
+              <h3 class="column-heading header-emerald">Expected Impact</h3>
+              <ul class="impact-list">
+                <li class="impact-item">
+                  <div class="impact-icon-circle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" class="impact-icon-svg">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 class="impact-item-title">Secure AI Collaboration</h4>
+                    <p class="impact-item-desc">Zero trust architectural boundaries ensure model weights and data never leave local nodes.</p>
+                  </div>
+                </li>
+                <li class="impact-item">
+                  <div class="impact-icon-circle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" class="impact-icon-svg">
+                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                      <polyline points="17 6 23 6 23 12" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 class="impact-item-title">Accelerated Innovation</h4>
+                    <p class="impact-item-desc">Connecting distinct specialist systems allows complex workflows to emerge naturally.</p>
+                  </div>
+                </li>
+                <li class="impact-item">
+                  <div class="impact-icon-circle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" class="impact-icon-svg">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 class="impact-item-title">Dynamic Knowledge Sharing</h4>
+                    <p class="impact-item-desc">Organizations query external expertise on demand without continuous synchronization pipelines.</p>
+                  </div>
+                </li>
+                <li class="impact-item">
+                  <div class="impact-icon-circle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" class="impact-icon-svg">
+                      <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+                      <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+                      <line x1="6" y1="6" x2="6.01" y2="6" />
+                      <line x1="6" y1="18" x2="6.01" y2="18" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 class="impact-item-title">Reduced Resource Duplication</h4>
+                    <p class="impact-item-desc">Allows reutilization of existing models instead of retraining massive redundant structures locally.</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="bottom-infographic">
+            <div class="network-connector-line">
+              <span class="connector-pulse"></span>
+            </div>
+            <div class="infographic-labels">
+              <span>Nodes Pool</span>
+              <span class="label-accent">Distributed Intelligence Mesh</span>
+              <span>Collective Outputs</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           SLIDE 7: CONCLUSION
+           ========================================== -->
+      <section class="slide slide-conclusion" id="slide-7" data-slide-index="7">
+        <div class="slide-content conclusion-layout">
+          <div class="slide-header">
+            <span class="slide-number">07</span>
+            <h2 class="slide-title">Conclusion</h2>
+          </div>
+          
+          <div class="conclusion-grid">
+            <div class="conclusion-points">
+              <p class="conclusion-lead">
+                Artificial Intelligence is becoming an essential technology across industries, but collaboration between independent AI systems remains a major challenge.
+              </p>
+              
+              <p class="conclusion-body">
+                This project proposes a <strong>Distributed Intelligence Infrastructure</strong> that enables secure collaboration while preserving privacy, ownership, and trust.
+              </p>
+              
+              <p class="conclusion-body">
+                By connecting intelligence across organizations, the proposed approach aims to support the next generation of collaborative AI.
+              </p>
+            </div>
+            
+            <div class="conclusion-quote-block">
+              <p class="conclusion-quote">
+                "The future of Artificial Intelligence is not only about building intelligent systems, but enabling them to work together."
+              </p>
+              <div class="quote-accent-bar"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Minimalist Frosted Navigation Bar -->
+  <nav class="presentation-controls">
+    <div class="controls-left">
+      <button id="btn-prev" class="control-btn" title="Previous Slide (← / PageUp)">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
+        </svg>
+      </button>
+      
+      <span class="slide-indicator">
+        <span id="current-slide-num">01</span>
+        <span class="indicator-separator">/</span>
+        <span class="total-slides-num">07</span>
+      </span>
+      
+      <button id="btn-next" class="control-btn" title="Next Slide (→ / Space / PageDown)">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <polyline points="12 5 19 12 12 19" />
+        </svg>
+      </button>
+    </div>
+    
+    <div class="controls-center">
+      <div class="progress-bar-container">
+        <div id="presentation-progress" class="progress-bar-fill"></div>
+      </div>
+    </div>
+    
+    <div class="controls-right">
+      <button id="btn-overview" class="control-btn" title="Toggle Slide Overview (O)">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" />
+          <rect x="14" y="3" width="7" height="7" />
+          <rect x="14" y="14" width="7" height="7" />
+          <rect x="3" y="14" width="7" height="7" />
+        </svg>
+      </button>
+      
+      <button id="btn-fullscreen" class="control-btn" title="Toggle Fullscreen (F)">
+        <svg id="fullscreen-svg-enter" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+        </svg>
+        <svg id="fullscreen-svg-exit" class="hidden" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 14h6v6m10-6h-6v6M4 10h6V4m10 6h-6V4" />
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Slide Overview Modal Grid -->
+  <div id="overview-modal" class="overview-modal-overlay">
+    <div class="overview-modal-content">
+      <div class="overview-modal-header">
+        <h3>Slide Overview</h3>
+        <button id="btn-close-overview" class="close-btn">&times;</button>
+      </div>
+      <div class="overview-grid-container">
+        <!-- Javascript will inject slide preview representations here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{
+  "adapter": {
+    "id": "lora-7c2a7bfa-7e6e-4a91-bdba-21c09effdbad",
+    "modelId": "TinyLlama-1.1B",
+    "version": "v1.0.0",
+    "rank": 4,
+    "alpha": 8,
+    "path": "C:\\aegis\\workspace\\lora\\lora-7c2a7bfa-7e6e-4a91-bdba-21c09effdbad.json",
+    "hash": "c7c364a8ce50553d9c4f084a0ea58d1ae6e3a2b5583fbc1f096e3ceb9ece00bf",
+    "signature": "a146a0224ae8a4eba671e9005f5230eb1836b6d7b2ca0e53285aa2138a9208c1",
+    "sizeBytes": 196,
+    "createdAt": "2026-08-08T09:51:54.842Z",
+    "metadata": {
+      "targetModules": [
+        "q_proj",
+        "v_proj"
+      ],
+      "dropout": 0.05
+    }
+  },
+  "weights": {
+    "q_proj": [
+      0.0020865268039353692,
+      -0.004890640028770416,
+      0.0015332806897306339,
+      0.0029464047350107247
+    ],
+    "v_proj": [
+      0.0012217676053799121,
+      -0.002506037447834341,
+      0.0019414366091519719,
+      0.00320519132726569
+    ]
+  }
+}
