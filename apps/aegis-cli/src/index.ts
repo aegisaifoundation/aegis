@@ -655,4 +655,18 @@ nodeCmd
     }
   });
 
+nodeCmd
+  .command('send-message <nodeId> <message>')
+  .description('Send a chat message to a peer node via AEGIS communication')
+  .action(async (nodeId, message) => {
+    try {
+      console.log(`[CLI] Dispatching node:send-message to "${nodeId}"...`);
+      const result = await sendIpcCommand('node:send-message', { nodeId, message });
+      console.log(`[CLI] ${result.message}`);
+    } catch (err: any) {
+      console.error(`[CLI] Failed to send message: ${err.message}`);
+      process.exit(1);
+    }
+  });
+
 program.parse(process.argv);

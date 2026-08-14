@@ -128,6 +128,16 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
     this.messagingService.onMessage('connection_accepted', async (payload: any, senderId: string) => {
       await this.handleIncomingConnectionApproval(payload, senderId);
     });
+
+    this.messagingService.onMessage('user_chat_msg', async (payload: any, senderId: string) => {
+      try {
+        const logDir = 'workspace/logs';
+        if (!fs.existsSync(logDir)) {
+          fs.mkdirSync(logDir, { recursive: true });
+        }
+        fs.appendFileSync('workspace/logs/chat_history.log', `[${new Date().toISOString()}] [${senderId}]: ${payload.text}\n`, 'utf8');
+      } catch {}
+    });
   }
 
   async pause(): Promise<void> {

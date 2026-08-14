@@ -169,6 +169,20 @@ export class IpcServer {
               result = { success: true, message: 'All connection requests cleared successfully.' };
               break;
             }
+            case 'node:send-message': {
+              if (!req.payload || !req.payload.nodeId || !req.payload.message) {
+                throw new Error('Missing nodeId or message in payload');
+              }
+              const engine = serviceRegistry.get<any>('distributed-intelligence');
+              if (!engine) {
+                throw new Error('DistributedIntelligenceEngine is not loaded in serviceRegistry');
+              }
+              await engine.messagingService.sendMessage(req.payload.nodeId, 'user_chat_msg', {
+                text: req.payload.message
+              });
+              result = { success: true, message: `Message successfully sent to "${req.payload.nodeId}".` };
+              break;
+            }
             case 'node:accept': {
               if (!req.payload || !req.payload.requestId) {
                 throw new Error('Missing requestId in payload');

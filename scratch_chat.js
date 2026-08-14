@@ -1,107 +1,73 @@
-import net from 'net';
+import fs from 'fs';
+import path from 'path';
 import readline from 'readline';
-import os from 'os';
+import { execSync } from 'child_process';
 
-const PORT = 9901;
+const LOG_FILE = 'workspace/logs/chat_history.log';
 
-// 1. Start TCP listener server
-const server = net.createServer((socket) => {
-  let buffer = Buffer.alloc(0);
-  
-  socket.on('data', (chunk) => {
-    buffer = Buffer.concat([buffer, chunk]);
-    while (buffer.length >= 4) {
-      const payloadLen = buffer.readUInt32BE(0);
-      if (buffer.length >= 4 + payloadLen) {
-        const payloadStr = buffer.subarray(4, 4 + payloadLen).toString('utf8');
-        buffer = buffer.subarray(4 + payloadLen);
-        try {
-          const parsed = JSON.parse(payloadStr);
-          if (parsed.messageType === 'chat') {
-            console.log(`\n[${parsed.senderId}]: ${parsed.payload.text}`);
-            rl.prompt();
-          }
-        } catch (err) {
-          console.error('\n[Error parsing incoming message]:', err.message);
+// Ensure workspace/logs/ directory exists and log file is touched
+try {
+  fs.mkdirSync(path.dirname(LOG_FILE), { recursive: true });
+  if (!fs.existsSync(LOG_FILE)) {
+    fs.writeFileSync(LOG_FILE, '', 'utf8');
+  }
+} catch {}
+
+const args = process.argv.slice(2);
+if (args.length < 1) {
+  console.log('Usage: node scratch_chat.js <targetNodeId>');
+  process.exit(1);
+}
+const targetNodeId = args[0];
+
+console.log(`====================================================`);
+console.log(`AEGIS Interactive P2P Chat Client`);
+console.log(`Target Peer: Node "${targetNodeId}"`);
+console.log(`====================================================`);
+console.log(`Type a message and press Enter to send.`);
+console.log(`====================================================\n`);
+
+// Start tailing the chat log
+let logSize = fs.statSync(LOG_FILE).size;
+setInterval(() => {
+  try {
+    const stats = fs.statSync(LOG_FILE);
+    if (stats.size > logSize) {
+      const fd = fs.openSync(LOG_FILE, 'r');
+      const buffer = Buffer.alloc(stats.size - logSize);
+      fs.readSync(fd, buffer, 0, buffer.length, logSize);
+      fs.closeSync(fd);
+      logSize = stats.size;
+
+      const lines = buffer.toString('utf8').trim().split('\n');
+      for (const line of lines) {
+        if (line.trim()) {
+          console.log(`\n${line}`);
         }
-      } else {
-        break;
       }
+      rl.prompt();
     }
-  });
+  } catch (err) {}
+}, 500);
 
-  socket.on('error', (err) => {
-    console.error('\n[Connection error]:', err.message);
-  });
-});
-
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`====================================================`);
-  console.log(`P2P Chat Server listening on port ${PORT}...`);
-  console.log(`====================================================`);
-  console.log(`Commands:`);
-  console.log(`  /connect <IP>   - Establish connection to target IP`);
-  console.log(`  Type message and press Enter to send.`);
-  console.log(`====================================================\n`);
-  rl.prompt();
-});
-
-// 2. Interactive console input
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
   prompt: 'You > '
 });
 
-let activeConnection = null;
+rl.prompt();
 
 rl.on('line', (line) => {
-  const input = line.trim();
-  if (input.startsWith('/connect')) {
-    const parts = input.split(' ');
-    if (parts.length < 2) {
-      console.log('Usage: /connect <IP>');
-      rl.prompt();
-      return;
+  const text = line.trim();
+  if (text.length > 0) {
+    try {
+      // Escape quotes in message string for shell invocation
+      const escapedText = text.replace(/"/g, '\\"');
+      execSync(`node apps/aegis-cli/dist/index.js node send-message "${targetNodeId}" "${escapedText}"`, { stdio: 'ignore' });
+    } catch (err) {
+      console.error(`\n[Failed to send message via AEGIS]: Daemon might be stopped.`);
     }
-    const targetIp = parts[1];
-    console.log(`Connecting to ${targetIp}:${PORT}...`);
-    
-    const client = net.connect(PORT, targetIp, () => {
-      console.log(`Connected to ${targetIp}:${PORT} successfully!`);
-      activeConnection = client;
-      rl.prompt();
-    });
-
-    client.on('error', (err) => {
-      console.error(`Failed to connect to ${targetIp}:`, err.message);
-      activeConnection = null;
-      rl.prompt();
-    });
-
-    client.on('close', () => {
-      console.log('\nConnection closed.');
-      activeConnection = null;
-      rl.prompt();
-    });
-  } else if (input.length > 0) {
-    if (!activeConnection) {
-      console.log('No active connection. Use: /connect <IP> first.');
-      rl.prompt();
-      return;
-    }
-
-    const msgPayload = JSON.stringify({
-      messageType: 'chat',
-      senderId: os.hostname(),
-      payload: { text: input }
-    });
-
-    const lenBuf = Buffer.alloc(4);
-    lenBuf.writeUInt32BE(msgPayload.length, 0);
-    activeConnection.write(Buffer.concat([lenBuf, Buffer.from(msgPayload)]));
-    rl.prompt();
-  } else {
-    rl.prompt();
   }
+  rl.prompt();
 });
