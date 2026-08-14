@@ -163,7 +163,9 @@ export class MessagingService {
     }
     sendDirect(host, port, messageType, payload) {
         return new Promise((resolve, reject) => {
-            const client = net.connect(port, host, () => {
+            const client = net.connect(port, host);
+            client.setTimeout(3000);
+            client.on('connect', () => {
                 const ourNodeName = this.host.nodeName || 'unknown';
                 const msg = JSON.stringify({
                     messageType,
@@ -175,6 +177,10 @@ export class MessagingService {
                 client.write(Buffer.concat([lenBuf, Buffer.from(msg)]));
                 client.end();
                 resolve();
+            });
+            client.on('timeout', () => {
+                client.destroy();
+                reject(new Error('Connection timed out after 3000ms'));
             });
             client.on('error', reject);
         });
