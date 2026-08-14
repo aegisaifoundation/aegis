@@ -1,10 +1,11 @@
 import { serviceRegistry } from '@aegis/runtime';
 import { EngineLifecycle } from '../lifecycle/EngineLifecycle.js';
 import { EngineState } from '../state/EngineState.js';
-import { DiscoveryService, MessagingService, TransportService, ExecutionService, CapabilityService, ResourceService, TrustService, SchedulerService, EventService } from '../services/index.js';
+import { DiscoveryService, MessagingService, TransportService, ExecutionService, CapabilityService, ResourceService, TrustService, SchedulerService, EventService, activeEngines } from '../services/index.js';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import crypto from 'crypto';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 export class DistributedIntelligenceEngine {
@@ -21,6 +22,8 @@ export class DistributedIntelligenceEngine {
     };
     lifecycle = new EngineLifecycle();
     context;
+    nodeName = 'aegis-die-node';
+    port = 9900;
     discoveryService = new DiscoveryService(this);
     messagingService = new MessagingService(this);
     transportService = new TransportService(this);
@@ -55,10 +58,22 @@ export class DistributedIntelligenceEngine {
         await this.lifecycle.initialize(context, executablePath);
     }
     async configure(config) {
+        if (config.nodeName)
+            this.nodeName = config.nodeName;
+        if (config.port)
+            this.port = config.port;
         await this.lifecycle.configure(config);
+        activeEngines.set(this.nodeName, this);
     }
     async start() {
         await this.lifecycle.start();
+        // Register incoming P2P connection request handlers
+        this.messagingService.onMessage('connection_request', async (payload, senderId) => {
+            await this.handleIncomingConnectionRequest(payload, senderId);
+        });
+        this.messagingService.onMessage('connection_accepted', async (payload, senderId) => {
+            await this.handleIncomingConnectionApproval(payload, senderId);
+        });
     }
     async pause() {
         await this.lifecycle.pause();
@@ -99,6 +114,100 @@ export class DistributedIntelligenceEngine {
     }
     getRestartCount() {
         return this.lifecycle.getRestartCount();
+    }
+    getRequestsFilePath() {
+        const workspacePath = this.context.getWorkspacePath();
+        const dotAegisPath = path.resolve(workspacePath, '../.aegis');
+        if (!fs.existsSync(dotAegisPath)) {
+            fs.mkdirSync(dotAegisPath, { recursive: true });
+        }
+        return path.join(dotAegisPath, 'connection_requests.json');
+    }
+    async getConnectionRequests() {
+        const filePath = this.getRequestsFilePath();
+        if (!fs.existsSync(filePath)) {
+            return [];
+        }
+        try {
+            return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        }
+        catch {
+            return [];
+        }
+    }
+    async saveConnectionRequests(requests) {
+        const filePath = this.getRequestsFilePath();
+        fs.writeFileSync(filePath, JSON.stringify(requests, null, 2), 'utf8');
+    }
+    async requestConnection(targetNodeId) {
+        const peer = this.discoveryService.getLocalPeer(targetNodeId);
+        if (!peer) {
+            throw new Error(`Node "${targetNodeId}" is not registered locally. Use registerNode first.`);
+        }
+        const requests = await this.getConnectionRequests();
+        const requestId = crypto.randomUUID();
+        const newRequest = {
+            requestId,
+            senderNodeId: this.nodeName,
+            senderHost: '127.0.0.1',
+            senderPort: this.port,
+            targetNodeId,
+            status: 'pending',
+            timestamp: new Date().toISOString()
+        };
+        requests.push(newRequest);
+        await this.saveConnectionRequests(requests);
+        // Send connection request via messagingService
+        await this.messagingService.sendMessage(targetNodeId, 'connection_request', {
+            requestId,
+            senderHost: '127.0.0.1',
+            senderPort: this.port
+        });
+    }
+    async acceptConnectionRequest(requestId) {
+        const requests = await this.getConnectionRequests();
+        const req = requests.find((r) => r.requestId === requestId);
+        if (!req) {
+            throw new Error(`Connection request with ID "${requestId}" not found.`);
+        }
+        req.status = 'accepted';
+        await this.saveConnectionRequests(requests);
+        // Register peer in discoveryService
+        await this.discoveryService.registerNode(req.senderNodeId, req.senderHost, req.senderPort);
+        // Send connection approval back to the sender
+        await this.messagingService.sendMessage(req.senderNodeId, 'connection_accepted', {
+            requestId,
+            targetHost: '127.0.0.1',
+            targetPort: this.port
+        });
+    }
+    async handleIncomingConnectionRequest(payload, senderId) {
+        const requests = await this.getConnectionRequests();
+        // Prevent duplicate request records
+        if (requests.some((r) => r.requestId === payload.requestId)) {
+            return;
+        }
+        const newRequest = {
+            requestId: payload.requestId,
+            senderNodeId: senderId,
+            senderHost: payload.senderHost,
+            senderPort: payload.senderPort,
+            targetNodeId: this.nodeName,
+            status: 'pending',
+            timestamp: new Date().toISOString()
+        };
+        requests.push(newRequest);
+        await this.saveConnectionRequests(requests);
+    }
+    async handleIncomingConnectionApproval(payload, senderId) {
+        const requests = await this.getConnectionRequests();
+        const req = requests.find((r) => r.requestId === payload.requestId);
+        if (req) {
+            req.status = 'accepted';
+            await this.saveConnectionRequests(requests);
+        }
+        // Register the approved target node
+        await this.discoveryService.registerNode(senderId, payload.targetHost, payload.targetPort);
     }
     resolveExecutable() {
         let dir = __dirname;

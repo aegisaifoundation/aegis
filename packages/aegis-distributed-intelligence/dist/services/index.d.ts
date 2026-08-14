@@ -1,6 +1,7 @@
 export interface IEngineIpcHost {
     getIpcManager(): any;
 }
+export declare const activeEngines: Map<string, any>;
 export declare class DiscoveryService {
     private host;
     private localPeers;
@@ -11,15 +12,22 @@ export declare class DiscoveryService {
         host: string;
         port: number;
     } | undefined;
+    getLocalPeers(): {
+        nodeId: string;
+        host: string;
+        port: number;
+    }[];
 }
 export declare class MessagingService {
     private host;
     private localServer;
+    private listeners;
     constructor(host: IEngineIpcHost);
     private startLocalServer;
     sendMessage(targetNodeId: string, messageType: string, payload: Record<string, any>): Promise<void>;
     private sendDirect;
     onMessage(messageType: string, callback: (payload: any, senderId: string) => void | Promise<void>): void;
+    deliverMessage(messageType: string, payload: any, senderId: string): void;
 }
 export declare class TransportService {
     private host;

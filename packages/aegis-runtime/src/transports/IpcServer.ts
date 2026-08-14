@@ -3,6 +3,7 @@ import fs from 'fs';
 import { getIpcPath } from './IpcPath.js';
 import { IpcRequest, IpcResponse, CURRENT_IPC_VERSION } from './IpcProtocol.js';
 import { engineManager } from '../managers/EngineManager.js';
+import { serviceRegistry } from '../registry/ServiceRegistry.js';
 
 export class IpcServer {
   private server: net.Server | null = null;
@@ -101,6 +102,60 @@ export class IpcServer {
                 }
               };
               break;
+            case 'node:register': {
+              if (!req.payload || !req.payload.nodeId || !req.payload.host || !req.payload.port) {
+                throw new Error('Missing nodeId, host, or port in payload');
+              }
+              const disc = serviceRegistry.get<any>('distributed-intelligence:discovery');
+              if (!disc) {
+                throw new Error('DiscoveryService is not loaded in serviceRegistry');
+              }
+              await disc.registerNode(req.payload.nodeId, req.payload.host, Number(req.payload.port));
+              result = { success: true, message: `Node "${req.payload.nodeId}" registered successfully.` };
+              break;
+            }
+            case 'node:list': {
+              const disc = serviceRegistry.get<any>('distributed-intelligence:discovery');
+              if (!disc) {
+                throw new Error('DiscoveryService is not loaded in serviceRegistry');
+              }
+              const peers = disc.getLocalPeers ? disc.getLocalPeers() : [];
+              result = { success: true, peers };
+              break;
+            }
+            case 'node:connect': {
+              if (!req.payload || !req.payload.nodeId) {
+                throw new Error('Missing nodeId in payload');
+              }
+              const engine = serviceRegistry.get<any>('distributed-intelligence');
+              if (!engine) {
+                throw new Error('DistributedIntelligenceEngine is not loaded in serviceRegistry');
+              }
+              await engine.requestConnection(req.payload.nodeId);
+              result = { success: true, message: `Connection request sent to "${req.payload.nodeId}".` };
+              break;
+            }
+            case 'node:requests': {
+              const engine = serviceRegistry.get<any>('distributed-intelligence');
+              if (!engine) {
+                throw new Error('DistributedIntelligenceEngine is not loaded in serviceRegistry');
+              }
+              const requests = await engine.getConnectionRequests();
+              result = { success: true, requests };
+              break;
+            }
+            case 'node:accept': {
+              if (!req.payload || !req.payload.requestId) {
+                throw new Error('Missing requestId in payload');
+              }
+              const engine = serviceRegistry.get<any>('distributed-intelligence');
+              if (!engine) {
+                throw new Error('DistributedIntelligenceEngine is not loaded in serviceRegistry');
+              }
+              await engine.acceptConnectionRequest(req.payload.requestId);
+              result = { success: true, message: `Accepted connection request "${req.payload.requestId}".` };
+              break;
+            }
             case 'shutdown':
               setTimeout(() => {
                 process.exit(0);

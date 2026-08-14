@@ -12,11 +12,13 @@ import {
   TrustService,
   SchedulerService,
   EventService,
-  IEngineIpcHost
+  IEngineIpcHost,
+  activeEngines
 } from '../services/index.js';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import crypto from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,6 +38,9 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
 
   private lifecycle = new EngineLifecycle();
   private context!: IRuntimeContext_v1;
+
+  public nodeName = 'aegis-die-node';
+  public port = 9900;
 
   readonly discoveryService = new DiscoveryService(this);
   readonly messagingService = new MessagingService(this);
@@ -78,11 +83,23 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
   }
 
   async configure(config: Record<string, any>): Promise<void> {
+    if (config.nodeName) this.nodeName = config.nodeName;
+    if (config.port) this.port = config.port;
     await this.lifecycle.configure(config);
+    activeEngines.set(this.nodeName, this);
   }
 
   async start(): Promise<void> {
     await this.lifecycle.start();
+
+    // Register incoming P2P connection request handlers
+    this.messagingService.onMessage('connection_request', async (payload: any, senderId: string) => {
+      await this.handleIncomingConnectionRequest(payload, senderId);
+    });
+
+    this.messagingService.onMessage('connection_accepted', async (payload: any, senderId: string) => {
+      await this.handleIncomingConnectionApproval(payload, senderId);
+    });
   }
 
   async pause(): Promise<void> {
@@ -132,6 +149,111 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
 
   getRestartCount(): number {
     return this.lifecycle.getRestartCount();
+  }
+
+  private getRequestsFilePath(): string {
+    const workspacePath = this.context.getWorkspacePath();
+    const dotAegisPath = path.resolve(workspacePath, '../.aegis');
+    if (!fs.existsSync(dotAegisPath)) {
+      fs.mkdirSync(dotAegisPath, { recursive: true });
+    }
+    return path.join(dotAegisPath, 'connection_requests.json');
+  }
+
+  async getConnectionRequests(): Promise<any[]> {
+    const filePath = this.getRequestsFilePath();
+    if (!fs.existsSync(filePath)) {
+      return [];
+    }
+    try {
+      return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    } catch {
+      return [];
+    }
+  }
+
+  private async saveConnectionRequests(requests: any[]): Promise<void> {
+    const filePath = this.getRequestsFilePath();
+    fs.writeFileSync(filePath, JSON.stringify(requests, null, 2), 'utf8');
+  }
+
+  async requestConnection(targetNodeId: string): Promise<void> {
+    const peer = this.discoveryService.getLocalPeer(targetNodeId);
+    if (!peer) {
+      throw new Error(`Node "${targetNodeId}" is not registered locally. Use registerNode first.`);
+    }
+
+    const requests = await this.getConnectionRequests();
+    const requestId = crypto.randomUUID();
+    const newRequest = {
+      requestId,
+      senderNodeId: this.nodeName,
+      senderHost: '127.0.0.1',
+      senderPort: this.port,
+      targetNodeId,
+      status: 'pending',
+      timestamp: new Date().toISOString()
+    };
+    requests.push(newRequest);
+    await this.saveConnectionRequests(requests);
+
+    // Send connection request via messagingService
+    await this.messagingService.sendMessage(targetNodeId, 'connection_request', {
+      requestId,
+      senderHost: '127.0.0.1',
+      senderPort: this.port
+    });
+  }
+
+  async acceptConnectionRequest(requestId: string): Promise<void> {
+    const requests = await this.getConnectionRequests();
+    const req = requests.find((r: any) => r.requestId === requestId);
+    if (!req) {
+      throw new Error(`Connection request with ID "${requestId}" not found.`);
+    }
+
+    req.status = 'accepted';
+    await this.saveConnectionRequests(requests);
+
+    // Register peer in discoveryService
+    await this.discoveryService.registerNode(req.senderNodeId, req.senderHost, req.senderPort);
+
+    // Send connection approval back to the sender
+    await this.messagingService.sendMessage(req.senderNodeId, 'connection_accepted', {
+      requestId,
+      targetHost: '127.0.0.1',
+      targetPort: this.port
+    });
+  }
+
+  private async handleIncomingConnectionRequest(payload: any, senderId: string): Promise<void> {
+    const requests = await this.getConnectionRequests();
+    // Prevent duplicate request records
+    if (requests.some((r: any) => r.requestId === payload.requestId)) {
+      return;
+    }
+    const newRequest = {
+      requestId: payload.requestId,
+      senderNodeId: senderId,
+      senderHost: payload.senderHost,
+      senderPort: payload.senderPort,
+      targetNodeId: this.nodeName,
+      status: 'pending',
+      timestamp: new Date().toISOString()
+    };
+    requests.push(newRequest);
+    await this.saveConnectionRequests(requests);
+  }
+
+  private async handleIncomingConnectionApproval(payload: any, senderId: string): Promise<void> {
+    const requests = await this.getConnectionRequests();
+    const req = requests.find((r: any) => r.requestId === payload.requestId);
+    if (req) {
+      req.status = 'accepted';
+      await this.saveConnectionRequests(requests);
+    }
+    // Register the approved target node
+    await this.discoveryService.registerNode(senderId, payload.targetHost, payload.targetPort);
   }
 
   private resolveExecutable(): string {

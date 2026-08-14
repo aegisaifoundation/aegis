@@ -512,4 +512,95 @@ engine
         process.exit(1);
     }
 });
+// ─── 5. NODE COMMANDS ───
+const nodeCmd = program.command('node').description('Manage peer nodes, connection requests, and discovery');
+nodeCmd
+    .command('register <nodeId> <host> <port>')
+    .description('Register details of a remote peer node')
+    .action(async (nodeId, host, port) => {
+    try {
+        console.log(`[CLI] Dispatching node:register for "${nodeId}"...`);
+        const result = await sendIpcCommand('node:register', { nodeId, host, port: Number(port) });
+        console.log(`[CLI] ${result.message}`);
+    }
+    catch (err) {
+        console.error(`[CLI] Failed to register node: ${err.message}`);
+        process.exit(1);
+    }
+});
+nodeCmd
+    .command('list')
+    .description('List all registered remote nodes')
+    .action(async () => {
+    try {
+        console.log('[CLI] Dispatching node:list...');
+        const result = await sendIpcCommand('node:list');
+        if (!result.peers || result.peers.length === 0) {
+            console.log('No remote nodes registered.');
+            return;
+        }
+        console.log('Registered Peer Nodes:');
+        for (const peer of result.peers) {
+            console.log(`- ${peer.nodeId} -> ${peer.host}:${peer.port}`);
+        }
+    }
+    catch (err) {
+        console.error(`[CLI] Failed to list nodes: ${err.message}`);
+        process.exit(1);
+    }
+});
+nodeCmd
+    .command('connect <nodeId>')
+    .description('Request a direct connection to a node')
+    .action(async (nodeId) => {
+    try {
+        console.log(`[CLI] Dispatching node:connect request to "${nodeId}"...`);
+        const result = await sendIpcCommand('node:connect', { nodeId });
+        console.log(`[CLI] ${result.message}`);
+    }
+    catch (err) {
+        console.error(`[CLI] Failed to send connection request: ${err.message}`);
+        process.exit(1);
+    }
+});
+nodeCmd
+    .command('requests')
+    .description('List incoming and outgoing connection requests')
+    .action(async () => {
+    try {
+        console.log('[CLI] Dispatching node:requests...');
+        const result = await sendIpcCommand('node:requests');
+        if (!result.requests || result.requests.length === 0) {
+            console.log('No connection requests found.');
+            return;
+        }
+        console.log('Connection Requests:');
+        for (const req of result.requests) {
+            console.log(`- ID:        ${req.requestId}`);
+            console.log(`  From Node: ${req.senderNodeId} (${req.senderHost}:${req.senderPort})`);
+            console.log(`  To Node:   ${req.targetNodeId}`);
+            console.log(`  Status:    ${req.status.toUpperCase()}`);
+            console.log(`  Timestamp: ${req.timestamp}`);
+            console.log('------------------------------------------------');
+        }
+    }
+    catch (err) {
+        console.error(`[CLI] Failed to retrieve connection requests: ${err.message}`);
+        process.exit(1);
+    }
+});
+nodeCmd
+    .command('accept <requestId>')
+    .description('Accept an incoming connection request by ID')
+    .action(async (requestId) => {
+    try {
+        console.log(`[CLI] Dispatching node:accept for request "${requestId}"...`);
+        const result = await sendIpcCommand('node:accept', { requestId });
+        console.log(`[CLI] ${result.message}`);
+    }
+    catch (err) {
+        console.error(`[CLI] Failed to accept connection request: ${err.message}`);
+        process.exit(1);
+    }
+});
 program.parse(process.argv);

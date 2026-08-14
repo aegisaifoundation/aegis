@@ -4,6 +4,8 @@ export declare class DistributedIntelligenceEngine implements IEngine, IEngineIp
     readonly metadata: IEngineMetadata;
     private lifecycle;
     private context;
+    nodeName: string;
+    port: number;
     readonly discoveryService: DiscoveryService;
     readonly messagingService: MessagingService;
     readonly transportService: TransportService;
@@ -28,6 +30,13 @@ export declare class DistributedIntelligenceEngine implements IEngine, IEngineIp
     getStartedAt(): Date | null;
     getUptimeMs(): number;
     getRestartCount(): number;
+    private getRequestsFilePath;
+    getConnectionRequests(): Promise<any[]>;
+    private saveConnectionRequests;
+    requestConnection(targetNodeId: string): Promise<void>;
+    acceptConnectionRequest(requestId: string): Promise<void>;
+    private handleIncomingConnectionRequest;
+    private handleIncomingConnectionApproval;
     private resolveExecutable;
 }
 export default DistributedIntelligenceEngine;
