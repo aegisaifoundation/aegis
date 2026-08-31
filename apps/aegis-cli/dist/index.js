@@ -36,6 +36,87 @@ function getRepositoryRoot() {
 const repoRoot = getRepositoryRoot();
 const configPath = path.resolve(repoRoot, 'packages/aegis-runtime/src/config/runtime.json');
 const enginesDir = path.resolve(repoRoot, 'workspace/engines');
+// Resolve the workspace using the same rules as the runtime WorkspaceManager.
+// StructuredLogger stores runtime.log under the parent of the workspace path.
+function getWorkspacePath() {
+    if (process.env.AEGIS_WORKSPACE_ROOT) {
+        return path.normalize(path.resolve(process.env.AEGIS_WORKSPACE_ROOT));
+    }
+    let runtimeConfigPath = process.env.AEGIS_CONFIG_PATH
+        ? path.resolve(process.env.AEGIS_CONFIG_PATH)
+        : path.resolve(repoRoot, 'config/runtime.json');
+    if (!fs.existsSync(runtimeConfigPath)) {
+        runtimeConfigPath = path.resolve(repoRoot, 'packages/aegis-runtime/src/config/runtime.json');
+    }
+    let workspaceRootConfig = './workspace';
+    try {
+        if (fs.existsSync(runtimeConfigPath)) {
+            const config = JSON.parse(fs.readFileSync(runtimeConfigPath, 'utf8'));
+            if (config.workspace) {
+                workspaceRootConfig = config.workspace;
+            }
+            else if (config.workspaceRoot) {
+                workspaceRootConfig = config.workspaceRoot;
+            }
+        }
+    }
+    catch (e) {
+        // Match the runtime's fallback behavior when the config cannot be read.
+    }
+    if (path.isAbsolute(workspaceRootConfig)) {
+        return path.normalize(workspaceRootConfig);
+    }
+    if (workspaceRootConfig.startsWith('../workspace')) {
+        return path.resolve(repoRoot, workspaceRootConfig.replace('../workspace', './workspace'));
+    }
+    return path.resolve(repoRoot, workspaceRootConfig);
+}
+function getRuntimeLogPath() {
+    return path.resolve(path.dirname(getWorkspacePath()), 'logs', 'runtime.log');
+}
+function readLastLines(filePath, lineCount) {
+    if (lineCount <= 0)
+        return [];
+    const fd = fs.openSync(filePath, 'r');
+    try {
+        const stats = fs.fstatSync(fd);
+        if (stats.size === 0)
+            return [];
+        const chunkSize = 64 * 1024;
+        const chunks = [];
+        let position = stats.size;
+        let newlineCount = 0;
+        while (position > 0 && newlineCount <= lineCount) {
+            const size = Math.min(chunkSize, position);
+            position -= size;
+            const buffer = Buffer.allocUnsafe(size);
+            fs.readSync(fd, buffer, 0, size, position);
+            chunks.unshift(buffer);
+            newlineCount += buffer.toString('utf8').split('\n').length - 1;
+        }
+        const text = Buffer.concat(chunks).toString('utf8');
+        return text.split(/\r?\n/).filter(Boolean).slice(-lineCount);
+    }
+    finally {
+        fs.closeSync(fd);
+    }
+}
+function formatLogLine(line) {
+    try {
+        const entry = JSON.parse(line);
+        const timestamp = entry.timestamp || '-';
+        const level = String(entry.level || 'info').toUpperCase().padEnd(5);
+        const event = entry.event || 'unknown';
+        const session = entry.sessionId && entry.sessionId !== 'system' ? ` [${entry.sessionId}]` : '';
+        const details = entry.details && Object.keys(entry.details).length > 0
+            ? ` ${JSON.stringify(entry.details)}`
+            : '';
+        return `${timestamp} ${level} ${event}${session}${details}`;
+    }
+    catch {
+        return line;
+    }
+}
 // Helper to ensure config dir exists
 const configDir = path.dirname(configPath);
 if (!fs.existsSync(configDir)) {
@@ -311,7 +392,72 @@ repoCmd
         console.log(`- ${r.id} [Type: ${r.type}] -> ${r.url}`);
     }
 });
-// ─── 3. DIAGNOSTICS & DOCTOR COMMANDS ───
+// ─── 3. LOGGING COMMANDS ───
+program
+    .command('logs')
+    .description('Show recent AEGIS runtime logs')
+    .option('-n, --lines <number>', 'Number of recent log entries to show', '50')
+    .option('-l, --level <level>', 'Filter logs by level (currently supports: error)')
+    .action((options) => {
+    const logPath = getRuntimeLogPath();
+    const lineCount = Number.parseInt(options.lines, 10);
+    const level = options.level?.toLowerCase();
+    if (!Number.isInteger(lineCount) || lineCount < 1) {
+        console.error('[CLI] --lines must be a positive integer.');
+        process.exit(1);
+    }
+    if (level && level !== 'error') {
+        console.error('[CLI] Unsupported log level. Currently supported: error');
+        process.exit(1);
+    }
+    if (!fs.existsSync(logPath)) {
+        console.error('[CLI] Runtime log file was not found.');
+        console.error(`[CLI] Expected: ${logPath}`);
+        console.error('[CLI] Start the AEGIS runtime and try again.');
+        process.exit(1);
+    }
+    try {
+        const lines = readLastLines(logPath, lineCount);
+        if (lines.length === 0) {
+            console.log('[CLI] Runtime log is empty.');
+            return;
+        }
+        const filteredLines = level === 'error'
+            ? lines.filter((line) => {
+                try {
+                    const entry = JSON.parse(line);
+                    return String(entry.level || '').toLowerCase() === 'error';
+                }
+                catch {
+                    return /\bERROR\b/i.test(line);
+                }
+            })
+            : lines;
+        if (filteredLines.length === 0) {
+            if (level === 'error') {
+                console.log(`No ERROR entries found in the latest ${lines.length} log entries.`);
+            }
+            else {
+                console.log('[CLI] No log entries found.');
+            }
+            return;
+        }
+        const title = level === 'error'
+            ? `AEGIS Runtime Logs — ERROR (latest ${lines.length} scanned)`
+            : `AEGIS Runtime Logs (latest ${filteredLines.length})`;
+        console.log(title);
+        console.log(`Log file: ${logPath}`);
+        console.log('─'.repeat(80));
+        for (const line of filteredLines) {
+            console.log(formatLogLine(line));
+        }
+    }
+    catch (err) {
+        console.error(`[CLI] Failed to read runtime logs: ${err.message}`);
+        process.exit(1);
+    }
+});
+// ─── 4. DIAGNOSTICS & DOCTOR COMMANDS ───
 program
     .command('doctor')
     .description('Run platform verification checks')
@@ -327,7 +473,7 @@ program
     console.log(`[Doctor] Installed Packages: ${packages.length} registered.`);
     console.log('==============================');
 });
-// ─── 4. IPC HELPER AND ENGINE COMMANDS ───
+// ─── 5. IPC HELPER AND ENGINE COMMANDS ───
 function getIpcPath(workspacePath) {
     if (process.platform === 'win32') {
         return '\\\\.\\pipe\\aegis_kernel_v1';
