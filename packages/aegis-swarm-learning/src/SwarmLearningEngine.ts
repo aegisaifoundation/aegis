@@ -24,8 +24,12 @@ export class SwarmLearningEngine implements IEngine {
 
   async initialize(context: IRuntimeContext_v1): Promise<void> {
     this.context = context;
+    if (!context.nodeId || context.nodeId.trim() === '') {
+      throw new Error('[SwarmLearningEngine] Fatal: Canonical nodeId is missing or invalid in runtime context');
+    }
+    this.localNodeId = context.nodeId;
     serviceRegistry.register('swarm-learning', this);
-    console.log('[SwarmLearningEngine] Initialized. Registered in service registry.');
+    console.log(`[SwarmLearningEngine] Initialized with nodeId ${this.localNodeId}. Registered in service registry.`);
   }
 
   async start(): Promise<void> {
@@ -113,7 +117,7 @@ export class SwarmLearningEngine implements IEngine {
       return;
     }
 
-    const candidateId = this.localNodeId || 'self';
+    const candidateId = this.localNodeId;
     console.log(`[SwarmLearningEngine] Broadcasting leader election proposal: ${candidateId}`);
     
     for (const peer of peers) {
@@ -126,7 +130,7 @@ export class SwarmLearningEngine implements IEngine {
 
   private async handleLeaderProposal(candidateId: string, senderId: string): Promise<void> {
     // Simple deterministic leader selection: lowest-sorted ID wins
-    const selfId = this.localNodeId || 'self';
+    const selfId = this.localNodeId;
     if (candidateId < selfId) {
       this.currentLeaderId = candidateId;
       this.isLeader = false;
@@ -138,7 +142,7 @@ export class SwarmLearningEngine implements IEngine {
 
   private becomeLeader(): void {
     this.isLeader = true;
-    this.currentLeaderId = this.localNodeId || 'self';
+    this.currentLeaderId = this.localNodeId;
     console.log('[SwarmLearningEngine] This node is now the swarm leader.');
   }
 

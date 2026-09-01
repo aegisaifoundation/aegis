@@ -1,4 +1,5 @@
 export interface EngineConfig {
+  nodeId?: string;
   nodeName: string;
   port: number;
   host: string;

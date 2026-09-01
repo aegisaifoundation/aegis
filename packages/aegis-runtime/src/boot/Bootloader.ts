@@ -7,7 +7,7 @@ import { logger } from '../logging/StructuredLogger.js';
 import { eventBus } from '../eventbus/EventBus.js';
 import { serviceRegistry } from '../registry/ServiceRegistry.js';
 import { engineManager, EngineManager } from '../managers/EngineManager.js';
-import { IKernelAPI_v1, KernelStatus, EventEnvelope } from '@aegis/sdk';
+import { IKernelAPI_v1, KernelStatus, EventEnvelope, INodeIdentity, IRuntimeContext_v1, ILogger } from '@aegis/sdk';
 import { runtimeSessionManager } from '../services/RuntimeSessionManager.js';
 
 export class KernelAPI implements IKernelAPI_v1 {
@@ -77,29 +77,36 @@ export class Bootloader {
     const arch = detectArch();
     console.log(`[Bootloader] Platform: ${platform} | Arch: ${arch}`);
 
-    // Stage 4: Workspace Discovery
+    // Stage 4: Workspace Discovery & Canonical Node Identity Initialization
     workspaceManager.initialize();
 
-    // Auto-generate node config & identity if they don't exist
+    let nodeIdentity: any = null;
     try {
-      const fs = await import('fs');
       const path = await import('path');
       const workspacePath = workspaceManager.getWorkspacePath();
       const dotAegisPath = path.resolve(workspacePath, '../.aegis');
 
-      const identityFile = path.join(dotAegisPath, 'identity', 'identity.json');
-      const nodeJsonFile = path.join(dotAegisPath, 'node.json');
-
-      if (!fs.existsSync(identityFile) || !fs.existsSync(nodeJsonFile)) {
-        console.log('[Bootloader] Auto-initializing Aegis Node configuration and credentials...');
-        const { NodeManager } = await import('@aegis/node');
-        const nodeManager = new NodeManager(dotAegisPath);
-        nodeManager.initialize();
-        console.log('[Bootloader] Node configuration auto-generated successfully.');
-      }
+      const { NodeManager } = await import('@aegis/node');
+      const nodeManager = new NodeManager(dotAegisPath);
+      nodeManager.initialize();
+      nodeIdentity = nodeManager.getIdentity();
+      console.log(`[Bootloader] Canonical Node Identity initialized: ${nodeIdentity?.nodeId}`);
     } catch (nodeErr: any) {
-      console.warn('[Bootloader] Failed to auto-initialize node config:', nodeErr.message);
+      console.error('[Bootloader] Failed to initialize canonical node identity:', nodeErr.message);
+      throw new Error(`[Bootloader] Fatal: Canonical Node Identity initialization failed: ${nodeErr.message}`);
     }
+
+    if (!nodeIdentity || !nodeIdentity.nodeId || typeof nodeIdentity.nodeId !== 'string' || nodeIdentity.nodeId.trim() === '') {
+      throw new Error('[Bootloader] Fatal: Canonical AEGIS Node Identity is invalid or missing');
+    }
+
+    const canonicalNodeIdentity: INodeIdentity = {
+      nodeId: nodeIdentity.nodeId,
+      nodeName: nodeIdentity.name || 'Aegis Node',
+      createdAt: nodeIdentity.createdAt || new Date().toISOString(),
+      publicKey: nodeIdentity.publicKey,
+      fingerprint: nodeIdentity.fingerprint
+    };
 
     console.log('[Bootloader] Initiating Phase 2: Configuration & Logging...');
     
@@ -111,7 +118,7 @@ export class Bootloader {
     if (process.env.OPENAI_API_KEY) secrets['OPENAI_API_KEY'] = process.env.OPENAI_API_KEY;
 
     // Stage 7: Logging Initialization
-    logger.log('info', 'Kernel log system initialized', 'system', { hardware, platform, arch });
+    logger.log('info', 'Kernel log system initialized', 'system', { hardware, platform, arch, nodeId: canonicalNodeIdentity.nodeId });
 
     // Stage 8: Event Bus Initialization
     // eventBus is imported from EventBus.js
@@ -131,6 +138,8 @@ export class Bootloader {
     container.bind('workspaceManager', workspaceManager);
     container.bind('config', configurationManager);
     container.bind('engineManager', engineManager);
+    container.bind('nodeId', canonicalNodeIdentity.nodeId);
+    container.bind('nodeIdentity', canonicalNodeIdentity);
 
     // Stage 11-21: Managers Registration
     serviceRegistry.register('eventBus', eventBus);
@@ -138,6 +147,8 @@ export class Bootloader {
     serviceRegistry.register('config', configurationManager);
     serviceRegistry.register('kernelAPI', kernelApi);
     serviceRegistry.register('engineManager', engineManager);
+    serviceRegistry.register('nodeId', canonicalNodeIdentity.nodeId);
+    serviceRegistry.register('nodeIdentity', canonicalNodeIdentity);
 
     // Register ConversationContext service wrapper around memoryGateway history
     const conversationContext = {
@@ -169,16 +180,18 @@ export class Bootloader {
 
     console.log('[Bootloader] Initiating Phase 5: Ready State & Engine Loading...');
     
-    // Create Context
-    const runtimeContext = {
+    // Create Context with mandatory nodeId and getNodeIdentity
+    const runtimeContext: IRuntimeContext_v1 = {
+      nodeId: canonicalNodeIdentity.nodeId,
       runtimeId: "node-123",
       kernelVersion: "1.0.0",
       bootId: "boot-abc",
       platform,
       architecture: arch,
       bootMode: 'NORMAL' as const,
+      getNodeIdentity: () => canonicalNodeIdentity,
       getWorkspacePath: () => workspaceManager.getWorkspacePath(),
-      getLogger: () => logger,
+      getLogger: () => logger as unknown as ILogger,
       getConfig: () => config,
       getSecrets: () => secrets,
       getService: (tokenName: string) => container.resolve(tokenName),

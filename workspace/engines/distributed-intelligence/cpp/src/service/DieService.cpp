@@ -50,8 +50,14 @@ static std::string get_arg(int argc, char** argv, const std::string& flag, const
 
 int main(int argc, char** argv) {
   // 1. Parse CLI arguments
+  const std::string nodeId = get_arg(argc, argv, "--node-id", "");
   const std::string nodeName = get_arg(argc, argv, "--node-name", "aegis-die-node");
   const int port = std::stoi(get_arg(argc, argv, "--port", "9900"));
+
+  if (nodeId.empty()) {
+    std::cerr << "[Distributed Intelligence] Fatal: Mandatory argument --node-id is missing or empty." << std::endl;
+    return 1;
+  }
 
   // 2. Register platform shutdown signals
 #ifdef _WIN32
@@ -63,6 +69,7 @@ int main(int argc, char** argv) {
 
   // 3. Configure the DistributedRuntime
   aegis::die::runtime::RuntimeConfiguration config;
+  config.node.nodeId = nodeId;
   config.node.nodeName = nodeName;
   config.transport.host = "0.0.0.0";
   config.transport.port = port;

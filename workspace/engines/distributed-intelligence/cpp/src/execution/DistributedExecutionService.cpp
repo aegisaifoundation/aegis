@@ -35,6 +35,11 @@ static std::string resolveNodeAddress(std::shared_ptr<runtime::RuntimeContext> c
   return "127.0.0.1:9900";
 }
 
+static std::string getLocalNodeId(std::shared_ptr<runtime::RuntimeContext> ctx) {
+  const auto& conf = ctx->getRuntimeConfig().node;
+  return conf.nodeId.empty() ? conf.nodeName : conf.nodeId;
+}
+
 DistributedExecutionService::DistributedExecutionService(std::shared_ptr<runtime::RuntimeContext> ctx)
   : m_ctx(ctx),
     m_queue(tasks::QueueSchedulingMode::PRIORITY),
@@ -49,7 +54,7 @@ DistributedExecutionService::~DistributedExecutionService() {
 void DistributedExecutionService::initialize() {
   m_ctx->log("INFO", "ExecutionService", "Initializing Distributed Execution Service...");
   
-  m_localCapabilities.nodeId = m_ctx->getRuntimeConfig().node.nodeName;
+  m_localCapabilities.nodeId = getLocalNodeId(m_ctx);
   m_localCapabilities.cpuCores = 4;
   m_localCapabilities.cpuUtilization = 10.0;
   m_localCapabilities.ramCapacity = 8ULL * 1024ULL * 1024ULL * 1024ULL;
@@ -122,7 +127,7 @@ void DistributedExecutionService::submitTask(const tasks::DistributedTask& task)
   if (t.taskId.empty()) {
     t.taskId = "task-" + std::to_string(current_time_ms());
   }
-  t.sourceNode = m_ctx->getRuntimeConfig().node.nodeName;
+  t.sourceNode = getLocalNodeId(m_ctx);
   m_queue.enqueue(t);
   m_ctx->log("INFO", "ExecutionService", "Task submitted: " + t.taskId);
 }
@@ -137,7 +142,7 @@ void DistributedExecutionService::cancelTask(const common::TaskID& taskId) {
     it->second.currentState = "CANCELLED";
     
     // If remote, send cancel message
-    if (it->second.assignedNode != m_ctx->getRuntimeConfig().node.nodeName) {
+    if (it->second.assignedNode != getLocalNodeId(m_ctx)) {
       std::string remoteAddr = resolveNodeAddress(m_ctx, it->second.assignedNode);
       if (!remoteAddr.empty()) {
         m_ctx->getTransport()->send(remoteAddr, "TASK_CANCEL|" + taskId);
@@ -153,7 +158,7 @@ void DistributedExecutionService::pauseTask(const common::TaskID& taskId) {
   if (it != m_executingTasks.end()) {
     it->second.currentState = "PAUSED";
     // For remote, forward command
-    if (it->second.assignedNode != m_ctx->getRuntimeConfig().node.nodeName) {
+    if (it->second.assignedNode != getLocalNodeId(m_ctx)) {
       std::string remoteAddr = resolveNodeAddress(m_ctx, it->second.assignedNode);
       if (!remoteAddr.empty()) {
         m_ctx->getTransport()->send(remoteAddr, "TASK_PAUSE|" + taskId);
@@ -168,7 +173,7 @@ void DistributedExecutionService::resumeTask(const common::TaskID& taskId) {
   if (it != m_executingTasks.end()) {
     it->second.currentState = "RUNNING";
     // For remote, forward command
-    if (it->second.assignedNode != m_ctx->getRuntimeConfig().node.nodeName) {
+    if (it->second.assignedNode != getLocalNodeId(m_ctx)) {
       std::string remoteAddr = resolveNodeAddress(m_ctx, it->second.assignedNode);
       if (!remoteAddr.empty()) {
         m_ctx->getTransport()->send(remoteAddr, "TASK_RESUME|" + taskId);
@@ -232,7 +237,7 @@ void DistributedExecutionService::broadcastCapabilities() {
   if (!m_ctx->getTransport()) return;
   
   capabilities::NodeCapabilities localCaps;
-  localCaps.nodeId = m_ctx->getRuntimeConfig().node.nodeName;
+  localCaps.nodeId = getLocalNodeId(m_ctx);
   localCaps.cpuCores = 8;
   localCaps.cpuUtilization = 12.5; // Dummy load
   localCaps.ramCapacity = 16ULL * 1024ULL * 1024ULL * 1024ULL;
@@ -278,11 +283,11 @@ void DistributedExecutionService::runDispatcher() {
       capabilities::NodeCapabilities localCaps;
       auto capReg = m_ctx->getCapabilityRegistry();
       if (capReg) {
-        localCaps = capReg->getCapabilities(m_ctx->getRuntimeConfig().node.nodeName);
+        localCaps = capReg->getCapabilities(getLocalNodeId(m_ctx));
       } else {
         localCaps = m_localCapabilities;
       }
-      localCaps.nodeId = m_ctx->getRuntimeConfig().node.nodeName;
+      localCaps.nodeId = getLocalNodeId(m_ctx);
       allCaps.push_back(localCaps);
       healthMap[localCaps.nodeId] = health::NodeHealth();
 
@@ -328,7 +333,7 @@ void DistributedExecutionService::runDispatcher() {
         m_executingTasks[task.taskId] = task;
       }
 
-      if (bestNode == m_ctx->getRuntimeConfig().node.nodeName) {
+      if (bestNode == getLocalNodeId(m_ctx)) {
         executeLocalTask(task);
       } else {
         dispatchRemoteTask(task, bestNode);
@@ -349,7 +354,7 @@ void DistributedExecutionService::runMonitor() {
       std::lock_guard<std::mutex> lock(m_tasksMutex);
       auto now = common::now();
       for (const auto& [id, task] : m_executingTasks) {
-        if (task.assignedNode != m_ctx->getRuntimeConfig().node.nodeName) {
+        if (task.assignedNode != getLocalNodeId(m_ctx)) {
           // Check if remote node is dead
           auto reg = m_ctx->getNodeRegistry();
           if (reg) {
@@ -468,7 +473,7 @@ void DistributedExecutionService::executeLocalTask(const tasks::DistributedTask&
       m_resultManager->addPartialOutput(task.taskId, partialOutput);
       
       // If remote task request, send progress back to client
-      if (!task.sourceNode.empty() && task.sourceNode != m_ctx->getRuntimeConfig().node.nodeName) {
+      if (!task.sourceNode.empty() && task.sourceNode != getLocalNodeId(m_ctx)) {
         std::string clientAddr = resolveNodeAddress(m_ctx, task.sourceNode);
         if (!clientAddr.empty()) {
           std::stringstream ss;
@@ -497,7 +502,7 @@ void DistributedExecutionService::executeLocalTask(const tasks::DistributedTask&
       }
 
       // If remote task request, send final result back
-      if (!task.sourceNode.empty() && task.sourceNode != m_ctx->getRuntimeConfig().node.nodeName) {
+      if (!task.sourceNode.empty() && task.sourceNode != getLocalNodeId(m_ctx)) {
         std::string clientAddr = resolveNodeAddress(m_ctx, task.sourceNode);
         if (!clientAddr.empty()) {
           std::stringstream ss;

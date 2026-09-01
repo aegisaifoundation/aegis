@@ -6,24 +6,22 @@ export declare class DiscoveryService {
     private host;
     private localPeers;
     constructor(host: IEngineIpcHost);
+    private getRegistry;
     discoverNodes(): Promise<string[]>;
     registerNode(nodeId: string, host: string, port: number): Promise<void>;
     removeNode(nodeId: string): Promise<void>;
     getLocalPeer(nodeId: string): {
-        host: string;
-        port: number;
+        host: any;
+        port: any;
     } | undefined;
-    getLocalPeers(): {
-        nodeId: string;
-        host: string;
-        port: number;
-    }[];
+    getLocalPeers(): any;
 }
 export declare class MessagingService {
     private host;
     private localServer;
     private listeners;
     constructor(host: IEngineIpcHost);
+    private getConnectionManager;
     private startLocalServer;
     sendMessage(targetNodeId: string, messageType: string, payload: Record<string, any>): Promise<void>;
     private sendDirect;

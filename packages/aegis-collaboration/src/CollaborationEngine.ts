@@ -55,9 +55,10 @@ export class CollaborationEngine implements IEngine {
 
   async initialize(context: IRuntimeContext_v1): Promise<void> {
     this.initStartTime = Date.now();
-    this.context = context;
-    this.workspacePath = context.getWorkspacePath();
-    this.localNodeId = context.runtimeId ?? os.hostname();
+    if (!context.nodeId || context.nodeId.trim() === '') {
+      throw new Error('[CollaborationEngine] Fatal: Canonical nodeId is missing or invalid in runtime context');
+    }
+    this.localNodeId = context.nodeId;
 
     console.log('[CollaborationEngine] Initializing sub-managers...');
 

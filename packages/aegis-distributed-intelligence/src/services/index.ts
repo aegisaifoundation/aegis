@@ -13,7 +13,16 @@ export class DiscoveryService {
 
   constructor(private host: IEngineIpcHost) {}
 
+  private getRegistry(): any {
+    return (this.host as any).peerRegistry;
+  }
+
   async discoverNodes(): Promise<string[]> {
+    const reg = this.getRegistry();
+    if (reg) {
+      const registeredPeers = reg.listPeers().map((p: any) => p.nodeId);
+      return Array.from(new Set(registeredPeers));
+    }
     try {
       const res = await this.host.getIpcManager().request(MessageType.REQUEST, { action: 'discover_nodes' });
       const nativeNodes = res?.nodes || [];
@@ -25,6 +34,14 @@ export class DiscoveryService {
 
   async registerNode(nodeId: string, host: string, port: number): Promise<void> {
     this.localPeers.set(nodeId, { host, port });
+    const reg = this.getRegistry();
+    if (reg && nodeId.startsWith('aegis://')) {
+      reg.registerPeer({
+        nodeId,
+        endpoints: [{ transport: 'tcp', host, port, priority: 1 }],
+        connectionState: 'DISCOVERED'
+      });
+    }
     try {
       await this.host.getIpcManager().request(MessageType.REQUEST, {
         action: 'register_node',
@@ -39,6 +56,10 @@ export class DiscoveryService {
 
   async removeNode(nodeId: string): Promise<void> {
     this.localPeers.delete(nodeId);
+    const reg = this.getRegistry();
+    if (reg) {
+      reg.removePeer(nodeId);
+    }
     try {
       await this.host.getIpcManager().request(MessageType.REQUEST, {
         action: 'unregister_node',
@@ -48,10 +69,25 @@ export class DiscoveryService {
   }
 
   getLocalPeer(nodeId: string) {
+    const reg = this.getRegistry();
+    if (reg) {
+      const peer = reg.getPeer(nodeId);
+      if (peer && peer.endpoints.length > 0) {
+        return { host: peer.endpoints[0].host, port: peer.endpoints[0].port };
+      }
+    }
     return this.localPeers.get(nodeId);
   }
 
   getLocalPeers() {
+    const reg = this.getRegistry();
+    if (reg) {
+      return reg.listPeers().map((p: any) => ({
+        nodeId: p.nodeId,
+        host: p.endpoints[0]?.host || '127.0.0.1',
+        port: p.endpoints[0]?.port || 9901
+      }));
+    }
     return Array.from(this.localPeers.entries()).map(([nodeId, peer]) => ({
       nodeId,
       host: peer.host,
@@ -68,31 +104,26 @@ export class MessagingService {
     this.startLocalServer();
   }
 
+  private getConnectionManager(): any {
+    return (this.host as any).connectionManager;
+  }
+
   private startLocalServer() {
+    // Local server initialization delegated to ConnectionManager transport adapters if available
     const localPort = (this.host as any).lifecycle?.getConfigurationManager()?.get()?.port || 9900;
     const msgPort = localPort + 1;
     this.localServer = net.createServer((socket) => {
       let buffer = Buffer.alloc(0);
-      const logDebug = (msg: string) => {
-        try {
-          fs.appendFileSync('workspace/logs/p2p_debug.log', `[${new Date().toISOString()}] [Socket ${socket.remoteAddress}:${socket.remotePort}] ${msg}\n`, 'utf8');
-        } catch {}
-      };
-      logDebug('Connection received');
       socket.on('data', (chunk) => {
-        logDebug(`Received chunk of size ${chunk.length}`);
         buffer = Buffer.concat([buffer, chunk]);
         while (buffer.length >= 4) {
           const payloadLen = buffer.readUInt32BE(0);
-          logDebug(`Reading expected payload length: ${payloadLen}. Accumulator size: ${buffer.length}`);
           if (buffer.length >= 4 + payloadLen) {
             const payloadStr = buffer.subarray(4, 4 + payloadLen).toString('utf8');
             buffer = buffer.subarray(4 + payloadLen);
-            logDebug(`Received complete payload of size ${payloadLen}: ${payloadStr}`);
             try {
               const parsed = JSON.parse(payloadStr);
               if (parsed.messageType && parsed.senderId) {
-                logDebug(`Successfully parsed packet. messageType=${parsed.messageType}, senderId=${parsed.senderId}`);
                 const packet = {
                   messageType: MessageType.EVENT,
                   payload: {
@@ -105,27 +136,17 @@ export class MessagingService {
                 // Emit to local IPC
                 this.host.getIpcManager().emit('packet', packet);
                 // Also trigger local event callbacks directly if registered
-                logDebug(`Delivering message to local listeners...`);
                 this.deliverMessage(parsed.messageType, parsed.payload, parsed.senderId);
-              } else {
-                logDebug(`Parsed packet missing messageType or senderId: ${payloadStr}`);
               }
             } catch (err: any) {
-              logDebug(`Failed to parse json: ${err.message}`);
               console.error('[MessagingService] Failed to parse JS fallback packet:', err);
             }
           } else {
-            logDebug(`Waiting for more data. Need ${4 + payloadLen} bytes, currently have ${buffer.length}`);
             break;
           }
         }
       });
-      socket.on('end', () => {
-        logDebug('Socket connection closed by client');
-      });
-      socket.on('error', (err) => {
-        logDebug(`Socket error: ${err.message}`);
-      });
+      socket.on('error', () => {});
     });
     this.localServer.listen(msgPort, '0.0.0.0', () => {
       console.log(`[MessagingService] TS P2P Message Server listening on port ${msgPort} (JS fallback)`);
@@ -136,20 +157,30 @@ export class MessagingService {
   }
 
   async sendMessage(targetNodeId: string, messageType: string, payload: Record<string, any>): Promise<void> {
-    // 1. In-process check (Gautham's implementation)
+    // 1. In-process check
     const targetEngine = activeEngines.get(targetNodeId);
     if (targetEngine) {
-      const ourNodeName = (this.host as any).nodeName || 'unknown';
-      targetEngine.messagingService.deliverMessage(messageType, payload, ourNodeName);
+      const ourNodeId = (this.host as any).nodeId || (this.host as any).nodeName || 'unknown';
+      targetEngine.messagingService.deliverMessage(messageType, payload, ourNodeId);
       return;
     }
 
-    // 2. Try JS P2P direct fallback
+    // 2. Try ConnectionManager if integrated
+    const connMgr = this.getConnectionManager();
+    if (connMgr) {
+      try {
+        await connMgr.sendPeerMessage(targetNodeId, messageType, payload);
+        return;
+      } catch (err: any) {
+        console.warn(`[MessagingService] ConnectionManager send failed for ${targetNodeId}: ${err.message}`);
+      }
+    }
+
+    // 3. Try JS P2P direct fallback
     const discovery = (this.host as any).discoveryService as DiscoveryService;
     const peer = discovery?.getLocalPeer(targetNodeId);
     if (peer) {
       try {
-        // Use port + 1 for the message service fallback
         await this.sendDirect(peer.host, peer.port + 1, messageType, payload);
         return;
       } catch (err: any) {
@@ -158,7 +189,7 @@ export class MessagingService {
       }
     }
 
-    // 3. Try native C++ send
+    // 4. Try native C++ send
     await this.host.getIpcManager().request(MessageType.REQUEST, {
       action: 'send_message',
       targetNodeId,
@@ -170,13 +201,13 @@ export class MessagingService {
   private sendDirect(host: string, port: number, messageType: string, payload: any): Promise<void> {
     return new Promise((resolve, reject) => {
       const client = net.connect(port, host);
-      client.setTimeout(3000);
+      client.setTimeout(5000);
 
       client.on('connect', () => {
-        const ourNodeName = (this.host as any).nodeName || 'unknown';
+        const ourNodeId = (this.host as any).nodeId || (this.host as any).nodeName || 'unknown';
         const msg = JSON.stringify({
           messageType,
-          senderId: ourNodeName,
+          senderId: ourNodeId,
           payload
         });
         const lenBuf = Buffer.alloc(4);
@@ -188,7 +219,7 @@ export class MessagingService {
 
       client.on('timeout', () => {
         client.destroy();
-        reject(new Error('Connection timed out after 3000ms'));
+        reject(new Error('Connection timed out after 5000ms'));
       });
 
       client.on('error', reject);
@@ -200,6 +231,11 @@ export class MessagingService {
       this.listeners.set(messageType, new Set());
     }
     this.listeners.get(messageType)!.add(callback);
+
+    const connMgr = this.getConnectionManager();
+    if (connMgr) {
+      connMgr.onMessage(messageType, callback);
+    }
 
     this.host.getIpcManager().on('packet', (packet: any) => {
       if (packet.messageType === MessageType.EVENT && packet.payload?.type === 'peer_message') {

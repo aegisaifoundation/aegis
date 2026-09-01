@@ -30,6 +30,8 @@ function assert(condition: boolean, message: string): void {
 }
 
 const mockContext: any = {
+  nodeId: 'aegis://test-node-123',
+  getNodeIdentity: () => ({ nodeId: 'aegis://test-node-123', nodeName: 'Test Node', createdAt: new Date().toISOString() }),
   runtimeId: 'test-runtime',
   kernelVersion: '1.0.0',
   bootId: 'test-boot',

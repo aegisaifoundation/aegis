@@ -4,6 +4,7 @@
 namespace aegis::die::configuration {
 
 struct NodeConfiguration {
+  std::string nodeId;
   std::string nodeName;
   std::string roleMode = "hybrid";
   bool autoStart = true;

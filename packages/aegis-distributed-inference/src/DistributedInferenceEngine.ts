@@ -53,6 +53,9 @@ export class DistributedInferenceEngine implements IEngine {
 
   async initialize(context: IRuntimeContext_v1): Promise<void> {
     this.context = context;
+    if (!context.nodeId || context.nodeId.trim() === '') {
+      throw new Error('[DistributedInferenceEngine] Fatal: Canonical nodeId is missing or invalid in runtime context');
+    }
 
     this.policyEngine = new ExecutionPolicyEngine();
     this.registry = new ModelRegistry();

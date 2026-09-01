@@ -15,6 +15,7 @@ export class FederatedLearningEngine implements IEngine {
   };
 
   private context!: IRuntimeContext_v1;
+  private localNodeId = '';
   private state: 'STOPPED' | 'ONLINE' | 'TRAINING' = 'STOPPED';
   private currentRound = 0;
   private activeModelVersion = 'v1.0.0';
@@ -22,6 +23,10 @@ export class FederatedLearningEngine implements IEngine {
 
   async initialize(context: IRuntimeContext_v1): Promise<void> {
     this.context = context;
+    if (!context.nodeId || context.nodeId.trim() === '') {
+      throw new Error('[FederatedLearningEngine] Fatal: Canonical nodeId is missing or invalid in runtime context');
+    }
+    this.localNodeId = context.nodeId;
     this.state = 'ONLINE';
     
     // Register ourselves in service registry for downstream AI clients

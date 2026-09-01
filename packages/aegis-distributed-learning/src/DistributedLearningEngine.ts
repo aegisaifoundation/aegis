@@ -114,7 +114,10 @@ export class DistributedLearningEngine implements IEngine {
     const dis = serviceRegistry.has('distributed-intelligence')
       ? serviceRegistry.get<any>('distributed-intelligence')
       : null;
-    const nodeId = context.runtimeId ?? os.hostname();
+    if (!context.nodeId || context.nodeId.trim() === '') {
+      throw new Error('[DistributedLearningEngine] Fatal: Canonical nodeId is missing or invalid in runtime context');
+    }
+    const nodeId = context.nodeId;
     this.learningManager.initialize(dis, nodeId);
 
     // Register strategies

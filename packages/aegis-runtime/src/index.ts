@@ -29,5 +29,6 @@ export * from './transports/IpcPath.js';
 export * from './transports/IpcProtocol.js';
 export * from './transports/IpcServer.js';
 export * from './managers/EngineManager.js';
+export * from './networking/index.js';
 export const RUNTIME_VERSION = "1.0.0";
 

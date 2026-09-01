@@ -15,6 +15,14 @@ import {
   IEngineIpcHost,
   activeEngines
 } from '../services/index.js';
+import {
+  PeerRegistry,
+  ConnectionManager,
+  LanDiscoveryProvider,
+  NetworkConfigurationManager,
+  NodeTcpTransportAdapter,
+  NativeTcpTransportAdapter
+} from '@aegis/runtime';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -67,8 +75,14 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
   private lifecycle = new EngineLifecycle();
   private context!: IRuntimeContext_v1;
 
+  public nodeId = '';
   public nodeName = 'aegis-die-node';
   public port = 9900;
+
+  public peerRegistry!: PeerRegistry;
+  public connectionManager!: ConnectionManager;
+  public lanDiscoveryProvider!: LanDiscoveryProvider;
+  public configManager!: NetworkConfigurationManager;
 
   readonly discoveryService = new DiscoveryService(this);
   readonly messagingService = new MessagingService(this);
@@ -84,8 +98,48 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
     return this.lifecycle.getIpcManager();
   }
 
+  getNodeIdentity() {
+    return this.context.getNodeIdentity();
+  }
+
   async initialize(context: IRuntimeContext_v1): Promise<void> {
     this.context = context;
+    if (!context.nodeId || context.nodeId.trim() === '') {
+      throw new Error('[DistributedIntelligenceEngine] Fatal: Canonical nodeId is missing or invalid in runtime context');
+    }
+    this.nodeId = context.nodeId;
+
+    const allowLoopback = process.env.NODE_ENV === 'test' || process.env.AEGIS_ALLOW_LOOPBACK === 'true';
+    this.configManager = new NetworkConfigurationManager({ allowLoopback });
+    this.peerRegistry = new PeerRegistry(allowLoopback);
+
+    const tcpAdapter = new NodeTcpTransportAdapter();
+    const nativeAdapter = new NativeTcpTransportAdapter(() => this.getIpcManager());
+
+    this.connectionManager = new ConnectionManager(
+      this.nodeId,
+      this.nodeName,
+      this.peerRegistry,
+      this.configManager,
+      [tcpAdapter, nativeAdapter]
+    );
+
+    this.lanDiscoveryProvider = new LanDiscoveryProvider(
+      this.nodeId,
+      this.nodeName,
+      () => [
+        { transport: 'tcp', port: this.port + 1, priority: 1 },
+        { transport: 'native_tcp', port: this.port, priority: 2 }
+      ]
+    );
+
+    await tcpAdapter.listen(this.port + 1);
+    await this.lanDiscoveryProvider.start();
+
+    this.lanDiscoveryProvider.onPeerDiscovered((peer) => {
+      this.peerRegistry.registerPeer(peer);
+    });
+
     const executablePath = this.resolveExecutable();
 
     // Set up runtime event publisher
@@ -113,7 +167,12 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
   async configure(config: Record<string, any>): Promise<void> {
     if (config.nodeName) this.nodeName = config.nodeName;
     if (config.port) this.port = config.port;
-    await this.lifecycle.configure(config);
+    await this.lifecycle.configure({
+      ...config,
+      nodeId: this.nodeId,
+      nodeName: this.nodeName
+    });
+    activeEngines.set(this.nodeId, this);
     activeEngines.set(this.nodeName, this);
   }
 
@@ -159,8 +218,22 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
     await this.lifecycle.reload();
   }
 
+  async stopNetwork(): Promise<void> {
+    if (this.lanDiscoveryProvider) {
+      await this.lanDiscoveryProvider.stop();
+    }
+    if (this.connectionManager) {
+      await this.connectionManager.stop();
+    }
+  }
+
   async shutdown(): Promise<void> {
-    await this.lifecycle.shutdown();
+    await this.stopNetwork();
+    try {
+      await this.lifecycle.shutdown();
+    } catch (err: any) {
+      console.log(`[DistributedIntelligenceEngine] Lifecycle shutdown notice: ${err.message}`);
+    }
   }
 
   async dispose(): Promise<void> {
@@ -226,7 +299,7 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
     const requestId = crypto.randomUUID();
     const newRequest = {
       requestId,
-      senderNodeId: this.nodeName,
+      senderNodeId: this.nodeId || this.nodeName,
       senderHost: localIp,
       senderPort: this.port,
       targetNodeId,
@@ -286,7 +359,7 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
       senderNodeId: senderId,
       senderHost: payload.senderHost,
       senderPort: payload.senderPort,
-      targetNodeId: this.nodeName,
+      targetNodeId: this.nodeId || this.nodeName,
       status: 'pending',
       timestamp: new Date().toISOString()
     };
