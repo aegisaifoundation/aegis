@@ -1,10 +1,10 @@
 {
   "sessionId": "session_1783840491552",
   "createdAt": "2026-07-12T07:14:51.587Z",
-  "updatedAt": "2026-07-17T15:32:41.233Z",
+  "updatedAt": "2026-09-02T13:36:37.332Z",
   "lastAccessedAt": "2026-07-17T15:32:41.233Z",
   "memoryVersion": "1.0.0",
-  "lifecycleState": "ACTIVE",
+  "lifecycleState": "ARCHIVED",
   "checksums": {
     "history": "d2f099f693891ef814e07aea864d8979f158dd6c9dfa0802c4cd3ceb15885175",
     "sessionMemory": "aec3c6983f27f63f05ef0c1b475f836d15f16ae0736023e5f916239da6a3749c",

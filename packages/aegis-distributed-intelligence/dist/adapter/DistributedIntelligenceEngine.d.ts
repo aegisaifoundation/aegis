@@ -1,6 +1,6 @@
 import { IEngine, IEngineMetadata, IRuntimeContext_v1, EngineHealthReport } from '@aegis/sdk';
 import { DiscoveryService, MessagingService, TransportService, ExecutionService, CapabilityService, ResourceService, TrustService, SchedulerService, EventService, IEngineIpcHost } from '../services/index.js';
-import { PeerRegistry, ConnectionManager, LanDiscoveryProvider, NetworkConfigurationManager } from '@aegis/runtime';
+import { PeerRegistry, ConnectionManager, LanDiscoveryProvider, NetworkConfigurationManager, AegisMessageRouter, DistributedTaskManager } from '@aegis/runtime';
 export declare function getLocalIpAddress(): string;
 export declare class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
     readonly metadata: IEngineMetadata;
@@ -11,6 +11,8 @@ export declare class DistributedIntelligenceEngine implements IEngine, IEngineIp
     port: number;
     peerRegistry: PeerRegistry;
     connectionManager: ConnectionManager;
+    messageRouter: AegisMessageRouter;
+    taskManager: DistributedTaskManager;
     lanDiscoveryProvider: LanDiscoveryProvider;
     configManager: NetworkConfigurationManager;
     readonly discoveryService: DiscoveryService;

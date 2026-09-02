@@ -2,7 +2,7 @@ import { serviceRegistry } from '@aegis/runtime';
 import { EngineLifecycle } from '../lifecycle/EngineLifecycle.js';
 import { EngineState } from '../state/EngineState.js';
 import { DiscoveryService, MessagingService, TransportService, ExecutionService, CapabilityService, ResourceService, TrustService, SchedulerService, EventService, activeEngines } from '../services/index.js';
-import { PeerRegistry, ConnectionManager, LanDiscoveryProvider, NetworkConfigurationManager, NodeTcpTransportAdapter, NativeTcpTransportAdapter } from '@aegis/runtime';
+import { PeerRegistry, ConnectionManager, LanDiscoveryProvider, NetworkConfigurationManager, NodeTcpTransportAdapter, NativeTcpTransportAdapter, AegisMessageRouter, DistributedTaskManager } from '@aegis/runtime';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -55,6 +55,8 @@ export class DistributedIntelligenceEngine {
     port = 9900;
     peerRegistry;
     connectionManager;
+    messageRouter;
+    taskManager;
     lanDiscoveryProvider;
     configManager;
     discoveryService = new DiscoveryService(this);
@@ -84,6 +86,9 @@ export class DistributedIntelligenceEngine {
         const tcpAdapter = new NodeTcpTransportAdapter();
         const nativeAdapter = new NativeTcpTransportAdapter(() => this.getIpcManager());
         this.connectionManager = new ConnectionManager(this.nodeId, this.nodeName, this.peerRegistry, this.configManager, [tcpAdapter, nativeAdapter]);
+        this.messageRouter = new AegisMessageRouter(this.nodeId, () => this.connectionManager);
+        this.connectionManager.setMessageRouter(this.messageRouter);
+        this.taskManager = new DistributedTaskManager(this.nodeId, this.messageRouter, this.peerRegistry);
         this.lanDiscoveryProvider = new LanDiscoveryProvider(this.nodeId, this.nodeName, () => [
             { transport: 'tcp', port: this.port + 1, priority: 1 },
             { transport: 'native_tcp', port: this.port, priority: 2 }

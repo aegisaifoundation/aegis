@@ -7,3 +7,6 @@ export * from './api/IKernelAPI.js';
 export * from './types/syscall.js';
 export * from './errors/SdkErrors.js';
 export * from './client/AegisSDK.js';
+export * from './communication/index.js';
+export * from './coordination/index.js';
+export * from './state/index.js';

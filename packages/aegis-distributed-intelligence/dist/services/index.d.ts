@@ -21,6 +21,7 @@ export declare class MessagingService {
     private listeners;
     constructor(host: IEngineIpcHost);
     private getConnectionManager;
+    private getMessageRouter;
     sendMessage(targetNodeId: string, messageType: string, payload: Record<string, any>): Promise<void>;
     private sendDirect;
     onMessage(messageType: string, callback: (payload: any, senderId: string) => void | Promise<void>): void;
@@ -35,6 +36,7 @@ export declare class TransportService {
 export declare class ExecutionService {
     private host;
     constructor(host: IEngineIpcHost);
+    private getTaskManager;
     submitTask(task: any): Promise<void>;
     cancelTask(taskId: string): Promise<void>;
     onTaskCompleted(taskId: string, callback: (result: any) => void): void;
@@ -42,6 +44,7 @@ export declare class ExecutionService {
 export declare class CapabilityService {
     private host;
     constructor(host: IEngineIpcHost);
+    private getRegistry;
     advertiseCapabilities(caps: any[]): Promise<void>;
     getRemoteCapabilities(nodeId: string): Promise<any[]>;
 }

@@ -21,6 +21,8 @@ export declare class ConnectionManager {
     private reconnectBackoffs;
     private reconnectTimers;
     private messageListeners;
+    messageRouter: any;
+    setMessageRouter(router: any): void;
     constructor(localNodeId: string, localNodeName: string, peerRegistry: PeerRegistry, configManager: NetworkConfigurationManager, transports: ITransportAdapter[]);
     connectToPeer(targetNodeId: string): Promise<ActivePeerConnection>;
     private handleIncomingTransportConnection;

@@ -105,6 +105,10 @@ export class MessagingService {
     return (this.host as any).connectionManager;
   }
 
+  private getMessageRouter(): any {
+    return (this.host as any).messageRouter;
+  }
+
   async sendMessage(targetNodeId: string, messageType: string, payload: Record<string, any>): Promise<void> {
     if (!targetNodeId || typeof targetNodeId !== 'string' || !targetNodeId.startsWith('aegis://')) {
       throw new Error(`[AEGIS Network] Canonical nodeId is required for network operations. Received: "${targetNodeId}"`);
@@ -115,14 +119,27 @@ export class MessagingService {
       throw new Error('[AEGIS Network] Canonical nodeId is required for network operations.');
     }
 
-    // 1. In-process check
+    // 1. Try AegisMessageRouter if available
+    const router = this.getMessageRouter();
+    if (router) {
+      const envelope = router.getFactory().createMessage({
+        messageType,
+        payload,
+        targetNodeId,
+        sourceEngine: 'distributed-intelligence'
+      });
+      await router.send(envelope);
+      return;
+    }
+
+    // 2. In-process check
     const targetEngine = activeEngines.get(targetNodeId);
     if (targetEngine) {
       targetEngine.messagingService.deliverMessage(messageType, payload, localNodeId);
       return;
     }
 
-    // 2. Try ConnectionManager if integrated
+    // 3. Try ConnectionManager if integrated
     const connMgr = this.getConnectionManager();
     if (connMgr) {
       try {
@@ -240,7 +257,23 @@ export class TransportService {
 export class ExecutionService {
   constructor(private host: IEngineIpcHost) {}
 
+  private getTaskManager(): any {
+    return (this.host as any).taskManager;
+  }
+
   async submitTask(task: any): Promise<void> {
+    const tm = this.getTaskManager();
+    if (tm) {
+      const created = tm.getTask(task.taskId) || tm.createTask({
+        type: task.type || 'ENGINE.task',
+        payload: task.payload || task,
+        priority: task.priority,
+        requirements: task.requirements,
+        targetNodeId: task.targetNodeId
+      });
+      await tm.submitTask(created);
+      return;
+    }
     await this.host.getIpcManager().request(MessageType.REQUEST, {
       action: 'submit_task',
       task
@@ -248,6 +281,11 @@ export class ExecutionService {
   }
 
   async cancelTask(taskId: string): Promise<void> {
+    const tm = this.getTaskManager();
+    if (tm) {
+      await tm.cancelTask(taskId);
+      return;
+    }
     await this.host.getIpcManager().request(MessageType.REQUEST, {
       action: 'cancel_task',
       taskId
@@ -255,6 +293,11 @@ export class ExecutionService {
   }
 
   onTaskCompleted(taskId: string, callback: (result: any) => void): void {
+    const tm = this.getTaskManager();
+    if (tm) {
+      tm.onTaskCompleted(taskId, (res: any) => callback(res.result !== undefined ? res.result : res));
+      return;
+    }
     this.host.getIpcManager().on('packet', (packet: any) => {
       if (packet.messageType === MessageType.EVENT && packet.payload?.type === 'task_completed') {
         const payload = packet.payload;
@@ -269,14 +312,37 @@ export class ExecutionService {
 export class CapabilityService {
   constructor(private host: IEngineIpcHost) {}
 
+  private getRegistry(): any {
+    const tm = (this.host as any).taskManager;
+    return tm ? tm.getCapabilityRegistry() : null;
+  }
+
   async advertiseCapabilities(caps: any[]): Promise<void> {
-    await this.host.getIpcManager().request(MessageType.REQUEST, {
-      action: 'advertise_capabilities',
-      capabilities: caps
-    });
+    const reg = this.getRegistry();
+    if (reg) {
+      const nodeId = (this.host as any).nodeId;
+      if (nodeId) {
+        reg.registerCapabilities({
+          nodeId,
+          capabilities: caps,
+          updatedAt: Date.now()
+        });
+      }
+    }
+    try {
+      await this.host.getIpcManager().request(MessageType.REQUEST, {
+        action: 'advertise_capabilities',
+        capabilities: caps
+      });
+    } catch {}
   }
 
   async getRemoteCapabilities(nodeId: string): Promise<any[]> {
+    const reg = this.getRegistry();
+    if (reg) {
+      const caps = reg.getCapabilities(nodeId);
+      if (caps) return caps.capabilities;
+    }
     try {
       const res = await this.host.getIpcManager().request(MessageType.REQUEST, {
         action: 'get_remote_capabilities',

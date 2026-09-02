@@ -18,7 +18,7 @@
     "aegis-unified-platform",
     "aegis-hello-world"
   ],
-  "defaultProvider": "local/ollama",
+  "defaultProvider": "local/gguf",
   "autoloadTools": [
     "shared/memory-read",
     "shared/FolderTool",

@@ -30,4 +30,8 @@ export * from './transports/IpcProtocol.js';
 export * from './transports/IpcServer.js';
 export * from './managers/EngineManager.js';
 export * from './networking/index.js';
+export * from './communication/index.js';
+export * from './coordination/index.js';
+export * from './storage/index.js';
+export * from './state/index.js';
 export declare const RUNTIME_VERSION = "1.0.0";

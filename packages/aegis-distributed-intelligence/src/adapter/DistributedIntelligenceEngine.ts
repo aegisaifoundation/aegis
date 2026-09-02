@@ -21,7 +21,9 @@ import {
   LanDiscoveryProvider,
   NetworkConfigurationManager,
   NodeTcpTransportAdapter,
-  NativeTcpTransportAdapter
+  NativeTcpTransportAdapter,
+  AegisMessageRouter,
+  DistributedTaskManager
 } from '@aegis/runtime';
 import path from 'path';
 import fs from 'fs';
@@ -81,6 +83,8 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
 
   public peerRegistry!: PeerRegistry;
   public connectionManager!: ConnectionManager;
+  public messageRouter!: AegisMessageRouter;
+  public taskManager!: DistributedTaskManager;
   public lanDiscoveryProvider!: LanDiscoveryProvider;
   public configManager!: NetworkConfigurationManager;
 
@@ -123,6 +127,10 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
       this.configManager,
       [tcpAdapter, nativeAdapter]
     );
+
+    this.messageRouter = new AegisMessageRouter(this.nodeId, () => this.connectionManager);
+    this.connectionManager.setMessageRouter(this.messageRouter);
+    this.taskManager = new DistributedTaskManager(this.nodeId, this.messageRouter, this.peerRegistry);
 
     this.lanDiscoveryProvider = new LanDiscoveryProvider(
       this.nodeId,

@@ -96,6 +96,9 @@ export class MessagingService {
     getConnectionManager() {
         return this.host.connectionManager;
     }
+    getMessageRouter() {
+        return this.host.messageRouter;
+    }
     async sendMessage(targetNodeId, messageType, payload) {
         if (!targetNodeId || typeof targetNodeId !== 'string' || !targetNodeId.startsWith('aegis://')) {
             throw new Error(`[AEGIS Network] Canonical nodeId is required for network operations. Received: "${targetNodeId}"`);
@@ -104,13 +107,25 @@ export class MessagingService {
         if (!localNodeId || typeof localNodeId !== 'string' || !localNodeId.startsWith('aegis://')) {
             throw new Error('[AEGIS Network] Canonical nodeId is required for network operations.');
         }
-        // 1. In-process check
+        // 1. Try AegisMessageRouter if available
+        const router = this.getMessageRouter();
+        if (router) {
+            const envelope = router.getFactory().createMessage({
+                messageType,
+                payload,
+                targetNodeId,
+                sourceEngine: 'distributed-intelligence'
+            });
+            await router.send(envelope);
+            return;
+        }
+        // 2. In-process check
         const targetEngine = activeEngines.get(targetNodeId);
         if (targetEngine) {
             targetEngine.messagingService.deliverMessage(messageType, payload, localNodeId);
             return;
         }
-        // 2. Try ConnectionManager if integrated
+        // 3. Try ConnectionManager if integrated
         const connMgr = this.getConnectionManager();
         if (connMgr) {
             try {
@@ -223,19 +238,44 @@ export class ExecutionService {
     constructor(host) {
         this.host = host;
     }
+    getTaskManager() {
+        return this.host.taskManager;
+    }
     async submitTask(task) {
+        const tm = this.getTaskManager();
+        if (tm) {
+            const created = tm.getTask(task.taskId) || tm.createTask({
+                type: task.type || 'ENGINE.task',
+                payload: task.payload || task,
+                priority: task.priority,
+                requirements: task.requirements,
+                targetNodeId: task.targetNodeId
+            });
+            await tm.submitTask(created);
+            return;
+        }
         await this.host.getIpcManager().request(MessageType.REQUEST, {
             action: 'submit_task',
             task
         });
     }
     async cancelTask(taskId) {
+        const tm = this.getTaskManager();
+        if (tm) {
+            await tm.cancelTask(taskId);
+            return;
+        }
         await this.host.getIpcManager().request(MessageType.REQUEST, {
             action: 'cancel_task',
             taskId
         });
     }
     onTaskCompleted(taskId, callback) {
+        const tm = this.getTaskManager();
+        if (tm) {
+            tm.onTaskCompleted(taskId, (res) => callback(res.result !== undefined ? res.result : res));
+            return;
+        }
         this.host.getIpcManager().on('packet', (packet) => {
             if (packet.messageType === MessageType.EVENT && packet.payload?.type === 'task_completed') {
                 const payload = packet.payload;
@@ -251,13 +291,37 @@ export class CapabilityService {
     constructor(host) {
         this.host = host;
     }
+    getRegistry() {
+        const tm = this.host.taskManager;
+        return tm ? tm.getCapabilityRegistry() : null;
+    }
     async advertiseCapabilities(caps) {
-        await this.host.getIpcManager().request(MessageType.REQUEST, {
-            action: 'advertise_capabilities',
-            capabilities: caps
-        });
+        const reg = this.getRegistry();
+        if (reg) {
+            const nodeId = this.host.nodeId;
+            if (nodeId) {
+                reg.registerCapabilities({
+                    nodeId,
+                    capabilities: caps,
+                    updatedAt: Date.now()
+                });
+            }
+        }
+        try {
+            await this.host.getIpcManager().request(MessageType.REQUEST, {
+                action: 'advertise_capabilities',
+                capabilities: caps
+            });
+        }
+        catch { }
     }
     async getRemoteCapabilities(nodeId) {
+        const reg = this.getRegistry();
+        if (reg) {
+            const caps = reg.getCapabilities(nodeId);
+            if (caps)
+                return caps.capabilities;
+        }
         try {
             const res = await this.host.getIpcManager().request(MessageType.REQUEST, {
                 action: 'get_remote_capabilities',

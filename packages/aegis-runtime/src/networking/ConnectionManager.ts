@@ -18,6 +18,11 @@ export class ConnectionManager {
   private reconnectBackoffs = new Map<string, number>(); // nodeId -> attempt count
   private reconnectTimers = new Map<string, NodeJS.Timeout>();
   private messageListeners = new Map<string, Set<(payload: any, senderId: string) => void | Promise<void>>>();
+  public messageRouter: any = null;
+
+  setMessageRouter(router: any): void {
+    this.messageRouter = router;
+  }
 
   constructor(
     private localNodeId: string,
@@ -135,15 +140,28 @@ export class ConnectionManager {
     }
 
     // 4. Application Payload Packet — Only process if connection is VERIFIED/ACTIVE
-    if (packet.senderId && packet.payload !== undefined) {
+    const senderId = packet.senderId || packet.senderNodeId;
+    if (senderId && (packet.payload !== undefined || packet.messageId !== undefined)) {
       const activeConn = this.findConnectionBySocket(socket);
       if (!activeConn || (activeConn.state !== PeerConnectionState.VERIFIED && activeConn.state !== PeerConnectionState.ACTIVE)) {
-        console.warn(`[AEGIS Messaging] Rejected payload frame on unverified connection from ${packet.senderId}`);
+        console.warn(`[AEGIS Messaging] Rejected payload frame on unverified connection from ${senderId}`);
         return;
       }
 
-      console.log(`[AEGIS Messaging] Delivered packet messageType=${packet.messageType} from ${packet.senderId}`);
-      this.deliverPayload(packet.messageType, packet.payload, packet.senderId);
+      let userPayload = packet.payload !== undefined ? packet.payload : packet;
+      if (userPayload && typeof userPayload === 'object' && userPayload.protocolVersion && userPayload.payload !== undefined) {
+        userPayload = userPayload.payload;
+      }
+
+      console.log(`[AEGIS Messaging] Delivered packet messageType=${packet.messageType} from ${senderId}`);
+      this.deliverPayload(packet.messageType, userPayload, senderId);
+
+      // Also forward to AegisMessageRouter if attached
+      if (this.messageRouter) {
+        Promise.resolve(this.messageRouter.handleIngressMessage(packet, socket)).catch(err => {
+          console.error('[AEGIS Messaging] Ingress message router error:', err);
+        });
+      }
     }
   }
 

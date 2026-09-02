@@ -33,6 +33,14 @@
       "updatedAt": "2026-07-13T11:54:32.887Z",
       "lastAccessedAt": "2026-07-13T13:48:34.931Z",
       "lifecycleState": "ACTIVE"
+    },
+    "session_1788355897245": {
+      "sessionId": "session_1788355897245",
+      "tags": [],
+      "createdAt": "2026-09-02T13:31:37.273Z",
+      "updatedAt": "2026-09-02T13:31:37.273Z",
+      "lastAccessedAt": "2026-09-02T13:31:37.436Z",
+      "lifecycleState": "ACTIVE"
     }
   }
 }
