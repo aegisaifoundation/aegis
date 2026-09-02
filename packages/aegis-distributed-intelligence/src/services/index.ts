@@ -97,71 +97,28 @@ export class DiscoveryService {
 }
 
 export class MessagingService {
-  private localServer: net.Server | null = null;
   private listeners = new Map<string, Set<(payload: any, senderId: string) => void | Promise<void>>>();
 
-  constructor(private host: IEngineIpcHost) {
-    this.startLocalServer();
-  }
+  constructor(private host: IEngineIpcHost) {}
 
   private getConnectionManager(): any {
     return (this.host as any).connectionManager;
   }
 
-  private startLocalServer() {
-    // Local server initialization delegated to ConnectionManager transport adapters if available
-    const localPort = (this.host as any).lifecycle?.getConfigurationManager()?.get()?.port || 9900;
-    const msgPort = localPort + 1;
-    this.localServer = net.createServer((socket) => {
-      let buffer = Buffer.alloc(0);
-      socket.on('data', (chunk) => {
-        buffer = Buffer.concat([buffer, chunk]);
-        while (buffer.length >= 4) {
-          const payloadLen = buffer.readUInt32BE(0);
-          if (buffer.length >= 4 + payloadLen) {
-            const payloadStr = buffer.subarray(4, 4 + payloadLen).toString('utf8');
-            buffer = buffer.subarray(4 + payloadLen);
-            try {
-              const parsed = JSON.parse(payloadStr);
-              if (parsed.messageType && parsed.senderId) {
-                const packet = {
-                  messageType: MessageType.EVENT,
-                  payload: {
-                    type: 'peer_message',
-                    messageType: parsed.messageType,
-                    senderId: parsed.senderId,
-                    payload: parsed.payload
-                  }
-                };
-                // Emit to local IPC
-                this.host.getIpcManager().emit('packet', packet);
-                // Also trigger local event callbacks directly if registered
-                this.deliverMessage(parsed.messageType, parsed.payload, parsed.senderId);
-              }
-            } catch (err: any) {
-              console.error('[MessagingService] Failed to parse JS fallback packet:', err);
-            }
-          } else {
-            break;
-          }
-        }
-      });
-      socket.on('error', () => {});
-    });
-    this.localServer.listen(msgPort, '0.0.0.0', () => {
-      console.log(`[MessagingService] TS P2P Message Server listening on port ${msgPort} (JS fallback)`);
-    });
-    this.localServer.on('error', (err) => {
-      console.error(`[MessagingService] Failed to start TS P2P Message Server: ${err.message}`);
-    });
-  }
-
   async sendMessage(targetNodeId: string, messageType: string, payload: Record<string, any>): Promise<void> {
+    if (!targetNodeId || typeof targetNodeId !== 'string' || !targetNodeId.startsWith('aegis://')) {
+      throw new Error(`[AEGIS Network] Canonical nodeId is required for network operations. Received: "${targetNodeId}"`);
+    }
+
+    const localNodeId = (this.host as any).nodeId || (this.host as any).context?.nodeId;
+    if (!localNodeId || typeof localNodeId !== 'string' || !localNodeId.startsWith('aegis://')) {
+      throw new Error('[AEGIS Network] Canonical nodeId is required for network operations.');
+    }
+
     // 1. In-process check
     const targetEngine = activeEngines.get(targetNodeId);
     if (targetEngine) {
-      const ourNodeId = (this.host as any).nodeId || (this.host as any).nodeName || 'unknown';
-      targetEngine.messagingService.deliverMessage(messageType, payload, ourNodeId);
+      targetEngine.messagingService.deliverMessage(messageType, payload, localNodeId);
       return;
     }
 
@@ -181,7 +138,7 @@ export class MessagingService {
     const peer = discovery?.getLocalPeer(targetNodeId);
     if (peer) {
       try {
-        await this.sendDirect(peer.host, peer.port + 1, messageType, payload);
+        await this.sendDirect(peer.host, peer.port + 1, messageType, payload, localNodeId);
         return;
       } catch (err: any) {
         console.warn(`[MessagingService] Direct TS P2P send to ${peer.host}:${peer.port + 1} failed: ${err.message}`);
@@ -198,16 +155,15 @@ export class MessagingService {
     });
   }
 
-  private sendDirect(host: string, port: number, messageType: string, payload: any): Promise<void> {
+  private sendDirect(host: string, port: number, messageType: string, payload: any, senderId: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const client = net.connect(port, host);
       client.setTimeout(5000);
 
       client.on('connect', () => {
-        const ourNodeId = (this.host as any).nodeId || (this.host as any).nodeName || 'unknown';
         const msg = JSON.stringify({
           messageType,
-          senderId: ourNodeId,
+          senderId,
           payload
         });
         const lenBuf = Buffer.alloc(4);

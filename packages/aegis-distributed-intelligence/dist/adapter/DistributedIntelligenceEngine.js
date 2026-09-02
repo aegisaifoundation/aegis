@@ -161,14 +161,22 @@ export class DistributedIntelligenceEngine {
     async reload() {
         await this.lifecycle.reload();
     }
-    async shutdown() {
+    async stopNetwork() {
         if (this.lanDiscoveryProvider) {
             await this.lanDiscoveryProvider.stop();
         }
         if (this.connectionManager) {
             await this.connectionManager.stop();
         }
-        await this.lifecycle.shutdown();
+    }
+    async shutdown() {
+        await this.stopNetwork();
+        try {
+            await this.lifecycle.shutdown();
+        }
+        catch (err) {
+            console.log(`[DistributedIntelligenceEngine] Lifecycle shutdown notice: ${err.message}`);
+        }
     }
     async dispose() {
         await this.lifecycle.dispose();

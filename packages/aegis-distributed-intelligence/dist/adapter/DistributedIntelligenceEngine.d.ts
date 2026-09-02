@@ -31,6 +31,7 @@ export declare class DistributedIntelligenceEngine implements IEngine, IEngineIp
     resume(): Promise<void>;
     health(): Promise<EngineHealthReport>;
     reload(): Promise<void>;
+    stopNetwork(): Promise<void>;
     shutdown(): Promise<void>;
     dispose(): Promise<void>;
     getState(): string;

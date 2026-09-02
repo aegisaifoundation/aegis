@@ -18,11 +18,9 @@ export declare class DiscoveryService {
 }
 export declare class MessagingService {
     private host;
-    private localServer;
     private listeners;
     constructor(host: IEngineIpcHost);
     private getConnectionManager;
-    private startLocalServer;
     sendMessage(targetNodeId: string, messageType: string, payload: Record<string, any>): Promise<void>;
     private sendDirect;
     onMessage(messageType: string, callback: (payload: any, senderId: string) => void | Promise<void>): void;
