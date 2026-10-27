@@ -1,14 +1,18 @@
 import net from 'net';
+export const MAX_TCP_FRAME_SIZE = 16 * 1024 * 1024; // 16 MB max frame protection
 export class NodeTcpTransportAdapter {
     transportType = 'tcp';
     server = null;
+    activeSockets = new Set();
     connectionCallbacks = new Set();
     messageCallbacks = new Set();
     disconnectCallbacks = new Set();
     errorCallbacks = new Set();
-    async listen(port, host = '0.0.0.0') {
+    async listen(port, host = '0.0.0.0', strictPort = false) {
+        const isStrict = strictPort || process.env.AEGIS_STRICT_PORT === 'true';
         return new Promise((resolve, reject) => {
             this.server = net.createServer((socket) => {
+                this.activeSockets.add(socket);
                 const remoteAddr = `${socket.remoteAddress || '127.0.0.1'}:${socket.remotePort || 0}`;
                 for (const cb of this.connectionCallbacks) {
                     cb(socket, remoteAddr);
@@ -18,6 +22,11 @@ export class NodeTcpTransportAdapter {
                     buffer = Buffer.concat([buffer, chunk]);
                     while (buffer.length >= 4) {
                         const payloadLen = buffer.readUInt32BE(0);
+                        if (payloadLen > MAX_TCP_FRAME_SIZE) {
+                            console.error(`[AEGIS Transport] Frame size ${payloadLen} exceeds limit of ${MAX_TCP_FRAME_SIZE}. Terminating socket.`);
+                            socket.destroy(new Error(`Oversized TCP frame rejected (${payloadLen} > ${MAX_TCP_FRAME_SIZE})`));
+                            return;
+                        }
                         if (buffer.length >= 4 + payloadLen) {
                             const payloadStr = buffer.subarray(4, 4 + payloadLen).toString('utf8');
                             buffer = buffer.subarray(4 + payloadLen);
@@ -31,17 +40,19 @@ export class NodeTcpTransportAdapter {
                     }
                 });
                 socket.on('close', () => {
+                    this.activeSockets.delete(socket);
                     for (const cb of this.disconnectCallbacks) {
                         cb(socket);
                     }
                 });
                 socket.on('error', (err) => {
+                    this.activeSockets.delete(socket);
                     for (const cb of this.errorCallbacks) {
                         cb(err);
                     }
                 });
             });
-            // Controlled port allocation: try requested port first, fallback to 0 (OS dynamic port)
+            // Controlled port allocation: try requested port first, fallback to 0 (OS dynamic port) if not strict
             this.server.listen(port, host, () => {
                 const address = this.server?.address();
                 const actualPort = typeof address === 'object' && address ? address.port : port;
@@ -49,7 +60,7 @@ export class NodeTcpTransportAdapter {
                 resolve(actualPort);
             });
             this.server.on('error', (err) => {
-                if (err.code === 'EADDRINUSE' && port !== 0) {
+                if (err.code === 'EADDRINUSE' && port !== 0 && !isStrict) {
                     console.warn(`[AEGIS Transport] Port ${port} occupied. Retrying with OS dynamic port allocation (port 0)...`);
                     this.server?.listen(0, host, () => {
                         const address = this.server?.address();
@@ -69,11 +80,17 @@ export class NodeTcpTransportAdapter {
             const client = net.connect(port, host);
             client.setTimeout(5000);
             client.on('connect', () => {
+                this.activeSockets.add(client);
                 let buffer = Buffer.alloc(0);
                 client.on('data', (chunk) => {
                     buffer = Buffer.concat([buffer, chunk]);
                     while (buffer.length >= 4) {
                         const payloadLen = buffer.readUInt32BE(0);
+                        if (payloadLen > MAX_TCP_FRAME_SIZE) {
+                            console.error(`[AEGIS Transport] Inbound frame size ${payloadLen} exceeds limit. Closing socket.`);
+                            client.destroy(new Error(`Oversized TCP frame rejected (${payloadLen} > ${MAX_TCP_FRAME_SIZE})`));
+                            return;
+                        }
                         if (buffer.length >= 4 + payloadLen) {
                             const payloadStr = buffer.subarray(4, 4 + payloadLen).toString('utf8');
                             buffer = buffer.subarray(4 + payloadLen);
@@ -87,11 +104,13 @@ export class NodeTcpTransportAdapter {
                     }
                 });
                 client.on('close', () => {
+                    this.activeSockets.delete(client);
                     for (const cb of this.disconnectCallbacks) {
                         cb(client);
                     }
                 });
                 client.on('error', (err) => {
+                    this.activeSockets.delete(client);
                     for (const cb of this.errorCallbacks) {
                         cb(err);
                     }
@@ -99,10 +118,14 @@ export class NodeTcpTransportAdapter {
                 resolve(client);
             });
             client.on('timeout', () => {
+                this.activeSockets.delete(client);
                 client.destroy();
                 reject(new Error(`Connection to ${host}:${port} timed out after 5000ms`));
             });
-            client.on('error', reject);
+            client.on('error', (err) => {
+                this.activeSockets.delete(client);
+                reject(err);
+            });
         });
     }
     async send(socket, payload) {
@@ -123,6 +146,7 @@ export class NodeTcpTransportAdapter {
     }
     async disconnect(socket) {
         if (socket && !socket.destroyed) {
+            this.activeSockets.delete(socket);
             socket.destroy();
         }
     }
@@ -139,8 +163,17 @@ export class NodeTcpTransportAdapter {
         this.errorCallbacks.add(callback);
     }
     async stop() {
+        for (const socket of Array.from(this.activeSockets)) {
+            try {
+                socket.destroy();
+            }
+            catch { }
+        }
+        this.activeSockets.clear();
         if (this.server) {
-            this.server.close();
+            await new Promise((resolve) => {
+                this.server.close(() => resolve());
+            });
             this.server = null;
         }
     }

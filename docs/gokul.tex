@@ -1,0 +1,1752 @@
+
+% LaTeX seminar report template for:
+% RUNTIME GUARDRAILS FOR LLM-BASED AUTONOMOUS AI AGENTS
+% Prepared for Abhinav Manoj (Reg. No. MCE23AIM003)
+\documentclass[12pt,a4paper,titlepage]{report}
+
+% ------------------------------------------------
+% PAGE SIZE AND MARGINS (STANDARD ACADEMIC FORMAT)
+% ------------------------------------------------
+\usepackage[
+    a4paper,
+    left=3.0cm,
+    right=3.0cm,
+    top=3.0cm,
+    bottom=2.5cm
+]{geometry}
+
+% ------------------------------------------------
+% FONTS & PACKAGES
+% ------------------------------------------------
+\usepackage[T1]{fontenc}
+\usepackage{newtxtext}
+\usepackage{newtxmath}
+\usepackage{courier}
+\usepackage{setspace}
+\onehalfspacing % Standard academic density
+
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{tocloft}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta}
+
+% Number prefixes in List of Figures / List of Tables
+\renewcommand{\cftfigpresnum}{Figure~}
+\renewcommand{\cfttabpresnum}{Table~}
+\setlength{\cftfignumwidth}{7em}
+\setlength{\cfttabnumwidth}{7em}
+\setlength{\cftfigindent}{0pt}
+\setlength{\cfttabindent}{0pt}
+
+% ------------------------------------------------
+% HEADING FORMATTING (CENTERED CHAPTERS)
+% ------------------------------------------------
+\usepackage{titlesec}
+
+% Centered Chapter Headings
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\centering}
+  {\fontsize{16}{19}\selectfont CHAPTER \thechapter}
+  {6pt}
+  {\fontsize{16}{19}\selectfont\bfseries\centering}
+\titlespacing*{\chapter}{0pt}{0pt}{15pt}
+
+% Section Headings
+\titleformat{\section}
+    {\normalfont\bfseries\fontsize{14}{17}\selectfont}
+    {\thesection}
+    {0.5em}
+    {}
+\titlespacing*{\section}{0pt}{12pt}{6pt}
+
+\titleformat{\subsection}
+    {\normalfont\bfseries\fontsize{13}{16}\selectfont}
+    {\thesubsection}
+    {0.5em}
+    {}
+\titlespacing*{\subsection}{0pt}{10pt}{4pt}
+
+\titleformat{\subsubsection}
+    {\normalfont\bfseries\fontsize{12}{15}\selectfont}
+    {\thesubsubsection}
+    {0.5em}
+    {}
+\titlespacing*{\subsubsection}{0pt}{8pt}{2pt}
+
+% ------------------------------------------------
+% PARAGRAPH FORMATTING
+% ------------------------------------------------
+\setlength{\parindent}{0.5in}
+\setlength{\parskip}{0pt}
+
+% ------------------------------------------------
+% HEADER AND FOOTER
+% ------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\textit{Runtime Guardrails}}
+\fancyfoot[C]{\thepage}
+\fancyfoot[L]{\textit{Dept. of AI \& ML, MEC}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyfoot[C]{\thepage}
+  \fancyfoot[L]{\textit{Dept. of AI \& ML, MEC}}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0.4pt}
+}
+
+% ------------------------------------------------
+% TOC FORMATTING
+% ------------------------------------------------
+\setlength{\cftsubsecindent}{3em}
+\setlength{\cftsubsecnumwidth}{2.5em}
+
+\renewcommand{\cftchapfont}{\bfseries}
+\renewcommand{\cftchappagefont}{\bfseries}
+\renewcommand{\cftchapleader}{\hfill}
+
+\renewcommand{\cftsecfont}{\normalfont}
+\renewcommand{\cftsecpagefont}{\normalfont}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+
+\renewcommand{\cftsubsecfont}{\normalfont}
+\renewcommand{\cftsubsecpagefont}{\normalfont}
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
+
+\setlength{\cftbeforechapskip}{6pt}
+\setlength{\cftbeforesecskip}{2pt}
+\setlength{\cftbeforesubsecskip}{0pt}
+
+% ------------------------------------------------
+% DOCUMENT BEGINS
+% ------------------------------------------------
+
+
+% Additional packages required by this report
+\usepackage{longtable}
+\usepackage{caption}
+\usepackage{hyperref}
+\usepackage{lipsum}
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue}
+
+\fancypagestyle{preliminary}{
+  \fancyhf{}
+  \fancyfoot[R]{\small \thepage}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0pt}
+}
+\fancypagestyle{maincontent}{
+  \fancyhf{}
+  \fancyhead[R]{\textit{Adaptive Test-Time Compute Allocation}}
+  \fancyfoot[C]{\thepage}
+  \fancyfoot[L]{\textit{Dept. of AI \& ML, MEC}}
+  \renewcommand{\headrulewidth}{0.4pt}
+  \renewcommand{\footrulewidth}{0.4pt}
+}
+\setlength{\headheight}{15pt}
+\pagestyle{maincontent}
+
+\newcommand{\reportfigure}[4]{
+\begin{figure}[H]
+\centering
+\IfFileExists{figures/#1}{%
+  \includegraphics[width=#2\textwidth]{figures/#1}%
+}{%
+  \fbox{\parbox[c][3.0in][c]{#2\textwidth}{\centering
+  FIGURE: #3\\
+  \texttt{\detokenize{figures/#1}}}}%
+}
+\caption{#3}
+\label{#4}
+\end{figure}
+}
+
+\begin{document}
+
+% ================================================
+% TITLE PAGE 1
+% ================================================
+\begin{titlepage}
+\centering
+\vfill
+{\normalsize\textbf{SEMINAR REPORT ON}\par}
+\vspace{0.4cm}
+{\Large\textbf{ADAPTIVE TEST-TIME COMPUTE ALLOCATION FOR\\ REASONING LLMs VIA CONSTRAINED POLICY OPTIMIZATION}\par}
+\vfill
+{\itshape Submitted to the APJ Abdul Kalam Technological\\
+University in partial fulfillment for the award of degree\par}
+\vfill
+{\Large\textbf{Bachelor of Technology in Artificial\\
+Intelligence and Machine Learning}\par}
+\vfill
+{\normalsize Submitted by\par}
+\vspace{0.2cm}
+{\normalsize\textbf{Gokul S\\ (Reg. No. MCE23AIM030)}\par}
+\vfill
+{\normalsize Under the guidance of\par}
+\vspace{0.2cm}
+{\normalsize\textbf{Mrs. Aswathy T K}\par}
+\vfill
+\IfFileExists{figures/college_logo.jpg}{%
+  \includegraphics[width=0.30\linewidth]{figures/college_logo.jpg}%
+}{\fbox{\parbox[c][1.5in][c]{1.5in}{\centering COLLEGE LOGO}}}
+\vfill
+{\normalsize
+\textbf{DEPARTMENT OF ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING}\par
+\textbf{MARIAN ENGINEERING COLLEGE}\par
+\textbf{TRIVANDRUM}\par}
+\vspace{0.2cm}
+{\normalsize\textbf{OCTOBER 2026}\par}
+\vfill
+\end{titlepage}
+
+% ================================================
+% TITLE PAGE 2 (DUPLICATE TITLE PAGE)
+% ================================================
+\begin{titlepage}
+\centering
+\vfill
+{\normalsize\textbf{SEMINAR REPORT ON}\par}
+\vspace{0.4cm}
+{\Large\textbf{ADAPTIVE TEST-TIME COMPUTE ALLOCATION FOR\\ REASONING LLMs VIA CONSTRAINED POLICY OPTIMIZATION}\par}
+\vfill
+{\itshape Submitted to the APJ Abdul Kalam Technological\\
+University in partial fulfillment for the award of degree\par}
+\vfill
+{\Large\textbf{Bachelor of Technology in Artificial\\
+Intelligence and Machine Learning}\par}
+\vfill
+{\normalsize Submitted by\par}
+\vspace{0.2cm}
+{\normalsize\textbf{Gokul S\\ (Reg. No. MCE23AIM030)}\par}
+\vfill
+{\normalsize Under the guidance of\par}
+\vspace{0.2cm}
+{\normalsize\textbf{Mrs. Aswathy T K}\par}
+\vfill
+\IfFileExists{figures/college_logo.jpg}{%
+  \includegraphics[width=0.30\linewidth]{figures/college_logo.jpg}%
+}{\fbox{\parbox[c][1.5in][c]{1.5in}{\centering COLLEGE LOGO}}}
+\vfill
+{\normalsize
+\textbf{DEPARTMENT OF ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING}\par
+\textbf{MARIAN ENGINEERING COLLEGE}\par
+\textbf{TRIVANDRUM}\par}
+\vspace{0.2cm}
+{\normalsize\textbf{OCTOBER 2026}\par}
+\vfill
+\end{titlepage}
+
+\clearpage
+
+% CERTIFICATE PAGE (CENTERED)
+% ------------------------------------------------
+\clearpage
+\thispagestyle{empty}
+
+\begin{center}
+\Large \bfseries{DEPARTMENT OF ARTIFICIAL INTELLIGENCE \& MACHINE LEARNING}\\
+\large\bfseries{MARIAN ENGINEERING COLLEGE}\\
+\large \bfseries{KAZHAKUTTOM, TRIVANDRUM}\\[0.5cm]
+\IfFileExists{figures/college_logo.jpg}{\includegraphics[height=3.8cm]{figures/college_logo.jpg}}{\fbox{\parbox[c][1.4in][c]{1.4in}{\centering COLLEGE LOGO}}}\\[0.5cm]
+\textbf{CERTIFICATE}
+\end{center}
+
+\vspace{0.3cm}
+\noindent\sloppy
+This is to certify that the report entitled \textbf{``ADAPTIVE TEST-TIME COMPUTE ALLOCATION FOR REASONING LLMs VIA CONSTRAINED POLICY OPTIMIZATION''} is a bonafide record of the Seminar presented by \textbf{Gokul S (Reg. No. MCE23AIM030)} under our supervision and guidance. The report has been submitted to the Department of Artificial Intelligence \& Machine Learning, Marian Engineering College, Kazhakuttom, Trivandrum, in partial fulfillment of the requirements for the award of the Degree of Bachelor of Technology in Artificial Intelligence \& Machine Learning.
+
+\vspace{1.2cm}
+
+\noindent
+\begin{minipage}[t]{0.45\textwidth}
+\begin{center}
+\textbf{PROJECT GUIDE}\\[0.2cm]
+Mrs. Aswathy T K\\
+Assistant Professor\\
+Dept. of AI\&ML
+\end{center}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+\begin{center}
+\textbf{PROJECT COORDINATOR}\\[0.2cm]
+Prof. Dr. Aswathy S U\\
+Professor\\
+Dept. of AI\&ML
+\end{center}
+\end{minipage}
+
+\vspace{1.0cm}
+
+\begin{center}
+\textbf{HEAD OF THE DEPARTMENT}\\[0.2cm]
+Prof. Balu John\\
+Professor and HOD\\
+Dept. of AI\&ML
+\end{center}
+
+
+\clearpage
+
+% =========================================================
+% PRELIMINARY PAGES (ROMAN NUMBERING)
+% =========================================================
+\pagenumbering{roman}
+\pagestyle{preliminary}
+
+% ---------- DECLARATION ----------
+\chapter*{DECLARATION}
+\addcontentsline{toc}{chapter}{DECLARATION}
+\setcounter{page}{1}
+
+\noindent I undersigned hereby declare that the Seminar report ``\textbf{ADAPTIVE TEST-TIME COMPUTE ALLOCATION FOR REASONING LLMs VIA CONSTRAINED POLICY OPTIMIZATION}'', submitted for partial fulfillment of the requirements for the award of degree of Bachelor of Technology of the APJ Abdul Kalam Technological University, Kerala is a bonafide work done by me under the guidance of \textbf{Mrs. Aswathy T K}. This submission represents my ideas in my own words and where ideas or words of others have been included, I have adequately and accurately cited and referenced the original sources. I also declare that I have adhered to ethics of academic honesty and integrity and have not misrepresented or fabricated any data or idea or fact or source in my submission. I understand that any violation of the above will be a cause for disciplinary action by the institute and/or the University and can also evoke penal action from the sources which have thus not been properly cited or from whom proper permission has not been obtained. This report has not been previously formed the basis for the award of any degree, diploma or similar title of any other University.
+
+\vspace{0.8in}
+\noindent Place: Trivandrum \hfill Gokul S \\
+
+
+\clearpage
+
+% ---------- ACKNOWLEDGEMENT ----------
+\chapter*{ACKNOWLEDGEMENT}
+\addcontentsline{toc}{chapter}{ACKNOWLEDGEMENT}
+
+\noindent I would like to take this opportunity to express my heartfelt gratitude and sincere thanks to all who supported me in the successful completion of this seminar. First and foremost, I express my gratitude to the respected Principal, \textbf{Dr. Ajit Prabhu V}, for providing me with the opportunity and resources to carry out this seminar successfully.
+
+\vspace{0.15in}
+\noindent I extend my sincere thanks to our Head of the Department, \textbf{Prof. Balu John}, for organizing the seminar.
+
+\vspace{0.15in}
+\noindent I am grateful to staff advisors, \textbf{Mrs. Aswathy T K} and \textbf{Mrs. Nisha Soman}, for their valuable suggestions, constructive feedback, and continuous motivation throughout the course of this work.
+
+\vspace{0.15in}
+\noindent I would like to extend special thanks to seminar coordinator, \textbf{Dr. Aswathy S.U}, for her guidance and facilitation in organizing the seminar effectively.
+
+\vspace{0.15in}
+\noindent I owe my sincere gratitude to my guide, \textbf{Mrs. Aswathy T K}, for her priceless guidance, encouragement, and unwavering support throughout the preparation and completion of this seminar .
+
+\vspace{0.15in}
+\noindent Finally, I thank God Almighty for His blessings, and my family and friends for their constant love, encouragement, and support in the successful completion of this work .
+
+\vspace{0.8in}
+\hfill Gokul S
+
+\clearpage
+
+% ---------- ABSTRACT ----------
+\chapter*{ABSTRACT}
+\addcontentsline{toc}{chapter}{ABSTRACT}
+
+Over the past few years, significant advancements in Large Language Models (LLMs) have demonstrated that increasing computation during inference can substantially improve reasoning performance. Techniques such as chain-of-thought reasoning, self-consistency, repeated sampling, and search enable models to spend additional computation on challenging problems. However, existing approaches often allocate a uniform inference budget to every input, regardless of its difficulty, resulting in unnecessary computational costs for easy questions while limiting the resources available for more challenging ones.
+
+This seminar explores a novel framework for adaptive test-time compute allocation that dynamically determines how much inference computation should be assigned to each input under a finite computational budget. The proposed SOLVE-THEN-LEARN framework formulates compute allocation as a constrained optimization problem, maximizing expected accuracy while satisfying an average compute constraint. Through Lagrangian relaxation, the globally coupled optimization is decomposed into independent per-instance decisions, where a dual variable represents the computational cost or “shadow price” of inference.
+
+The framework subsequently learns these optimal allocation decisions using a light- weight classifier trained on inexpensive input features. During deployment, the classifier predicts an appropriate inference budget before the LLM performs reasoning, enabling efficient allocation without significant additional latency. Experiments using DeepSeek-V3, GPT-4o-mini, and Qwen2.5-7B on MATH and GSM8K demonstrate consistent improvements over fixed, random, and heuristic allocation strategies, with the learned policy achieving over 91% imitation accuracy and substantial gains in task performance.
+
+This work highlights the potential of input-adaptive inference as an important direction for building more accurate, computationally efficient, and scalable reasoning systems.
+
+\clearpage
+
+% ---------- TABLE OF CONTENTS ----------
+\clearpage
+\begin{center}
+    {\Large\bfseries TABLE OF CONTENTS\par}
+\end{center}
+\renewcommand{\contentsname}{}
+\vspace{-0.5in}
+\tableofcontents
+
+\clearpage
+
+% ---------- LIST OF FIGURES ----------
+\renewcommand{\listfigurename}{}
+\begin{center}
+    {\Large\bfseries LIST OF FIGURES\par}
+\end{center}
+\vspace{-0.3in}
+\listoffigures
+\addcontentsline{toc}{chapter}{LIST OF FIGURES}
+\addtocontents{lof}{
+    \medskip
+    \noindent\textbf{Figure No.}\hfill
+    \textbf{Name}\hfill
+    \textbf{Page}\par
+    \medskip
+}
+
+\clearpage
+\pagestyle{maincontent}
+
+% ---------- LIST OF TABLES ----------
+\renewcommand{\listtablename}{}
+\begin{center}
+    {\Large\bfseries LIST OF TABLES\par}
+\end{center}
+\vspace{-0.3in}
+\listoftables
+\addcontentsline{toc}{chapter}{LIST OF TABLES}
+\addtocontents{lot}{
+    \medskip
+    \noindent\textbf{Table No.}\hfill
+    \textbf{Name}\hfill
+    \textbf{Page}\par
+    \medskip
+}
+
+\clearpage
+
+% ============================================================
+% MAIN CHAPTERS
+% ============================================================
+
+\pagenumbering{arabic}
+\pagestyle{maincontent}
+
+% ============================================================
+% CHAPTER 1
+% ============================================================
+
+\chapter{INTRODUCTION}
+
+\section{Introduction}
+
+Large Language Models (LLMs) have become a major component of modern artificial intelligence. The Transformer architecture introduced a scalable mechanism for processing relationships among tokens through self-attention, providing the foundation for many modern language models. Large-scale pre-training has enabled language models to perform a wide range of tasks including language understanding, generation, question answering, coding, and mathematical reasoning.
+
+Recent research has shown that the performance of an LLM does not depend only on the parameters learned during training. Additional computation during inference can also improve the quality of reasoning. Instead of producing an answer directly, a model can generate intermediate reasoning steps, sample multiple candidate solutions, explore alternative reasoning paths, or verify intermediate results.
+
+Chain-of-Thought (CoT) prompting is an important technique in this area because it encourages the model to produce intermediate reasoning steps before generating a final answer. Self-consistency extends this idea by generating multiple reasoning paths and selecting a consistent answer. Search-based approaches such as Tree of Thoughts allow the model to explore multiple possible reasoning trajectories. Process verification methods evaluate intermediate reasoning steps to improve the reliability of generated solutions.
+
+These methods demonstrate that inference-time computation can improve reasoning performance. However, additional computation also increases inference cost, latency, memory usage, energy consumption, and monetary cost. Therefore, using a large amount of computation for every input may not be efficient.
+
+This motivates the study of \textit{adaptive test-time compute allocation}. The main idea is to determine how much computational effort should be assigned to each input rather than applying the same budget to every input.
+
+\section{Background and Motivation}
+
+Different reasoning problems require different amounts of computation. Some questions can be solved correctly with a single inference attempt, whereas others benefit substantially from repeated reasoning. This variation is important because the computational requirements of an input cannot always be determined simply from the fact that it belongs to a particular task.
+
+For example, a simple mathematical problem may be solved correctly with a small amount of inference computation. Another problem may require several reasoning attempts before a correct solution is obtained. At the same time, some highly difficult problems may remain challenging even when a large computational budget is provided. These cases demonstrate that the relationship between computational effort and accuracy is different for different inputs.
+
+If the same budget is assigned to all problems, computation may be wasted on inputs that are already easy while insufficient resources are available for inputs that could benefit from additional reasoning. Therefore, the important question is not simply whether additional computation improves accuracy. Instead, the important question is whether additional computation is useful for a particular input.
+
+The central research problem can therefore be expressed as follows:
+
+\begin{quote}
+\textit{Given a limited average inference budget, how should computational resources be distributed among different inputs to maximize overall reasoning accuracy?}
+\end{quote}
+
+This problem can be viewed as a resource-allocation problem in which computational effort is treated as a limited resource. The objective is to distribute this resource intelligently rather than uniformly.
+
+\section{Test-Time Computation}
+
+Test-time computation refers to the computation performed by a trained model while solving an input. Unlike training-time computation, which is used to learn model parameters, test-time computation is repeatedly incurred during deployment. In reasoning-oriented systems, test-time computation may involve generating multiple responses, producing longer reasoning chains, exploring alternative reasoning paths, or verifying candidate solutions.
+
+Let $b$ represent a compute budget. The output of the model can then be represented as
+
+\begin{equation}
+y=f_{\theta}(x,b),
+\end{equation}
+
+where $x$ is the input and $\theta$ represents the model parameters. The accuracy achieved for an input can similarly be represented by
+
+\begin{equation}
+A_x(b)=Acc(x,b).
+\end{equation}
+
+The important observation is that $A_x(b)$ can vary significantly across inputs. Consequently, the same increase in computational budget may produce a large improvement for one input and very little improvement for another.
+
+\section{Problem Statement}
+
+Let $x$ denote an input sampled from a distribution $D$, and let $\mathcal{B}$ denote the set of possible compute budgets. An allocation policy determines the amount of computation assigned to each input and can be defined as
+
+\begin{equation}
+\pi:\mathcal{X}\rightarrow\mathcal{B}.
+\end{equation}
+
+The objective is to maximize expected accuracy:
+
+\begin{equation}
+V(B)
+=
+\max_{\pi\in\Pi}
+\mathbb{E}_{x\sim D}
+[Acc(x,\pi(x))]
+\end{equation}
+
+subject to
+
+\begin{equation}
+\mathbb{E}_{x\sim D}
+[C(\pi(x))]
+\leq B.
+\end{equation}
+
+Here, $C(\pi(x))$ represents the computational cost associated with the selected budget and $B$ represents the permitted average budget. The constraint prevents the system from simply assigning the maximum possible computation to every input.
+
+This formulation captures the central trade-off of the problem. A useful allocation policy should improve accuracy while ensuring that the total computational expenditure remains within the specified resource limit.
+
+\section{Research Questions}
+
+The study investigates how additional test-time computation affects the performance of reasoning LLMs and why uniform compute allocation can be inefficient. It further examines how adaptive compute allocation can be formulated as a constrained optimization problem and how Lagrangian relaxation can be used to determine appropriate compute budgets. Another important question is whether a lightweight learned model can approximate an oracle allocation policy using inexpensive input information. Finally, the study considers how the adaptive approach compares with fixed, random, heuristic, and oracle allocation strategies.
+
+\section{Objectives}
+
+The primary objective of this seminar is to study test-time computation in reasoning-oriented LLMs and understand the relationship between computational effort and reasoning accuracy. The study also aims to investigate the limitations of uniform inference computation and formulate adaptive compute allocation as a constrained optimization problem. Particular attention is given to Lagrangian relaxation and the SOLVE-THEN-LEARN framework, followed by an evaluation of the learned allocation strategy against different baseline methods.
+
+\section{Scope}
+
+The study focuses on adaptive allocation of inference-time computation for reasoning-orien- ted LLMs. Mathematical reasoning benchmarks, particularly MATH and GSM8K, are considered because they contain problems with varying reasoning requirements. The framework focuses on controlling inference computation rather than modifying the underlying language model.
+
+A lightweight prediction mechanism is used to select a suitable budget before expensive reasoning is performed. The candidate budget space considered in the study is
+
+\begin{equation}
+\mathcal{B}=\{1,2,4,8,16\}.
+\end{equation}
+
+The study therefore concentrates on selecting among predefined computational levels rather than continuously changing the internal architecture or parameters of the language model.
+
+\section{Significance of the Study}
+
+Efficient inference is becoming increasingly important as LLMs are deployed at larger scale. Reasoning-oriented systems can consume substantial computational resources because they may generate multiple solutions or perform extended inference. Although increasing computation can improve performance, applying high computational budgets to every input can lead to unnecessary resource consumption.
+
+Adaptive allocation provides an alternative to uniform computation. Instead of increasing the computational budget for every input, additional computation can be directed toward inputs that are more likely to benefit from it. This can improve the utilization of available computational resources while preserving or improving reasoning accuracy.
+
+The principle can potentially be applied to mathematical reasoning, coding, logical reasoning, scientific problem solving, planning, and other reasoning-oriented applications in which the computational requirements of individual inputs vary.
+
+\section{Contributions}
+
+The main contribution of this study is the formulation of adaptive test-time compute allocation as a constrained optimization problem. The approach applies Lagrangian relaxation to obtain per-input compute decisions and constructs an oracle allocation policy using multiple inference budgets. The SOLVE-THEN-LEARN framework is then used to learn these allocation decisions from inexpensive input features. Finally, the learned policy is evaluated across multiple LLMs and mathematical reasoning benchmarks to examine whether adaptive computation can improve the accuracy--compute trade-off.
+
+\section{Overall Framework}
+
+The overall framework consists of an offline optimization stage and an online inference stage. During the offline stage, training inputs are evaluated using multiple compute budgets. The resulting accuracy information is used to determine oracle budget assignments. A lightweight learning model is then trained to predict these assignments from inexpensive characteristics of the input.
+
+During deployment, an unseen input is first converted into inexpensive features. The learned model predicts an appropriate compute budget, after which the LLM performs reasoning using the selected budget. This separates the expensive allocation-learning process from the online reasoning process.
+
+\reportfigure{architecture_diagram.png}{0.86}{Overall architecture of adaptive test-time compute allocation}{fig:architecture}
+
+The separation between allocation and reasoning is important because expensive multi-budget evaluation is avoided during deployment. Instead, the learned model provides a budget prediction before the reasoning process begins.
+
+\section{Organization of the Report}
+
+The remainder of the report is organized into six chapters. Chapter~2 presents the literature review and discusses major developments in LLM reasoning and test-time computation. Chapter~3 introduces the fundamentals of adaptive test-time computation and explains the accuracy--compute trade-off. Chapter~4 presents the proposed constrained policy optimization framework and the SOLVE-THEN-LEARN methodology. Chapter~5 discusses the experimental setup, evaluation, and results. Chapter~6 summarizes the study, its major findings, limitations, and future scope.
+
+% ============================================================
+% CHAPTER 2
+% ============================================================
+
+\chapter{LITERATURE REVIEW}
+
+\section{Introduction}
+
+Research on Large Language Models has progressed from direct language generation toward increasingly sophisticated reasoning systems. The Transformer architecture established the foundation for modern LLMs, while large-scale pre-training demonstrated strong general-purpose capabilities. Subsequent research introduced explicit reasoning, multiple sampling, search, verification, and test-time scaling. These developments demonstrate that inference-time computation can influence model performance.
+
+The literature relevant to this study can therefore be viewed as a progression from improving the capabilities of the underlying model toward improving how computational resources are used during inference.
+
+\section{Transformer-Based Language Models}
+
+The Transformer architecture uses self-attention to model relationships among tokens. The scaled dot-product attention operation is
+
+\begin{equation}
+Attention(Q,K,V)
+=
+softmax
+\left(
+\frac{QK^T}{\sqrt{d_k}}
+\right)V.
+\end{equation}
+
+The scalability of the Transformer architecture enabled the development of increasingly large language models. BERT demonstrated the effectiveness of Transformer-based language representations, while large autoregressive models demonstrated strong few-shot and zero-shot capabilities. Later models such as the LLaMA family further expanded open language-model capabilities.
+
+The development of these models created the foundation for reasoning-oriented applications. As models became more capable, researchers increasingly investigated whether additional inference computation could further improve their performance.
+
+\section{Chain-of-Thought Reasoning}
+
+Chain-of-Thought prompting encourages an LLM to generate intermediate reasoning steps before producing the final answer. In direct generation, the relationship can be represented as
+
+\begin{equation}
+x\rightarrow y.
+\end{equation}
+
+With Chain-of-Thought reasoning, the process can instead be represented as
+
+\begin{equation}
+x\rightarrow r_1\rightarrow r_2\rightarrow\cdots\rightarrow r_n\rightarrow y.
+\end{equation}
+
+The intermediate reasoning steps provide additional computational space for solving complex problems. Chain-of-Thought methods have been particularly useful in mathematical and logical reasoning. However, longer reasoning sequences also require additional inference computation, which introduces a cost associated with improved reasoning.
+
+\section{Self-Consistency}
+
+Self-consistency extends Chain-of-Thought by generating multiple reasoning paths. For an input $x$, the model can generate
+
+\begin{equation}
+R_1,R_2,\ldots,R_k.
+\end{equation}
+
+The final answer can then be selected through an aggregation mechanism such as majority voting. The approach increases the number of reasoning attempts and can improve the probability of obtaining a correct solution. However, increasing $k$ also increases computational cost.
+
+Self-consistency therefore provides a clear example of the accuracy--compute trade-off considered in this study. Additional computation can improve performance, but the additional computation should ideally be used where it provides the greatest benefit.
+
+\section{Tree of Thoughts}
+
+Tree of Thoughts extends reasoning from a single trajectory to multiple possible reasoning states. Instead of following one sequence of reasoning steps, the model explores alternative intermediate states. This can be useful for problems where an early reasoning decision can lead toward different possible solutions.
+
+The advantage of this approach is that the model receives a larger search space in which to explore potential solutions. The major limitation is computational cost. Increasing the branching factor or search depth can rapidly increase the number of model evaluations. Consequently, search-based reasoning further highlights the need to control computational expenditure.
+
+\section{Process Verification}
+
+Process verification evaluates intermediate reasoning steps rather than only the final answer. Let a reasoning sequence be represented as
+
+\begin{equation}
+R=(r_1,r_2,\ldots,r_n).
+\end{equation}
+
+A verification system can evaluate individual steps to identify incorrect reasoning. Process supervision has demonstrated the importance of evaluating reasoning processes for mathematical tasks. However, verification itself consumes additional computation.
+
+Thus, reasoning and verification can both contribute to increased inference-time resource requirements. This makes the question of allocating computation particularly important for systems that combine generation and verification.
+
+\section{Test-Time Scaling}
+
+Test-time scaling increases computational effort during inference rather than increasing training computation. Additional computation can be introduced through repeated sampling, longer reasoning, search, verification, and iterative refinement.
+
+The key advantage of test-time scaling is that inference performance can potentially be improved without retraining the underlying language model. However, the additional computation must be paid for every time the model is used. The major challenge is therefore determining how much computation should be used for each individual input.
+
+\section{Adaptive Computation}
+
+Adaptive computation dynamically adjusts the computational effort according to the input. A general policy can be represented as
+
+\begin{equation}
+b=\pi(x).
+\end{equation}
+
+A fixed strategy uses
+
+\begin{equation}
+\pi_{\mathrm{fixed}}(x)=b_0,
+\end{equation}
+
+whereas an adaptive strategy permits different inputs to receive different budgets, such that
+
+\begin{equation}
+\pi(x_1)\neq\pi(x_2).
+\end{equation}
+
+Previous work on adaptive inference has explored mechanisms for dynamically controlling computational effort. The relevance of these approaches to the present study lies in the idea that computational effort should depend on the characteristics or requirements of the individual input.
+
+\section{LLM Routing}
+
+LLM routing selects an appropriate model for each input. RouteLLM investigates routing queries between models according to quality and cost considerations. Routing and adaptive test-time computation share the idea of input-dependent resource allocation.
+
+However, routing primarily changes the model used for inference, whereas adaptive compute allocation changes the amount of inference computation used by the selected reasoning system. This distinction is important because adaptive computation can potentially maintain the same underlying model while varying its computational effort.
+
+\begin{table}[H]
+\centering
+\caption{Comparison Between LLM Routing and Adaptive Compute Allocation}
+\label{tab:routing}
+\small
+\begin{tabular}{p{3.2cm}p{4.7cm}p{4.7cm}}
+\toprule
+\textbf{Aspect} & \textbf{LLM Routing} & \textbf{Adaptive Compute} \\
+\midrule
+Decision & Select model & Select compute budget \\
+Resource & Model capability & Inference computation \\
+Input dependent & Yes & Yes \\
+Cost objective & Model cost & Compute cost \\
+Reasoning model & May vary & Can remain fixed \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Cost-Efficient Inference}
+
+The increasing cost of LLM inference has motivated methods for reducing computational expenditure while maintaining performance. FrugalGPT investigates cost-efficient strategies for LLM applications. Other approaches use model cascades, routing, confidence estimation, or early stopping.
+
+Adaptive compute allocation differs from these approaches by explicitly considering how computation should be distributed across individual inputs. Rather than selecting only between different models or terminating computation early, the proposed framework treats the compute budget itself as a decision variable.
+
+\section{Input-Adaptive LLM Scaling}
+
+Input-adaptive scaling is based on the observation that the marginal value of additional computation varies across inputs. For one input, it may be the case that
+
+\begin{equation}
+A_{x_1}(1)\approx A_{x_1}(4),
+\end{equation}
+
+while another input may satisfy
+
+\begin{equation}
+A_{x_2}(1)<A_{x_2}(4).
+\end{equation}
+
+In such a situation, assigning additional computation to $x_2$ is more useful than assigning the same additional computation to $x_1$. This provides the fundamental motivation for adaptive compute allocation.
+
+The important distinction is that the objective is not simply to identify difficult inputs. Instead, the system should determine which inputs are likely to obtain the greatest benefit from additional computational effort.
+
+\section{Budgeted Prediction}
+
+Budgeted prediction considers prediction under resource constraints. In conventional prediction, the main question can be expressed as
+
+\begin{equation}
+\text{What is the answer?}
+\end{equation}
+
+For adaptive reasoning, an additional decision is required:
+
+\begin{equation}
+\text{How much computation should be used?}
+\end{equation}
+
+This introduces a resource-allocation layer before final prediction. The quality of the resulting system therefore depends not only on the quality of the final answer but also on whether an appropriate computational budget was selected.
+
+\section{MATH Benchmark}
+
+MATH is a mathematical reasoning benchmark containing challenging problems across multiple mathematical domains. The variation in problem complexity makes it useful for evaluating adaptive computation because different problems can exhibit different responses to additional reasoning effort.
+
+The benchmark provides an environment in which the relationship between inference computation and mathematical accuracy can be studied.
+
+\section{GSM8K Benchmark}
+
+GSM8K contains grade-school mathematical word problems requiring multi-step reasoning. It provides a complementary benchmark because its questions combine natural-language understanding with arithmetic and multi-step reasoning.
+
+The use of both MATH and GSM8K allows the adaptive allocation principle to be considered across different types of mathematical reasoning problems.
+
+\begin{table}[H]
+\centering
+\caption{Reasoning Benchmarks}
+\label{tab:datasets}
+\small
+\begin{tabular}{p{3cm}p{4.5cm}p{5cm}}
+\toprule
+\textbf{Dataset} & \textbf{Task} & \textbf{Relevance} \\
+\midrule
+MATH & Mathematical problem solving & Complex mathematical reasoning \\
+GSM8K & Mathematical word problems & Multi-step arithmetic reasoning \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Research Gap}
+
+Existing research establishes that additional inference computation can improve reasoning. However, the amount of useful computation varies between inputs. Uniform allocation does not exploit this variation because every input receives the same computational treatment.
+
+Heuristic approaches can use simple difficulty indicators, but such indicators do not necessarily measure the actual value of additional computation. An input may be long without benefiting substantially from additional inference, while a shorter problem may benefit from repeated reasoning.
+
+LLM routing addresses a related resource-allocation problem but focuses primarily on model selection. The remaining challenge is therefore to develop a principled input-adaptive allocation mechanism that explicitly maximizes accuracy under an average compute constraint.
+
+\section{Summary}
+
+The literature demonstrates a progression from direct generation toward increasingly computa- tion-intensive reasoning. Chain-of-Thought, self-consistency, search, verification, and test-time scaling all show that inference computation can affect reasoning performance.
+
+The central challenge identified through the literature review is therefore not simply how to increase inference-time computation, but how to distribute it across heterogeneous inputs. An effective strategy should account for the differing benefits that additional computation may provide while respecting an overall resource constraint. This requires a framework that balances reasoning accuracy against computational expenditure and determines when additional inference effort is justified. Such a framework can build upon the strengths of existing reasoning techniques while addressing the inefficiency of assigning an identical budget to every problem.
+
+In conclusion, the reviewed literature establishes the importance of inference-time computation as a means of enhancing the reasoning capabilities of LLMs. Chain-of-Thought prompting, self-consistency, search, verification, and test-time scaling represent different approaches to making more effective use of computation during inference. At the same time, their additional resource requirements highlight the need for an allocation mechanism that adapts to differences between inputs. This observation motivates the constrained adaptive compute allocation framework developed in the following chapters, which aims to distribute computational resources according to the expected value of additional reasoning while maintaining a specified average compute budget.
+
+% ============================================================
+% CHAPTER 3
+% ============================================================
+
+\chapter{FUNDAMENTALS OF ADAPTIVE TEST-TIME COMPUTATION}
+
+\section{Introduction}
+
+Adaptive test-time computation is based on the observation that different inputs may require different amounts of inference effort. A fixed inference strategy treats every input equally, whereas an adaptive strategy attempts to estimate how much computation is useful for each input.
+
+The purpose of this chapter is to establish the concepts required to understand adaptive compute allocation, including standard inference, reasoning computation, compute budgets, accuracy--compute relationships, marginal utility, and oracle allocation.
+
+\section{Large Language Model Inference}
+
+An autoregressive language model predicts the next token according to
+
+\begin{equation}
+P(x_{t+1}|x_1,x_2,\ldots,x_t).
+\end{equation}
+
+Generation is performed repeatedly until a complete response is produced. During this process, the model performs a sequence of computations that depend on factors such as model size, input length, generated length, number of samples, and reasoning operations.
+
+When reasoning-oriented inference is used, these computational requirements can become considerably larger because the system may generate multiple candidate solutions or explore additional reasoning paths.
+
+\section{Standard Inference}
+
+In standard single-pass inference, the process can be represented as
+
+\begin{equation}
+x\rightarrow LLM\rightarrow y.
+\end{equation}
+
+Every input follows approximately the same computation pattern. If a single inference costs $C_1$, then for $N$ inputs,
+
+\begin{equation}
+C_{\mathrm{total}}=NC_1.
+\end{equation}
+
+This strategy is simple and predictable, but it cannot exploit differences between inputs. An easy problem and a difficult problem may therefore receive the same computational effort even when their requirements are substantially different.
+
+\section{Reasoning Computation}
+
+Reasoning computation can be increased through repeated generation, longer reasoning, search, or verification. For multiple sampling, the model may produce
+
+\begin{equation}
+y_1,y_2,\ldots,y_k.
+\end{equation}
+
+The generated candidates can then be compared or aggregated to obtain a final answer. For search-based approaches, several reasoning states can be explored before a solution is selected. For verification-based approaches, candidate reasoning paths can be evaluated before selecting a final answer.
+
+Each of these operations increases computational cost. Consequently, the amount of reasoning computation should ideally be selected according to the expected benefit for the particular input.
+
+\section{Compute Budget}
+
+Let $b$ denote the compute budget assigned to an input. The available budget set is
+
+\begin{equation}
+\mathcal{B}
+=
+\{b_1,b_2,\ldots,b_K\}.
+\end{equation}
+
+In this study,
+
+\begin{equation}
+\mathcal{B}
+=
+\{1,2,4,8,16\}.
+\end{equation}
+
+The budget represents the amount of inference computation allocated to an input. A smaller budget corresponds to a lower computational expenditure, while a larger budget permits the reasoning system to perform additional inference computation.
+
+\section{Accuracy--Compute Trade-off}
+
+Let
+
+\begin{equation}
+A_x(b)=Accuracy(x,b).
+\end{equation}
+
+Different inputs may have different accuracy--compute curves. For an easy input, it may be the case that
+
+\begin{equation}
+A_x(1)\approx A_x(2)\approx A_x(4).
+\end{equation}
+
+In contrast, for an input that benefits from additional reasoning,
+
+\begin{equation}
+A_x(1)<A_x(2)<A_x(4)<A_x(8).
+\end{equation}
+
+For some difficult inputs, accuracy may eventually saturate, giving a relationship such as
+
+\begin{equation}
+A_x(8)\approx A_x(16).
+\end{equation}
+
+These differences demonstrate why a uniform compute strategy can be inefficient. If the additional computation does not improve the answer for a particular input, the same computational resources could potentially be used more effectively elsewhere.
+
+\reportfigure{accuracy_compute_tradeoff.png}{0.82}{Accuracy--compute trade-off for inputs with different computational requirements}{fig:tradeoff}
+
+\section{Marginal Utility of Computation}
+
+The benefit of additional computation can be represented by
+
+\begin{equation}
+\Delta A_x
+=
+A_x(b')-A_x(b).
+\end{equation}
+
+A useful approximation of the marginal utility per unit cost is
+
+\begin{equation}
+MU_x
+=
+\frac{A_x(b')-A_x(b)}
+{C(b')-C(b)}.
+\end{equation}
+
+This quantity describes how much additional accuracy can potentially be obtained from an increase in computational expenditure. An efficient adaptive policy should therefore preferentially allocate additional computation to inputs with higher expected marginal utility.
+
+\section{Diminishing Returns}
+
+Additional computation does not necessarily provide proportional improvements. Suppose an input has
+
+\begin{equation}
+A_x(1)=0.80,\quad
+A_x(2)=0.88,\quad
+A_x(4)=0.91.
+\end{equation}
+
+In this example, the improvement from the first increase in budget is larger than the improvement obtained from the subsequent increase. Such behavior represents diminishing returns.
+
+If another input has a substantially larger improvement between the same budgets, the available computation can be more effectively assigned to that input. This is the basic resource-allocation principle behind adaptive inference.
+
+\section{Input Difficulty}
+
+Input difficulty and compute sensitivity should be distinguished. Difficulty describes how challenging a problem is, while compute sensitivity describes how much the problem benefits from additional inference computation.
+
+A problem may be difficult but remain unsolved even after additional computation. Another problem may have moderate initial accuracy and improve significantly when additional computation is provided. Therefore, the allocation policy should estimate the value of computation rather than relying on difficulty alone.
+
+This distinction is important because a successful adaptive system should identify not only which inputs are difficult but also which inputs are likely to benefit from additional computational effort.
+
+\section{Uniform Allocation}
+
+A uniform policy assigns the same budget to every input:
+
+\begin{equation}
+\pi_{\mathrm{uniform}}(x)=b_0.
+\end{equation}
+
+For $N$ inputs,
+
+\begin{equation}
+C_{\mathrm{uniform}}
+=
+NC(b_0).
+\end{equation}
+
+Uniform allocation is simple but ignores input-level variation. Its main advantage is predictable resource usage, while its main limitation is that it cannot redistribute computation according to the requirements of individual inputs.
+
+\section{Adaptive Allocation}
+
+An adaptive policy assigns
+
+\begin{equation}
+b=\pi(x).
+\end{equation}
+
+For a set of inputs, the total computational cost becomes
+
+\begin{equation}
+C_{\mathrm{adaptive}}
+=
+\sum_{i=1}^{N}
+C(\pi(x_i)).
+\end{equation}
+
+The objective is to redistribute computation while keeping
+
+\begin{equation}
+\frac{1}{N}
+\sum_{i=1}^{N}
+C(\pi(x_i))
+\leq B.
+\end{equation}
+
+The policy can therefore allocate smaller budgets to inputs that do not benefit substantially from additional computation and larger budgets to inputs for which additional reasoning is more valuable.
+
+\section{Oracle Allocation}
+
+If the accuracy of every input at every possible budget were known, an ideal allocation could be calculated. For input $x$,
+
+\begin{equation}
+b^\star(x;\lambda)
+=
+\arg\max_{b\in\mathcal{B}}
+[
+Acc(x,b)-\lambda C(b)
+].
+\end{equation}
+
+This oracle is not directly available for unseen inputs because evaluating every possible budget would be expensive. Instead, it is used as a reference for training a learned allocation policy.
+
+The oracle therefore represents the best budget decision that can be obtained when the accuracy--budget relationship of an input is available.
+
+\section{Average Compute}
+
+The expected computational cost of a policy is
+
+\begin{equation}
+\overline{C}(\pi)
+=
+\mathbb{E}_{x\sim D}
+[C(\pi(x))].
+\end{equation}
+
+A policy is feasible if
+
+\begin{equation}
+\overline{C}(\pi)\leq B.
+\end{equation}
+
+The average-budget formulation allows computation to be redistributed across inputs. An input may therefore receive more computation than the average, provided that other inputs receive less and the overall constraint remains satisfied.
+
+\section{Offline and Online Computation}
+
+Adaptive allocation naturally separates into two stages. The offline stage performs expensive computation to determine useful allocation decisions. During this stage, training inputs can be evaluated at different budgets and the resulting information can be used to construct an oracle policy.
+
+The online stage performs inexpensive feature extraction and budget prediction before executing the selected LLM inference. This separation prevents the deployment system from having to evaluate every possible budget for each new input and therefore reduces the additional cost of adaptive allocation.
+
+\section{Summary}
+
+This chapter introduced the fundamental concepts of adaptive test-time computation. The key observation is that inputs have different accuracy--compute relationships. Uniform allocation ignores this variation, whereas adaptive allocation attempts to distribute computation according to the expected value of additional inference.
+
+Although the oracle provides an ideal allocation reference, obtaining these decisions may require an expensive optimization process. Therefore, its practical role extends beyond directly determining the budget during every inference operation. The oracle decisions can instead serve as the basis for developing a learned allocation strategy. This connection allows the theoretical formulation to guide the design of a more computationally efficient system, in which the insights obtained from optimization can be used to predict suitable budgets for new inputs.
+
+Overall, this chapter established the theoretical motivation for adaptive test-time computation by explaining the variation in accuracy--compute relationships, the limitations of uniform allocation, and the potential advantages of input-dependent resource distribution. It also introduced the oracle formulation as an ideal reference for determining compute allocation under a constrained budget. These concepts provide the necessary foundation for the constrained optimization framework and the SOLVE-THEN-LEARN methodology developed in Chapter~4. The following chapter builds on these fundamentals to formulate the allocation problem mathematically and describe how oracle decisions can be used to train a lightweight budget prediction model for efficient deployment.
+
+
+The oracle formulation provides the ideal allocation and forms the basis for the constrained optimization framework developed in Chapter~4.
+% ============================================================
+% CHAPTER 4
+% ============================================================
+
+\chapter{PROPOSED ADAPTIVE COMPUTE ALLOCATION FRAMEWORK}
+
+\section{Introduction}
+
+The proposed framework formulates adaptive test-time computation as a constrained policy optimization problem. The objective is to maximize expected reasoning accuracy while maintaining a specified average computational budget.
+
+The framework uses two main stages. The first is an offline \textit{solve} stage in which the optimal allocation decisions are determined using multiple compute budgets. The second is a \textit{learn} stage in which a lightweight model learns to predict those decisions from inexpensive input features.
+
+\section{Framework Overview}
+
+The framework begins by defining a set of candidate compute budgets and evaluating training inputs under each budget. The resulting accuracy information is used to construct an accuracy--budget matrix. A Lagrangian formulation is then used to generate oracle budget decisions while satisfying the desired average computational constraint.
+
+The oracle decisions are subsequently used as training targets for a lightweight budget prediction model. During inference, features are extracted from an unseen input, the learned model predicts the appropriate budget, and the reasoning-oriented LLM performs inference using the selected computational level.
+
+\reportfigure{solve_then_learn.png}{0.86}{SOLVE-THEN-LEARN framework for adaptive compute allocation}{fig:solvelearn}
+
+This approach separates the expensive optimization process from online inference and allows the allocation decision to be made before the expensive reasoning computation begins.
+
+\section{Problem Formulation}
+
+Let $x$ represent an input sampled from distribution $D$. The allocation policy is
+
+\begin{equation}
+\pi:\mathcal{X}\rightarrow\mathcal{B}.
+\end{equation}
+
+The optimization objective is
+
+\begin{equation}
+V(B)
+=
+\max_{\pi\in\Pi}
+\mathbb{E}_{x\sim D}
+[Acc(x,\pi(x))]
+\end{equation}
+
+subject to
+
+\begin{equation}
+\mathbb{E}_{x\sim D}
+[C(\pi(x))]
+\leq B.
+\end{equation}
+
+The constraint ensures that accuracy is improved without unlimited computation. It allows the system to consider accuracy and computational expenditure simultaneously rather than optimizing accuracy in isolation.
+
+\section{Lagrangian Relaxation}
+
+The constrained problem can be transformed using a Lagrange multiplier $\lambda\geq0$. The Lagrangian is
+
+\begin{equation}
+\mathcal{L}(\pi,\lambda)
+=
+\mathbb{E}
+[Acc(x,\pi(x))]
+-
+\lambda
+\left(
+\mathbb{E}[C(\pi(x))]-B
+\right).
+\end{equation}
+
+Rearranging gives
+
+\begin{equation}
+\mathcal{L}(\pi,\lambda)
+=
+\mathbb{E}
+[
+Acc(x,\pi(x))
+-\lambda C(\pi(x))
+]
++\lambda B.
+\end{equation}
+
+For a fixed $\lambda$, the per-input utility is
+
+\begin{equation}
+f_\lambda(x,b)
+=
+Acc(x,b)-\lambda C(b).
+\end{equation}
+
+The optimal budget is therefore
+
+\begin{equation}
+b^\star(x;\lambda)
+=
+\arg\max_{b\in\mathcal{B}}
+[
+Acc(x,b)-\lambda C(b)
+].
+\end{equation}
+
+The formulation converts the original constrained allocation problem into independent per-input decisions once the multiplier is fixed.
+
+\section{Shadow Price of Computation}
+
+The Lagrange multiplier can be interpreted as the shadow price of computational resources. When $\lambda$ is small, computation is penalized less strongly and larger budgets can be selected because the cost of additional inference has relatively little influence on the objective.
+
+When $\lambda$ is large, computational cost becomes more important and smaller budgets are favored. This relationship can be expressed as
+
+\begin{equation}
+\lambda\uparrow
+\Rightarrow
+\text{stronger compute penalty}.
+\end{equation}
+
+The interpretation of $\lambda$ provides a mechanism for controlling the average computational expenditure. By changing the multiplier, the system can move between policies that favor accuracy and policies that favor computational efficiency.
+
+\section{Oracle Budget Selection}
+
+During the offline stage, every training input is evaluated under multiple candidate budgets. For input $x_i$ and budget $b_j$,
+
+\begin{equation}
+A_{ij}=Acc(x_i,b_j).
+\end{equation}
+
+The resulting values form the accuracy--budget matrix
+
+\begin{equation}
+\mathbf{A}=[A_{ij}].
+\end{equation}
+
+The oracle label is
+
+\begin{equation}
+y_i
+=
+\arg\max_{b_j\in\mathcal{B}}
+[
+A_{ij}-\lambda C(b_j)
+].
+\end{equation}
+
+The selected budget becomes the target for the learning stage. In this way, the learning problem is transformed into the prediction of a computational decision derived from the constrained optimization problem.
+
+\section{Budget Targeting}
+
+For a particular multiplier $\lambda$, the average oracle cost is
+
+\begin{equation}
+\overline{C}(\lambda)
+=
+\mathbb{E}_x
+[
+C(b^\star(x;\lambda))
+].
+\end{equation}
+
+The desired operating point is obtained when
+
+\begin{equation}
+\overline{C}(\lambda)\approx B.
+\end{equation}
+
+Increasing $\lambda$ generally reduces the preferred compute budget. Thus,
+
+\begin{equation}
+\lambda_1<\lambda_2
+\Rightarrow
+\overline{C}(\lambda_1)
+\geq
+\overline{C}(\lambda_2).
+\end{equation}
+
+This monotonic relationship makes it possible to search for a multiplier that produces an average computational cost close to the required budget.
+
+\section{Binary Search for $\lambda$}
+
+Because the average compute is generally monotonic with respect to $\lambda$, binary search can be used to identify an appropriate multiplier efficiently. The search begins with lower and upper bounds for $\lambda$ and evaluates the midpoint. Oracle budgets are generated using the midpoint and the resulting average computational cost is compared with the target.
+
+If the resulting cost is too high, the value of $\lambda$ is increased so that computation is penalized more strongly. If the cost is too low, the value of $\lambda$ is decreased. This process is repeated until the resulting average cost is sufficiently close to the target budget.
+
+Binary search therefore avoids an exhaustive search over all possible multiplier values and provides a simple mechanism for targeting a desired computational operating point.
+
+\section{SOLVE-THEN-LEARN Framework}
+
+The key idea of the SOLVE-THEN-LEARN framework is to solve the allocation problem offline and then learn the resulting decisions. The expensive optimization is performed only during the construction of the training data, while the learned policy is used during deployment.
+
+\subsection{Solve Stage}
+
+For $N$ training inputs and $K$ candidate budgets, approximately
+
+\begin{equation}
+O(NK)
+\end{equation}
+
+budget evaluations are required.
+
+The resulting accuracy information is used to determine the oracle budget for every training input. Although this stage can be computationally expensive, it is performed offline and therefore does not have to be repeated for every new inference request.
+
+\subsection{Accuracy--Budget Matrix}
+
+The accuracy--budget matrix is
+
+\begin{equation}
+\mathbf{A}
+=
+[A_{ij}].
+\end{equation}
+
+An illustrative representation is shown in Table~\ref{tab:utility}.
+
+\begin{table}[H]
+\centering
+\caption{Illustrative Accuracy--Budget Matrix}
+\label{tab:utility}
+\small
+\begin{tabular}{c|ccccc}
+\toprule
+\textbf{Input} & 1 & 2 & 4 & 8 & 16 \\
+\midrule
+$x_1$ & High & High & High & High & High \\
+$x_2$ & Low & Medium & High & Higher & Higher \\
+$x_3$ & Medium & High & High & High & High \\
+$x_4$ & Low & Low & Medium & High & High \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The table is illustrative and shows how different inputs can respond differently to additional computation. An input such as $x_1$ may already perform well at a small budget, whereas an input such as $x_2$ may obtain progressively greater benefit from additional computation.
+
+\subsection{Oracle Label Generation}
+
+For each input,
+
+\begin{equation}
+y_i=b^\star(x_i;\lambda).
+\end{equation}
+
+The resulting labels represent the preferred compute budget under the selected computational constraint. These labels provide the supervision required by the learning stage.
+
+\subsection{Learn Stage}
+
+The learn stage uses inexpensive input features. Let
+
+\begin{equation}
+\phi(x)
+=
+[f_1(x),f_2(x),\ldots,f_d(x)]
+\end{equation}
+
+represent the feature vector. A learned model estimates
+
+\begin{equation}
+\hat{b}=g(\phi(x)).
+\end{equation}
+
+The model therefore learns to predict the appropriate budget rather than directly predicting the final answer. This is important because the allocation model only needs to make a computational decision before the main reasoning process begins.
+
+\section{Feature Extraction}
+
+The framework uses lightweight features that can be computed before expensive inference. These features can include properties such as input length, word count, token count, numerical expressions, mathematical terms, sentence structure, and indicators of multi-step reasoning.
+
+The purpose of these features is not to completely solve the problem or reproduce the reasoning performed by the LLM. Instead, they provide inexpensive signals that can help distinguish inputs according to their expected computational requirements. The main requirement is that feature extraction should be substantially cheaper than evaluating multiple inference budgets.
+
+\section{Gradient Boosting Budget Predictor}
+
+A Gradient Boosting Machine (GBM) is used to learn the relationship between input features and oracle budgets. The learned function is
+
+\begin{equation}
+g:\mathbb{R}^{d}\rightarrow\mathcal{B}.
+\end{equation}
+
+For a new input,
+
+\begin{equation}
+\hat{b}=g(\phi(x)).
+\end{equation}
+
+The predicted budget is then passed to the reasoning system. Gradient Boosting is suitable for structured low-dimensional features because it can model non-linear relationships without requiring a large neural network.
+
+The use of a lightweight predictor also ensures that the computational cost of making the allocation decision does not become comparable to the cost of the LLM inference itself.
+
+\section{Online Inference}
+
+The online process can be represented as
+
+\begin{equation}
+x
+\rightarrow
+\phi(x)
+\rightarrow
+\hat{b}
+\rightarrow
+LLM(x,\hat{b}).
+\end{equation}
+
+Only inexpensive computation is required before the selected reasoning process begins. This makes the method more practical than evaluating all candidate budgets for every new input.
+
+The predicted budget determines how much computational effort the reasoning system is permitted to use. The final answer is then generated using the selected budget.
+
+\section{Algorithm}
+
+The complete procedure begins by defining the candidate budget set and evaluating the training inputs at each available budget. The resulting accuracy--budget matrix is used with the Lagrangian objective to select a multiplier corresponding to the desired average budget. Oracle budget labels are then generated for the training examples.
+
+After the oracle labels are obtained, lightweight features are extracted from the inputs and the GBM budget predictor is trained. For an unseen input, the same feature extraction process is performed, the learned model predicts the compute budget, and the LLM performs reasoning using that budget.
+
+Thus, the complete framework transforms an expensive offline optimization problem into a lightweight online budget-selection process.
+
+\section{Computational Complexity}
+
+The offline solve stage requires approximately
+
+\begin{equation}
+O(NK)
+\end{equation}
+
+budget evaluations.
+
+This is the major computational expense of the framework because every training input must be considered under multiple candidate budgets. However, this cost is incurred during the offline stage.
+
+The online allocation stage requires feature extraction and a single budget prediction. Therefore, the additional allocation overhead is relatively small compared with repeatedly evaluating the LLM at multiple budgets. This distinction between offline and online cost is central to the practicality of the framework.
+
+\section{Oracle and Learned Policy}
+
+The oracle has access to the accuracy of every input under every candidate budget, whereas the learned policy has access only to inexpensive features. Let $\pi^\star$ denote the oracle and $\hat{\pi}$ denote the learned policy.
+
+The oracle gap is
+
+\begin{equation}
+Gap
+=
+Accuracy(\pi^\star)
+-
+Accuracy(\hat{\pi}).
+\end{equation}
+
+A small gap indicates that the learned model successfully approximates the oracle decisions. The goal of the learning stage is therefore not necessarily to reproduce the entire reasoning process but to reproduce the important computational allocation decision.
+
+\section{Advantages}
+
+The framework provides input-dependent computation while maintaining explicit control over the average computational budget. It can reduce unnecessary computation on inputs that do not benefit from additional reasoning and provides lightweight online prediction through a separate allocation model.
+
+Another advantage is the separation between offline and online computation. The expensive oracle construction is performed during training, while deployment requires only inexpensive feature extraction and budget prediction. The same principle can also be applied across different reasoning models, provided that suitable accuracy--budget information is available for training.
+
+\section{Limitations}
+
+The framework has several limitations. The candidate budget space is discrete, limiting the precision of allocation. Oracle construction requires multiple inference evaluations and can therefore be computationally expensive.
+
+The quality of the learned policy also depends on the selected input features. If the features do not contain sufficient information about how an input responds to additional computation, the learned policy may fail to reproduce the oracle allocation.
+
+Finally, a policy trained for one task or model may require retraining when the underlying distribution changes substantially. This limits the direct transferability of a learned allocation policy between significantly different tasks or models.
+
+\section{Summary}
+
+This chapter presented the proposed adaptive compute allocation framework. The constrained optimization formulation maximizes reasoning accuracy subject to an average compute constraint, while Lagrangian relaxation converts this problem into per-input budget decisions.
+
+The SOLVE-THEN-LEARN approach then uses these oracle decisions as supervision for a lightweight budget prediction model. The resulting system performs expensive optimization offline and uses inexpensive budget prediction during deployment.
+
+Overall, the proposed framework combines constrained optimization, Lagrangian relaxation, and supervised budget prediction into a unified approach for adaptive test-time compute allocation. It addresses the problem of distributing limited computational resources across inputs with potentially different reasoning requirements. The SOLVE-THEN-LEARN strategy provides a practical connection between theoretically motivated allocation decisions and their implementation in a deployed system. By performing complex optimization offline and using a lightweight prediction model online, the framework seeks to retain the benefits of adaptive allocation while reducing the computational overhead associated with making budget decisions. This chapter therefore establishes the methodological foundation for the experimental evaluation presented in the following chapter, where the effectiveness of the proposed approach can be assessed in terms of reasoning accuracy, compute usage, and prediction performance.
+
+% ============================================================
+% CHAPTER 5
+% ============================================================
+
+\chapter{EXPERIMENTAL ANALYSIS AND RESULTS}
+
+\section{Introduction}
+
+This chapter evaluates the adaptive compute allocation framework. The primary objective is to determine whether computation can be redistributed across inputs to improve reasoning accuracy while maintaining a constrained average compute budget.
+
+The experiments consider mathematical reasoning benchmarks and multiple language models. The evaluation focuses on comparing adaptive allocation with fixed, random, heuristic, and oracle strategies.
+
+\section{Experimental Objectives}
+
+The experiments investigate whether adaptive allocation improves accuracy under constrained computation and how closely the learned policy approximates the oracle. They also examine whether the approach works across different LLMs and reasoning benchmarks and whether the additional overhead introduced by the allocation mechanism remains small compared with the computational cost of repeated LLM inference.
+
+\section{Datasets}
+
+The evaluation uses MATH and GSM8K. MATH contains challenging mathematical problems across different domains \cite{hendrycks2021math}, while GSM8K contains grade-school mathematical word problems requiring multi-step reasoning \cite{cobbe2021gsm8k}.
+
+The experiments use 200 questions from each benchmark as described in the experimental setting. The use of two reasoning benchmarks provides an opportunity to examine whether the observed behavior is specific to one particular mathematical problem distribution or represents a broader property of reasoning tasks.
+
+\section{Language Models}
+
+The evaluated language models are DeepSeek-V3, GPT-4o-mini, and Qwen2.5-7B. Using multiple models allows the adaptive allocation principle to be evaluated across different model configurations and reasoning capabilities.
+
+The objective is not to compare the underlying models themselves, but to examine whether the principle of input-adaptive computation remains useful when the reasoning system changes.
+
+\section{Budget Settings}
+
+The candidate compute budgets are
+
+\begin{equation}
+\mathcal{B}
+=
+\{1,2,4,8,16\}.
+\end{equation}
+
+The main reported constrained operating point uses an average budget of approximately
+
+\begin{equation}
+B\approx3.0.
+\end{equation}
+
+This setting allows adaptive and fixed allocation strategies to be compared under approximately the same average computational expenditure. The comparison therefore focuses on how effectively the available computation is distributed rather than simply comparing systems with different total computational resources.
+
+\section{Baseline Methods}
+
+\subsection{Fixed Allocation}
+
+The fixed policy assigns the same budget to all inputs:
+
+\begin{equation}
+\pi_{\mathrm{fixed}}(x)=b.
+\end{equation}
+
+This provides a straightforward reference because every question receives identical computational treatment. Although simple, this policy cannot exploit variation in the usefulness of additional computation across different inputs.
+
+\subsection{Random Allocation}
+
+The random policy assigns budgets without considering input-specific characteristics while maintaining the desired average budget. It provides a useful comparison because it distinguishes intelligent adaptive allocation from non-uniform allocation that is performed without information about the input.
+
+\subsection{Heuristic Allocation}
+
+The heuristic policy uses manually selected input characteristics to estimate computational requirements. Such an approach can provide some degree of adaptation, but its effectiveness depends strongly on the quality of the manually designed rules.
+
+\subsection{Oracle Allocation}
+
+The oracle uses offline accuracy--budget information:
+
+\begin{equation}
+b^\star(x;\lambda)
+=
+\arg\max_b
+[
+Acc(x,b)-\lambda C(b)
+].
+\end{equation}
+
+It represents an ideal reference because it has access to information that would not normally be available for an unseen input.
+
+\subsection{AdaCompute-GBM}
+
+AdaCompute-GBM is the proposed learned allocation strategy. It predicts the appropriate budget using inexpensive input features and a Gradient Boosting Machine. Its purpose is to approximate the oracle allocation while avoiding the expensive evaluation of every possible budget during deployment.
+
+\section{Evaluation Metrics}
+
+Task accuracy is calculated as
+
+\begin{equation}
+Accuracy
+=
+\frac{1}{N}
+\sum_{i=1}^{N}
+\mathbb{I}
+[\hat{y}_i=y_i].
+\end{equation}
+
+Average compute is
+
+\begin{equation}
+\overline{C}
+=
+\frac{1}{N}
+\sum_{i=1}^{N}
+C(\pi(x_i)).
+\end{equation}
+
+The oracle gap is
+
+\begin{equation}
+Gap_{\mathrm{oracle}}
+=
+Accuracy_{\mathrm{oracle}}
+-
+Accuracy_{\mathrm{learned}}.
+\end{equation}
+
+In addition to these measures, budget imitation accuracy is used to determine how frequently the learned policy predicts the oracle budget correctly. Together, these metrics provide a view of both reasoning performance and allocation quality.
+
+\section{Experimental Procedure}
+
+The experimental procedure begins with offline oracle construction. Training questions are evaluated using the candidate compute budgets, and the resulting accuracy values are used to construct the accuracy--budget matrix.
+
+A suitable Lagrange multiplier is then selected to obtain the target average budget. The oracle budget is calculated for each training example using the resulting utility function.
+
+Next, lightweight features are extracted from the training inputs and used to train the GBM. During evaluation, the GBM predicts a budget for each new question, and the selected budget is used for LLM inference. The resulting answers are then evaluated against the benchmark answers.
+
+\section{Results on MATH}
+
+The MATH benchmark provides a challenging environment for adaptive computation because its problems require different levels of mathematical reasoning. At an average budget of approximately $3.0$, the reported improvements reach up to 5.8 percentage points for DeepSeek-V3, 5.2 percentage points for GPT-4o-mini, and 6.4 percentage points for Qwen2.5-7B.
+
+These results indicate that adaptive allocation can improve the accuracy--compute trade-off compared with uniform allocation. The improvement is particularly significant because the average computational budget remains constrained.
+
+The results suggest that the benefit is obtained through better distribution of the available computational resource rather than simply increasing the overall amount of computation.
+
+\section{Interpretation of MATH Results}
+
+The results can be understood using the concept of marginal utility. Suppose one question is already solved at a small budget. Providing additional computation to that question may have little effect because its accuracy has already reached a relatively high level.
+
+Another question may have a substantial probability of becoming correct when additional computation is provided. Adaptive allocation can therefore reduce computation for the first question and redirect it toward the second.
+
+The improvement does not necessarily come from using more computation overall. Instead, it comes from using the available computation more effectively. This behavior is consistent with the constrained optimization formulation presented earlier.
+
+\section{Results on GSM8K}
+
+GSM8K provides a complementary evaluation environment based on mathematical word problems. The benchmark requires both natural-language understanding and multi-step arithmetic reasoning.
+
+The experiments support the general applicability of adaptive allocation to reasoning problems in which computational requirements vary between inputs. The benchmark therefore provides another environment in which the usefulness of input-dependent computational allocation can be examined.
+
+The available reported results establish the effectiveness of the adaptive principle, while additional task-specific numerical breakdowns would require the corresponding experimental data.
+
+\section{Oracle Versus Learned Policy}
+
+The oracle represents the ideal allocation obtained from offline accuracy--budget information. The learned GBM attempts to imitate these decisions using inexpensive features.
+
+The reported imitation accuracy ranges approximately from
+
+\begin{equation}
+91\%\text{--}99\%.
+\end{equation}
+
+This indicates that a large proportion of oracle allocation decisions can be predicted without performing the expensive multi-budget evaluation during deployment. The result is important because it demonstrates that the allocation decision can be learned as a relatively lightweight prediction task.
+
+\section{Comparison with Fixed Allocation}
+
+Fixed allocation provides the same amount of computation to every input. This is useful as a baseline because it represents the conventional approach to inference-time resource allocation.
+
+The adaptive strategy instead permits
+
+\begin{equation}
+\pi(x_1)\neq\pi(x_2).
+\end{equation}
+
+Under the same average budget, this allows computation to be shifted toward inputs where it is more valuable. The reported improvements demonstrate that this redistribution can produce a better accuracy--compute trade-off.
+
+The key difference is therefore not necessarily the total amount of available computation, but the manner in which that computation is distributed across the input set.
+
+\section{Comparison with Random Allocation}
+
+Random allocation demonstrates that non-uniform computation alone is not sufficient. A random strategy may assign different budgets to different questions, but it does not know which questions benefit from additional computation.
+
+The learned policy uses input information to make this decision. Therefore, the comparison highlights the importance of intelligent rather than arbitrary resource allocation.
+
+\section{Comparison with Heuristic Allocation}
+
+Heuristic methods use manually designed rules. For example, a heuristic could allocate more computation to longer questions. However, length alone does not necessarily determine compute sensitivity.
+
+The proposed method learns allocation decisions from oracle supervision, allowing several inexpensive features to contribute to the final prediction. This provides a more flexible mechanism than relying on a single manually selected characteristic.
+
+\section{Accuracy--Compute Trade-off}
+
+The experiments demonstrate that computation and accuracy are not linearly related. For some questions, increasing the budget produces only a small improvement, while for others, additional computation can substantially increase the probability of obtaining the correct answer.
+
+Adaptive allocation attempts to exploit this variation. The optimization objective can therefore be written as
+
+\begin{equation}
+\max Accuracy
+\end{equation}
+
+subject to
+
+\begin{equation}
+AverageCompute\leq B.
+\end{equation}
+
+This is fundamentally different from simply maximizing accuracy without considering computational cost. The objective explicitly recognizes computation as a constrained resource.
+
+\section{Model-Wise Analysis}
+
+The framework is evaluated on DeepSeek-V3, GPT-4o-mini, and Qwen2.5-7B. The magnitude of improvement varies between models because the models have different reasoning capabilities and different responses to additional inference computation.
+
+Nevertheless, the reported results demonstrate that adaptive allocation can provide benefits across different model configurations. This suggests that the underlying principle is not restricted to a single language model architecture.
+
+\section{Routing Overhead}
+
+The online allocation process consists of lightweight feature extraction followed by budget prediction. The pipeline is
+
+\begin{equation}
+x
+\rightarrow
+\phi(x)
+\rightarrow
+g(\phi(x))
+\rightarrow
+LLM(x,\hat{b}).
+\end{equation}
+
+The overhead of the allocation model is intended to remain small relative to the cost of repeated LLM inference. This is an important requirement because an overly expensive allocator would reduce the overall benefit of adaptive computation.
+
+The separation between the lightweight allocation model and the reasoning model therefore allows the framework to maintain a relatively small online decision cost.
+
+\section{Error Analysis}
+
+The learned policy can make two broad types of allocation errors. Under-allocation occurs when
+
+\begin{equation}
+\hat{b}<b^\star.
+\end{equation}
+
+In this case, the model may receive insufficient reasoning computation, which can reduce the probability of obtaining a correct answer.
+
+Over-allocation occurs when
+
+\begin{equation}
+\hat{b}>b^\star.
+\end{equation}
+
+This may preserve accuracy but consume more resources than necessary. The objective of the learned policy is therefore to approximate the oracle while maintaining the average computational constraint.
+
+These two error types also illustrate why budget prediction accuracy alone is not always sufficient to evaluate the allocation system. An allocation error that selects a neighboring budget may have little effect on accuracy, while another error may have a larger computational or performance impact.
+
+\section{Discussion}
+
+The experimental results support the main hypothesis of the study: computation should be allocated according to input requirements rather than uniformly.
+
+The central benefit comes from redistribution. Easy or computation-insensitive inputs can receive smaller budgets, while inputs that are more likely to benefit from additional reasoning can receive larger budgets.
+
+The learned policy provides a practical approximation to this allocation without requiring exhaustive evaluation during deployment. This allows the system to retain the benefits of input-dependent allocation while keeping the online decision process relatively lightweight.
+
+\section{Experimental Limitations}
+
+The evaluation focuses on mathematical reasoning benchmarks. Additional research is required to determine how the approach performs on coding, scientific reasoning, logical reasoning, and planning tasks.
+
+The discrete budget space also limits allocation precision. Furthermore, oracle generation requires substantial offline computation, and the learned policy may need retraining when the input distribution changes.
+
+These limitations suggest that the current framework should be viewed as a foundation for adaptive inference rather than as a complete solution to all forms of computation allocation.
+
+\section{Summary}
+
+The experimental analysis demonstrates the potential of adaptive test-time compute allocation as an effective approach for improving the reasoning performance of Large Language Models (LLMs) under constrained computational resources. The evaluation focuses on the relationship between inference-time computational expenditure and reasoning accuracy, with particular attention to whether distributing computation according to individual input requirements can outperform conventional fixed allocation strategies.
+
+The experiments consider DeepSeek-V3, GPT-4o-mini, and Qwen2.5-7B on the MATH and GSM8K mathematical reasoning benchmarks. The candidate compute budgets are selected from the set \(\{1,2,4,8,16\}\), while the primary constrained operating point uses an average compute budget of approximately \(3.0\). This setting allows different allocation strategies to be compared under a similar average computational expenditure. The evaluation includes fixed, random, heuristic, oracle, and learned allocation policies to understand the benefits and limitations of adaptive resource distribution.
+
+The reported results indicate that adaptive allocation can achieve meaningful improvements in reasoning accuracy compared with conventional allocation approaches. On the MATH benchmark, improvements of up to 5.8 percentage points for DeepSeek-V3, 5.2 percentage points for GPT-4o-mini, and 6.4 percentage points for Qwen2.5-7B are reported at the constrained operating point. These improvements suggest that the effectiveness of inference computation depends on the characteristics of individual inputs. By allocating additional computational effort where it is expected to provide greater benefit, an adaptive policy can improve the utilization of available resources. An important component of the evaluation is the performance of the learned allocation policy. 
+
+Overall, the findings support adaptive test-time compute allocation as a promising approach to improving the accuracy--compute trade-off in reasoning-oriented LLMs. However, the effectiveness of the learned policy depends on the quality of the input features, the selected budget space, and the generalization of the training data. Further evaluation on larger datasets, additional reasoning tasks, and different model configurations would help establish the broader applicability of the framework. The results therefore provide motivation for continued research into efficient, input-dependent inference strategies for computationally constrained language-model applications.
+% ============================================================
+% CHAPTER 6
+% ============================================================
+
+\chapter{CONCLUSION}
+
+The study presented an adaptive approach for allocating test-time computation to reasoning-oriented Large Language Models. The main motivation is that different input problems do not benefit equally from additional inference computation. While some problems can be solved with a small computational budget, others can improve significantly when additional reasoning, sampling, or verification is provided. Therefore, assigning the same amount of computation to every input may lead to inefficient use of computational resources.
+
+The proposed approach formulates test-time compute allocation as a constrained optimization problem in which reasoning accuracy is maximized while maintaining a specified average computational budget. Lagrangian relaxation is used to balance the benefit of additional computation against its cost and to derive an oracle budget for individual inputs. The SOLVE-THEN-LEARN framework then uses these oracle decisions as supervision for a lightweight budget prediction model. By using inexpensive input features, the learned model can estimate the appropriate compute budget before performing expensive LLM inference.
+
+The experimental analysis considered the MATH and GSM8K reasoning benchmarks with DeepSeek-V3, GPT-4o-mini, and Qwen2.5-7B. The reported results demonstrate that adaptive allocation can provide improvements over uniform computation while maintaining a constrained average budget. At an average budget of approximately 3.0 on MATH, improvements of up to 5.8 percentage points for DeepSeek-V3, 5.2 percentage points for GPT-4o-mini, and 6.4 percentage points for Qwen2.5-7B were reported. The learned budget predictor also achieved approximately 91--99\% imitation accuracy across the reported settings, indicating that a lightweight model can closely approximate the oracle allocation policy.
+
+Overall, the study shows that efficient reasoning requires allocating computation according to input difficulty rather than uniformly. Despite limitations such as discrete budgets and offline computation, the framework provides a promising approach for cost-efficient LLM inference and can be extended to other reasoning tasks.
+
+% ============================================================
+% REFERENCES
+% ============================================================
+
+% ============================================================
+% REFERENCES — MANUAL LIST (NO BibTeX OR references.bib REQUIRED)
+% Replace the existing block at the end of report.tex beginning with:
+%   % REFERENCES
+% and ending with:
+%   \bibliography{references}
+% Keep \end{document} after this block.
+% ============================================================
+
+\clearpage
+\chapter*{REFERENCES}
+\addcontentsline{toc}{chapter}{REFERENCES}
+\begin{enumerate}[label={[\arabic*]}, leftmargin=*, itemsep=0.45em, align=left]
+
+\item A. Vaswani et al., ``Attention Is All You Need,'' in \textit{Advances in Neural Information Processing Systems}, vol. 30, 2017.
+
+\item T. B. Brown et al., ``Language Models are Few-Shot Learners,'' in \textit{Advances in Neural Information Processing Systems}, vol. 33, pp. 1877--1901, 2020.
+
+\item J. Wei et al., ``Chain-of-Thought Prompting Elicits Reasoning in Large Language Models,'' in \textit{Advances in Neural Information Processing Systems}, vol. 35, pp. 24824--24837, 2022.
+
+\item X. Wang et al., ``Self-Consistency Improves Chain of Thought Reasoning in Language Models,'' in \textit{International Conference on Learning Representations}, 2023.
+
+\item S. Yao et al., ``Tree of Thoughts: Deliberate Problem Solving with Large Language Models,'' in \textit{Advances in Neural Information Processing Systems}, vol. 36, 2023.
+
+\item H. Lightman et al., ``Let's Verify Step by Step,'' in \textit{International Conference on Learning Representations}, 2024.
+
+\item J. Snell et al., ``Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters,'' arXiv:2408.03314, 2024.
+
+\item D. Hendrycks et al., ``Measuring Mathematical Problem Solving With the MATH Dataset,'' in \textit{Advances in Neural Information Processing Systems}, vol. 33, 2021.
+
+\item K. Cobbe et al., ``Training Verifiers to Solve Math Word Problems,'' arXiv:2110.14168, 2021.
+
+\item J. Devlin, M.-W. Chang, K. Lee, and K. Toutanova, ``BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding,'' in \textit{Proceedings of NAACL-HLT}, pp. 4171--4186, 2019.
+
+\item H. Touvron et al., ``LLaMA: Open and Efficient Foundation Language Models,'' arXiv:2302.13971, 2023.
+
+\item H. Touvron et al., ``Llama 2: Open Foundation and Fine-Tuned Chat Models,'' arXiv:2307.09288, 2023.
+
+\item R. Chen et al., ``FrugalGPT: How to Use Large Language Models While Reducing Cost and Improving Performance,'' arXiv:2305.05176, 2023.
+
+\item J. Kaplan et al., ``Scaling Laws for Neural Language Models,'' arXiv:2001.08361, 2020.
+
+\item J. Hoffmann et al., ``Training Compute-Optimal Large Language Models,'' in \textit{Advances in Neural Information Processing Systems}, vol. 35, pp. 30016--30030, 2022.
+
+\item L. Ouyang et al., ``Training Language Models to Follow Instructions with Human Feedback,'' in \textit{Advances in Neural Information Processing Systems}, vol. 35, pp. 27730--27744, 2022.
+
+\item A. Chowdhery et al., ``PaLM: Scaling Language Modeling with Pathways,'' \textit{Journal of Machine Learning Research}, vol. 24, no. 240, pp. 1--113, 2023.
+
+\item DeepSeek-AI, ``DeepSeek-V3 Technical Report,'' arXiv:2412.19437, 2024.
+
+\item OpenAI, ``GPT-4 Technical Report,'' arXiv:2303.08774, 2023.
+
+\item OpenAI, ``GPT-4o System Card,'' technical report, 2024.
+
+\item S. Yao et al., ``ReAct: Synergizing Reasoning and Acting in Language Models,'' in \textit{International Conference on Learning Representations}, 2023.
+
+\item A. Madaan et al., ``Self-Refine: Iterative Refinement with Self-Feedback,'' in \textit{Advances in Neural Information Processing Systems}, vol. 36, 2023.
+
+\item L. Gao et al., ``PAL: Program-aided Language Models,'' in \textit{International Conference on Machine Learning}, 2023.
+
+\item P. Lewis et al., ``Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks,'' in \textit{Advances in Neural Information Processing Systems}, vol. 33, pp. 9459--9474, 2020.
+
+\item T. Wolf et al., ``Transformers: State-of-the-Art Natural Language Processing,'' in \textit{Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing: System Demonstrations}, pp. 38--45, 2020.
+
+\item M. Chen et al., ``Evaluating Large Language Models Trained on Code,'' arXiv:2107.03374, 2021.
+
+\item N. Shinn et al., ``Reflexion: Language Agents with Verbal Reinforcement Learning,'' in \textit{Advances in Neural Information Processing Systems}, vol. 36, 2023.
+
+\item S. Schuster et al., ``Confident Adaptive Language Modeling,'' in \textit{Advances in Neural Information Processing Systems}, 2022.
+
+\item S. Ong et al., ``RouteLLM: Learning to Route LLMs with Preference Data,'' arXiv preprint, 2024.
+
+\item A. Radford et al., ``Language Models are Unsupervised Multitask Learners,'' OpenAI technical report, 2019.
+
+\item C. Snell, J. Lee, K. Xu, and A. Kumar, ``Scaling LLM Test-Time Compute Optimally Can Be More Effective than Scaling Parameters for Reasoning,'' in \textit{Proceedings of the International Conference on Learning Representations (ICLR)}, 2025. 
+
+\item K. Zhang, S. Zhou, D. Wang, W. Y. Wang, and L. Li, ``Scaling LLM Inference with Optimized Sample Compute Allocation,'' arXiv preprint arXiv:2410.22480, 2024. 
+
+\item B. Zuo and Y. Zhu, ``Strategic Scaling of Test-Time Compute: A Bandit Learning Approach,'' arXiv preprint arXiv:2506.12721, 2025. 
+
+\item M. A. Alomrani et al., ``Reasoning on a Budget: A Survey of Adaptive and Controllable Test-Time Compute in LLMs,'' arXiv preprint arXiv:2507.02076, 2025. 
+
+\item A. Agarwal, A. Sengupta, and T. Chakraborty, ``The Art of Scaling Test-Time Compute for Large Language Models,'' arXiv preprint arXiv:2512.02008, 2025.
+
+\item X. Wang et al., ``Every Rollout Counts: Optimal Resource Allocation for Efficient Test-Time Scaling,'' arXiv preprint arXiv:2506.15707, 2025.
+
+\item J. Wang, B. Zhu, C. T. Leong, and W. Li, ``Scaling over Scaling: Exploring Test-Time Scaling Pareto in Large Reasoning Models,'' arXiv preprint arXiv:2505.20522, 2025. 
+
+\item A. P. Gema et al., ``Inverse Scaling in Test-Time Compute,'' arXiv preprint arXiv:2507.14417, 2025. 
+
+\item A. Q. OpenAI, ``Learning to Reason with LLMs,'' OpenAI, 2024. 
+
+\item DeepSeek-AI et al., ``DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning,'' arXiv preprint arXiv:2501.12948, 2025. 
+
+\item Q. L. team et al., ``QwQ-32B: Embracing the Power of Reinforcement Learning,'' arXiv preprint arXiv:2503.20783, 2025. 
+
+\item M. Y. et al., ``Large Language Models Can Self-Improve,'' arXiv preprint arXiv:2210.11610, 2022. 
+
+\end{enumerate}
+
+\end{document}

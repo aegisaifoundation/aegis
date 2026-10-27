@@ -13,5 +13,6 @@ export declare class PeerRegistry {
     } | undefined;
     removePeer(nodeId: string): void;
     listPeers(): IPeerDescriptor[];
+    pruneStalePeers(maxAgeMs?: number): string[];
     private isValidEndpointHost;
 }

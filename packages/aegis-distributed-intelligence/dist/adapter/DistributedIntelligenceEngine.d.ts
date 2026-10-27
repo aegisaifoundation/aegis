@@ -1,6 +1,6 @@
 import { IEngine, IEngineMetadata, IRuntimeContext_v1, EngineHealthReport } from '@aegis/sdk';
 import { DiscoveryService, MessagingService, TransportService, ExecutionService, CapabilityService, ResourceService, TrustService, SchedulerService, EventService, IEngineIpcHost } from '../services/index.js';
-import { PeerRegistry, ConnectionManager, LanDiscoveryProvider, NetworkConfigurationManager, AegisMessageRouter, DistributedTaskManager } from '@aegis/runtime';
+import { PeerRegistry, ConnectionManager, LanDiscoveryProvider, NetworkConfigurationManager, NodeTcpTransportAdapter, AegisMessageRouter, DistributedTaskManager } from '@aegis/runtime';
 export declare function getLocalIpAddress(): string;
 export declare class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
     readonly metadata: IEngineMetadata;
@@ -9,6 +9,9 @@ export declare class DistributedIntelligenceEngine implements IEngine, IEngineIp
     nodeId: string;
     nodeName: string;
     port: number;
+    messagePort: number;
+    actualMessagePort: number;
+    tcpAdapter: NodeTcpTransportAdapter | null;
     peerRegistry: PeerRegistry;
     connectionManager: ConnectionManager;
     messageRouter: AegisMessageRouter;
@@ -26,6 +29,7 @@ export declare class DistributedIntelligenceEngine implements IEngine, IEngineIp
     readonly eventService: EventService;
     getIpcManager(): import("../ipc/IPCManager.js").IPCManager;
     getNodeIdentity(): import("@aegis/sdk").INodeIdentity;
+    getBoundMessagePort(): number;
     initialize(context: IRuntimeContext_v1): Promise<void>;
     configure(config: Record<string, any>): Promise<void>;
     start(): Promise<void>;

@@ -27,6 +27,8 @@ async function runCanonicalNodeIdentityTests() {
     fs.mkdirSync(testTempDir, { recursive: true });
   }
 
+  let dieEngine: DistributedIntelligenceEngine | null = null;
+
   try {
     // ------------------------------------------------------------------------
     // Test 1: First Startup — Identity Generation & Storage
@@ -87,7 +89,7 @@ async function runCanonicalNodeIdentityTests() {
       getEventBus: () => ({ on: () => {}, off: () => {}, emit: () => {} })
     };
 
-    const dieEngine = new DistributedIntelligenceEngine();
+    dieEngine = new DistributedIntelligenceEngine();
     const learningEngine = new DistributedLearningEngine();
     const federatedEngine = new FederatedLearningEngine();
     const swarmEngine = new SwarmLearningEngine();
@@ -178,6 +180,11 @@ async function runCanonicalNodeIdentityTests() {
     console.log('  ✔ ALL CANONICAL NODE IDENTITY TESTS PASSED SUCCESSFULLY!');
     console.log('============================================================\n');
   } finally {
+    if (dieEngine) {
+      try {
+        await dieEngine.shutdown();
+      } catch {}
+    }
     // Cleanup temporary test directory
     try {
       fs.rmSync(testTempDir, { recursive: true, force: true });

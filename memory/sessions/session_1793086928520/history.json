@@ -1,0 +1,41 @@
+{
+  "messages": [
+    {
+      "id": "809337b4-0285-424c-9e95-a1b886e7dc51",
+      "role": "user",
+      "content": "hi",
+      "createdAt": "2026-10-27T07:42:12.642Z"
+    },
+    {
+      "id": "74d09710-2238-4770-ac13-eaccf585664b",
+      "role": "assistant",
+      "content": "Hello! How can I help you today?",
+      "createdAt": "2026-10-27T07:42:36.380Z"
+    },
+    {
+      "id": "678dd397-e8a7-47d5-8588-155f4fb77b1c",
+      "role": "user",
+      "content": "what is 6345634+6574",
+      "createdAt": "2026-10-27T07:42:58.145Z"
+    },
+    {
+      "id": "62dce5ef-5329-4a6d-a06e-d2f84a6790d5",
+      "role": "assistant",
+      "content": "The sum of 6,345,634 and 6,574 is **6,352,208**.",
+      "createdAt": "2026-10-27T07:43:03.646Z"
+    },
+    {
+      "id": "50a43230-93ab-4119-adbf-ee3bc56221fa",
+      "role": "user",
+      "content": "what is 11 + 110",
+      "createdAt": "2026-10-27T07:43:36.606Z"
+    },
+    {
+      "id": "db02368f-1e6f-440a-b48e-359658338607",
+      "role": "assistant",
+      "content": "11 plus 110 equals **121**.",
+      "createdAt": "2026-10-27T07:43:39.938Z"
+    }
+  ],
+  "memoryVersion": "1.0.0"
+}

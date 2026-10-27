@@ -80,11 +80,29 @@ export class PeerRegistry {
     listPeers() {
         return Array.from(this.peers.values());
     }
+    pruneStalePeers(maxAgeMs = 60000) {
+        const now = Date.now();
+        const removed = [];
+        for (const [nodeId, peer] of this.peers.entries()) {
+            if (peer.connectionState === PeerConnectionState.ACTIVE || peer.connectionState === PeerConnectionState.HANDSHAKING) {
+                continue;
+            }
+            if (peer.lastSeen && (now - peer.lastSeen) > maxAgeMs) {
+                this.peers.delete(nodeId);
+                removed.push(nodeId);
+                console.log(`[AEGIS Registry] Pruned stale peer ${nodeId} (inactive for ${Math.round((now - peer.lastSeen) / 1000)}s)`);
+            }
+        }
+        return removed;
+    }
     isValidEndpointHost(host) {
+        const normalized = host.trim().toLowerCase();
+        if (normalized === '0.0.0.0') {
+            return false;
+        }
         if (this.allowLoopback)
             return true;
-        const normalized = host.trim().toLowerCase();
-        if (normalized === '0.0.0.0' || normalized === '127.0.0.1' || normalized === '::1' || normalized === 'localhost') {
+        if (normalized === '127.0.0.1' || normalized === '::1' || normalized === 'localhost') {
             return false;
         }
         return true;

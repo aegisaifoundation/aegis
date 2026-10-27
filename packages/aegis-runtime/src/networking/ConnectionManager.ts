@@ -13,12 +13,21 @@ export interface ActivePeerConnection {
   isOutbound: boolean;
 }
 
+interface PendingInboundConnection {
+  socket: any;
+  remoteAddr: string;
+  transport: ITransportAdapter;
+  timeout: NodeJS.Timeout;
+}
+
 export class ConnectionManager {
   private activeConnections = new Map<string, ActivePeerConnection>();
+  private pendingInboundSockets = new Map<any, PendingInboundConnection>();
   private reconnectBackoffs = new Map<string, number>(); // nodeId -> attempt count
   private reconnectTimers = new Map<string, NodeJS.Timeout>();
   private messageListeners = new Map<string, Set<(payload: any, senderId: string) => void | Promise<void>>>();
   public messageRouter: any = null;
+  private isStopped = false;
 
   setMessageRouter(router: any): void {
     this.messageRouter = router;
@@ -39,6 +48,10 @@ export class ConnectionManager {
   }
 
   async connectToPeer(targetNodeId: string): Promise<ActivePeerConnection> {
+    if (this.isStopped) {
+      throw new Error('[ConnectionManager] Cannot connect: ConnectionManager is stopped.');
+    }
+
     const config = this.configManager.get();
 
     // Check if already active
@@ -78,7 +91,7 @@ export class ConnectionManager {
 
       this.activeConnections.set(targetNodeId, conn);
 
-      // Set Handshake Timeout (5s)
+      // Set Handshake Timeout
       conn.handshakeTimeout = setTimeout(() => {
         if (conn.state === PeerConnectionState.HANDSHAKING) {
           console.error(`[AEGIS Failure] Target=${targetNodeId} Endpoint=${conn.remoteAddr} Stage=HANDSHAKE Error=Handshake timeout (${config.handshakeTimeoutMs}ms)`);
@@ -107,14 +120,42 @@ export class ConnectionManager {
   }
 
   private async handleIncomingTransportConnection(socket: any, remoteAddr: string, transport: ITransportAdapter): Promise<void> {
+    if (this.isStopped) {
+      try { socket.destroy(); } catch {}
+      return;
+    }
+
     console.log(`[AEGIS Transport] Incoming connection accepted from ${remoteAddr}`);
+    const config = this.configManager.get();
+
+    // Register inbound socket with handshake timeout
+    const timeout = setTimeout(() => {
+      if (this.pendingInboundSockets.has(socket)) {
+        console.warn(`[AEGIS Handshake] Inbound connection from ${remoteAddr} timed out awaiting HELLO (${config.handshakeTimeoutMs}ms). Terminating socket.`);
+        this.pendingInboundSockets.delete(socket);
+        try { socket.destroy(); } catch {}
+      }
+    }, config.handshakeTimeoutMs);
+
+    this.pendingInboundSockets.set(socket, {
+      socket,
+      remoteAddr,
+      transport,
+      timeout
+    });
   }
 
   private async handleTransportMessage(socket: any, payloadStr: string): Promise<void> {
+    if (this.isStopped) return;
+
     let packet: any;
     try {
       packet = JSON.parse(payloadStr);
     } catch {
+      return;
+    }
+
+    if (!packet || typeof packet !== 'object') {
       return;
     }
 
@@ -148,6 +189,12 @@ export class ConnectionManager {
         return;
       }
 
+      // Security check: verify that senderId matches the authenticated identity of this socket
+      if (activeConn.nodeId !== senderId) {
+        console.warn(`[AEGIS Messaging] Security: Rejected payload frame with spoofed senderId "${senderId}" on connection for "${activeConn.nodeId}"`);
+        return;
+      }
+
       let userPayload = packet.payload !== undefined ? packet.payload : packet;
       if (userPayload && typeof userPayload === 'object' && userPayload.protocolVersion && userPayload.payload !== undefined) {
         userPayload = userPayload.payload;
@@ -168,10 +215,18 @@ export class ConnectionManager {
   private async handleIncomingHello(socket: any, packet: any): Promise<void> {
     const remoteNodeId = packet.nodeId;
     const remoteProtocolVersion = packet.protocolVersion;
-    const config = this.configManager.get();
+
+    const pendingInbound = this.pendingInboundSockets.get(socket);
+    if (pendingInbound) {
+      clearTimeout(pendingInbound.timeout);
+      this.pendingInboundSockets.delete(socket);
+    }
+
+    const transport = pendingInbound?.transport || this.transports.find(t => t.transportType === 'tcp') || this.transports[0];
+    const remoteAddr = pendingInbound?.remoteAddr || 'inbound';
 
     // Validation Check 1: Valid nodeId format
-    if (!remoteNodeId || !remoteNodeId.startsWith('aegis://')) {
+    if (!remoteNodeId || typeof remoteNodeId !== 'string' || !remoteNodeId.startsWith('aegis://')) {
       console.error(`[AEGIS Handshake] Rejected HELLO: Invalid nodeId format "${remoteNodeId}"`);
       await this.sendHelloFail(socket, 'Invalid nodeId format');
       return;
@@ -202,16 +257,15 @@ export class ConnectionManager {
       status: 'VERIFIED'
     });
 
-    const adapter = this.transports[0];
-    await adapter.send(socket, ackFrame);
+    await transport.send(socket, ackFrame);
 
     // Register inbound connection
     const conn: ActivePeerConnection = {
       nodeId: remoteNodeId,
       socket,
-      transport: adapter,
+      transport,
       state: PeerConnectionState.VERIFIED,
-      remoteAddr: 'inbound',
+      remoteAddr,
       isOutbound: false
     };
 
@@ -221,12 +275,20 @@ export class ConnectionManager {
   private async handleIncomingHelloAck(socket: any, packet: any): Promise<void> {
     const remoteNodeId = packet.nodeId;
 
-    // Find pending outbound connection
+    // Find pending outbound connection matching socket first
     let pendingConn: ActivePeerConnection | undefined;
     for (const c of this.activeConnections.values()) {
-      if (c.socket === socket || (c.isOutbound && c.nodeId === remoteNodeId)) {
+      if (c.socket === socket) {
         pendingConn = c;
         break;
+      }
+    }
+    if (!pendingConn) {
+      for (const c of this.activeConnections.values()) {
+        if (c.isOutbound && c.nodeId === remoteNodeId) {
+          pendingConn = c;
+          break;
+        }
       }
     }
 
@@ -249,6 +311,14 @@ export class ConnectionManager {
       return;
     }
 
+    // Protocol Version Validation
+    if (packet.protocolVersion !== AEGIS_NET_PROTOCOL_VERSION) {
+      console.error(`[AEGIS Handshake] Protocol Mismatch! Expected: ${AEGIS_NET_PROTOCOL_VERSION}, Received: ${packet.protocolVersion}`);
+      await this.sendHelloFail(socket, 'Protocol version mismatch');
+      this.closeConnection(pendingConn, 'Protocol version mismatch');
+      return;
+    }
+
     console.log(`[AEGIS Handshake] Identity mutually verified for ${remoteNodeId} (protocol v${packet.protocolVersion})`);
     pendingConn.state = PeerConnectionState.VERIFIED;
     this.promoteConnectionToActive(pendingConn);
@@ -258,7 +328,7 @@ export class ConnectionManager {
     // Deterministic Duplicate Connection Arbitration:
     // If Node A and Node B connect simultaneously, compare nodeId lexicographically
     const existing = this.activeConnections.get(conn.nodeId);
-    if (existing && existing !== conn && existing.state === PeerConnectionState.ACTIVE) {
+    if (existing && existing !== conn && (existing.state === PeerConnectionState.ACTIVE || existing.state === PeerConnectionState.HANDSHAKING)) {
       console.log(`[AEGIS Connection] Duplicate connection detected for ${conn.nodeId}. Arbitrating based on canonical nodeId...`);
       if (this.localNodeId < conn.nodeId) {
         // Our outbound connection wins; close the incoming competing duplicate
@@ -283,13 +353,22 @@ export class ConnectionManager {
   private async sendHelloFail(socket: any, reason: string): Promise<void> {
     try {
       const failFrame = JSON.stringify({ type: 'HELLO_FAIL', reason });
-      const adapter = this.transports[0];
+      const adapter = this.transports.find(t => t.transportType === 'tcp') || this.transports[0];
       await adapter.send(socket, failFrame);
       adapter.disconnect(socket);
     } catch {}
   }
 
   private handleTransportDisconnect(socket: any): void {
+    if (this.isStopped) return;
+
+    // Clean up if it was a pending inbound socket
+    const pending = this.pendingInboundSockets.get(socket);
+    if (pending) {
+      clearTimeout(pending.timeout);
+      this.pendingInboundSockets.delete(socket);
+    }
+
     const conn = this.findConnectionBySocket(socket);
     if (conn) {
       console.warn(`[AEGIS Connection] Transport disconnected for ${conn.nodeId} (${conn.remoteAddr})`);
@@ -299,11 +378,16 @@ export class ConnectionManager {
   }
 
   private scheduleReconnection(nodeId: string): void {
+    if (this.isStopped) return;
     if (!this.peerRegistry.getPeer(nodeId)) return; // Peer removed
     if (this.reconnectTimers.has(nodeId)) return; // Already scheduled
 
     const config = this.configManager.get();
     const attempts = (this.reconnectBackoffs.get(nodeId) || 0) + 1;
+    if (attempts > 20) {
+      console.warn(`[AEGIS Connection] Max reconnect attempts exceeded for ${nodeId}`);
+      return;
+    }
     this.reconnectBackoffs.set(nodeId, attempts);
 
     const delay = Math.min(
@@ -315,6 +399,7 @@ export class ConnectionManager {
 
     const timer = setTimeout(async () => {
       this.reconnectTimers.delete(nodeId);
+      if (this.isStopped) return;
       try {
         await this.connectToPeer(nodeId);
       } catch {}
@@ -324,6 +409,10 @@ export class ConnectionManager {
   }
 
   async sendPeerMessage(targetNodeId: string, messageType: string, payload: any): Promise<void> {
+    if (this.isStopped) {
+      throw new Error('[ConnectionManager] Cannot send message: ConnectionManager is stopped.');
+    }
+
     let conn = this.activeConnections.get(targetNodeId);
     if (!conn || conn.state !== PeerConnectionState.ACTIVE) {
       console.log(`[AEGIS Connection] Target ${targetNodeId} not ACTIVE. Initiating connection & handshake...`);
@@ -389,10 +478,19 @@ export class ConnectionManager {
   }
 
   async stop(): Promise<void> {
+    this.isStopped = true;
+
     for (const timer of this.reconnectTimers.values()) {
       clearTimeout(timer);
     }
     this.reconnectTimers.clear();
+    this.reconnectBackoffs.clear();
+
+    for (const inbound of this.pendingInboundSockets.values()) {
+      clearTimeout(inbound.timeout);
+      try { inbound.socket.destroy(); } catch {}
+    }
+    this.pendingInboundSockets.clear();
 
     for (const conn of Array.from(this.activeConnections.values())) {
       this.closeConnection(conn, 'Shutdown');

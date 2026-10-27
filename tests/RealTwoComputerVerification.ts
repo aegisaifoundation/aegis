@@ -38,9 +38,9 @@ async function runRealTwoComputerVerification() {
 
   console.log(`\nLocal Computer Information:`);
   console.log(`  • Canonical Node ID: ${identity.nodeId}`);
-  console.log(`  • Display Name:     ${identity.nodeName}`);
+  console.log(`  • Display Name:     ${identity.name || nodeName}`);
   console.log(`  • LAN IP Address:   ${localIp}`);
-  console.log(`  • DIE TCP Port:     ${port}`);
+  console.log(`  • DIE Base Port:    ${port}`);
   console.log(`  • Message TCP Port: ${port + 1}`);
   console.log(`  • Discovery Port:   9888 (UDP)\n`);
 
@@ -50,10 +50,16 @@ async function runRealTwoComputerVerification() {
     platform: os.platform(),
     architecture: os.arch(),
     bootMode: 'NORMAL',
-    getNodeIdentity: () => identity,
+    getNodeIdentity: () => ({
+      nodeId: identity.nodeId,
+      nodeName: identity.name || nodeName,
+      createdAt: identity.createdAt,
+      publicKey: identity.publicKey,
+      fingerprint: identity.fingerprint
+    }),
     getWorkspacePath: () => nodeDir,
     getLogger: () => ({ info: console.log, warn: console.warn, error: console.error }),
-    getConfig: () => ({}),
+    getConfig: () => ({ port, nodeName }),
     getSecrets: () => ({}),
     getService: () => undefined,
     getEventBus: () => ({ on: () => {}, off: () => {}, emit: () => {} })
@@ -82,10 +88,11 @@ async function runRealTwoComputerVerification() {
 
   console.log('\n[Status] Ready and listening for remote peer discovery and connections.');
   console.log('Commands:');
-  console.log('  send <targetNodeId> <message>  - Send message to remote AEGIS node');
-  console.log('  connect <host> <port>         - Connect to peer by host and port');
-  console.log('  list                           - List discovered peers in PeerRegistry');
-  console.log('  exit                           - Exit diagnostic tool\n');
+  console.log('  register <targetNodeId> <host> <port> - Register remote peer');
+  console.log('  connect <targetNodeId> [host] [port]   - Connect to remote peer');
+  console.log('  send <targetNodeId> <message>          - Send message to remote AEGIS node');
+  console.log('  list                                   - List discovered peers in PeerRegistry');
+  console.log('  exit                                   - Exit diagnostic tool\n');
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   rl.setPrompt('> ');
@@ -103,6 +110,7 @@ async function runRealTwoComputerVerification() {
 
     if (cmd === 'exit') {
       console.log('Shutting down AEGIS node...');
+      rl.close();
       await engine.shutdown();
       process.exit(0);
     } else if (cmd === 'list') {
@@ -115,19 +123,27 @@ async function runRealTwoComputerVerification() {
         }
       }
       console.log('');
-    } else if (cmd === 'connect' && parts[1] && parts[2]) {
-      const connectHost = parts[1];
-      const connectPort = parseInt(parts[2], 10);
-      const tempId = `aegis://manual-${connectHost}-${connectPort}`;
-      engine.peerRegistry.registerPeer({
-        nodeId: tempId,
-        endpoints: [{ transport: 'tcp', host: connectHost, port: connectPort, priority: 1 }],
-        connectionState: 'DISCOVERED' as any
-      });
+    } else if (cmd === 'register' && parts[1] && parts[2] && parts[3]) {
+      const targetPeerId = parts[1];
+      const targetHost = parts[2];
+      const targetPort = parseInt(parts[3], 10);
+      if (!targetPeerId.startsWith('aegis://')) {
+        console.error('Error: targetNodeId must start with aegis://');
+      } else {
+        await engine.discoveryService.registerNode(targetPeerId, targetHost, targetPort);
+        console.log(`✔ Registered ${targetPeerId} at ${targetHost}:${targetPort}`);
+      }
+    } else if (cmd === 'connect' && parts[1]) {
+      const targetPeerId = parts[1];
+      if (parts[2] && parts[3]) {
+        const connectHost = parts[2];
+        const connectPort = parseInt(parts[3], 10);
+        await engine.discoveryService.registerNode(targetPeerId, connectHost, connectPort);
+      }
       try {
-        console.log(`Attempting connection to ${connectHost}:${connectPort}...`);
-        await engine.connectionManager.connectToPeer(tempId);
-        console.log(`✔ Connected to ${connectHost}:${connectPort}`);
+        console.log(`Attempting connection to ${targetPeerId}...`);
+        await engine.connectionManager.connectToPeer(targetPeerId);
+        console.log(`✔ Connected to ${targetPeerId}`);
       } catch (err: any) {
         console.error(`❌ Connection failed: ${err.message}`);
       }
@@ -141,7 +157,7 @@ async function runRealTwoComputerVerification() {
         console.error(`❌ Failed to send message: ${err.message}`);
       }
     } else {
-      console.log('Unknown command. Available: send <targetNodeId> <text>, connect <host> <port>, list, exit');
+      console.log('Unknown command. Available: register <id> <host> <port>, connect <id> [host] [port], send <id> <text>, list, exit');
     }
 
     rl.prompt();
@@ -149,6 +165,6 @@ async function runRealTwoComputerVerification() {
 }
 
 runRealTwoComputerVerification().catch((err) => {
-  console.error('Fatal error running Real Two-Computer Verification tool:', err);
+  console.error('Verification tool error:', err);
   process.exit(1);
 });

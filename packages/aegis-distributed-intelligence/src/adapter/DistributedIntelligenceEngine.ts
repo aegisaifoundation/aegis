@@ -80,6 +80,9 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
   public nodeId = '';
   public nodeName = 'aegis-die-node';
   public port = 9900;
+  public messagePort = 9901;
+  public actualMessagePort = 0;
+  public tcpAdapter: NodeTcpTransportAdapter | null = null;
 
   public peerRegistry!: PeerRegistry;
   public connectionManager!: ConnectionManager;
@@ -106,6 +109,10 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
     return this.context.getNodeIdentity();
   }
 
+  getBoundMessagePort(): number {
+    return this.actualMessagePort || this.messagePort;
+  }
+
   async initialize(context: IRuntimeContext_v1): Promise<void> {
     this.context = context;
     if (!context.nodeId || context.nodeId.trim() === '') {
@@ -113,11 +120,21 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
     }
     this.nodeId = context.nodeId;
 
+    const cfg = (context.getConfig && context.getConfig()) || {};
+    if (cfg.nodeName) this.nodeName = cfg.nodeName;
+    if (cfg.port !== undefined) this.port = cfg.port;
+    if (cfg.messagePort !== undefined) this.messagePort = cfg.messagePort;
+    else this.messagePort = this.port + 1;
+
+    if (context.getNodeIdentity && context.getNodeIdentity()?.nodeName) {
+      this.nodeName = context.getNodeIdentity().nodeName;
+    }
+
     const allowLoopback = process.env.NODE_ENV === 'test' || process.env.AEGIS_ALLOW_LOOPBACK === 'true';
     this.configManager = new NetworkConfigurationManager({ allowLoopback });
     this.peerRegistry = new PeerRegistry(allowLoopback);
 
-    const tcpAdapter = new NodeTcpTransportAdapter();
+    this.tcpAdapter = new NodeTcpTransportAdapter();
     const nativeAdapter = new NativeTcpTransportAdapter(() => this.getIpcManager());
 
     this.connectionManager = new ConnectionManager(
@@ -125,23 +142,26 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
       this.nodeName,
       this.peerRegistry,
       this.configManager,
-      [tcpAdapter, nativeAdapter]
+      [this.tcpAdapter, nativeAdapter]
     );
 
     this.messageRouter = new AegisMessageRouter(this.nodeId, () => this.connectionManager);
     this.connectionManager.setMessageRouter(this.messageRouter);
     this.taskManager = new DistributedTaskManager(this.nodeId, this.messageRouter, this.peerRegistry);
 
+    this.actualMessagePort = await this.tcpAdapter.listen(this.messagePort, this.configManager.get().bindHost);
+    this.configManager.setBoundMsgPort(this.actualMessagePort);
+
     this.lanDiscoveryProvider = new LanDiscoveryProvider(
       this.nodeId,
       this.nodeName,
       () => [
-        { transport: 'tcp', port: this.port + 1, priority: 1 },
+        { transport: 'tcp', port: this.actualMessagePort || this.messagePort, priority: 1 },
         { transport: 'native_tcp', port: this.port, priority: 2 }
-      ]
+      ],
+      this.configManager.get().discoveryPort
     );
 
-    await tcpAdapter.listen(this.port + 1);
     await this.lanDiscoveryProvider.start();
 
     this.lanDiscoveryProvider.onPeerDiscovered((peer) => {
@@ -174,7 +194,20 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
 
   async configure(config: Record<string, any>): Promise<void> {
     if (config.nodeName) this.nodeName = config.nodeName;
-    if (config.port) this.port = config.port;
+    const newPort = config.port !== undefined ? config.port : this.port;
+    const newMsgPort = config.messagePort !== undefined ? config.messagePort : (newPort + 1);
+
+    const portChanged = (this.tcpAdapter !== null) && (newMsgPort !== this.actualMessagePort);
+    this.port = newPort;
+    this.messagePort = newMsgPort;
+
+    if (portChanged && this.tcpAdapter) {
+      console.log(`[DistributedIntelligenceEngine] Re-binding TCP transport to updated port ${this.messagePort}...`);
+      await this.tcpAdapter.stop();
+      this.actualMessagePort = await this.tcpAdapter.listen(this.messagePort, this.configManager.get().bindHost);
+      this.configManager.setBoundMsgPort(this.actualMessagePort);
+    }
+
     await this.lifecycle.configure({
       ...config,
       nodeId: this.nodeId,
@@ -232,6 +265,10 @@ export class DistributedIntelligenceEngine implements IEngine, IEngineIpcHost {
     }
     if (this.connectionManager) {
       await this.connectionManager.stop();
+    }
+    if (this.tcpAdapter) {
+      await this.tcpAdapter.stop();
+      this.tcpAdapter = null;
     }
   }
 

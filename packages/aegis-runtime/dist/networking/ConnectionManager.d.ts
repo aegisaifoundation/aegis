@@ -18,10 +18,12 @@ export declare class ConnectionManager {
     private configManager;
     private transports;
     private activeConnections;
+    private pendingInboundSockets;
     private reconnectBackoffs;
     private reconnectTimers;
     private messageListeners;
     messageRouter: any;
+    private isStopped;
     setMessageRouter(router: any): void;
     constructor(localNodeId: string, localNodeName: string, peerRegistry: PeerRegistry, configManager: NetworkConfigurationManager, transports: ITransportAdapter[]);
     connectToPeer(targetNodeId: string): Promise<ActivePeerConnection>;

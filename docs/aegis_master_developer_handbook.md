@@ -94,7 +94,7 @@ AEGIS aims to become the foundational operating layer for autonomous AI infrastr
 │ • An Enterprise AI Operating System                                     │
 │ • A Microkernel-based Subsystem Orchestrator                            │
 │ • A Native C++20 Distributed Compute & Inference Engine                 │
-│ • A Transactional, Durable Cognitive Memory Infrastructure             │
+│ • A Transactional, Durable Cognitive Memory Infrastructure              │
 │ • A Zero-Trust Capability & Sandboxed Tooling Ecosystem                 │
 └─────────────────────────────────────────────────────────────────────────┘
 
@@ -104,7 +104,7 @@ AEGIS aims to become the foundational operating layer for autonomous AI infrastr
 │ • A Standalone Chat Application UI                                      │
 │ • A Proprietary Monolithic AI Model                                     │
 │ • A Cloud-Bound SaaS Wrapper                                            │
-│ • An Unstructured File Directory Script System                         │
+│ • An Unstructured File Directory Script System                          │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -118,10 +118,10 @@ AEGIS uses a tiered architecture separating user applications, orchestration ker
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                      APPLICATION LAYER (Layer 4)                        │
-│  ┌──────────────┐  ┌─────────────┐  ┌─────────────┐  ┌──────────────┐  │
-│  │ Desktop UI   │  │  REST API   │  │ AEGIS CLI   │  │ Admin Dash.  │  │
-│  │ (Port 5001)  │  │ (Port 3005) │  │  (Terminal) │  │   (Web SPA)  │  │
-│  └──────┬───────┘  └──────┬──────┘  └──────┬──────┘  └──────┬───────┘  │
+│  ┌──────────────┐  ┌─────────────┐  ┌─────────────┐  ┌──────────────┐   │
+│  │ Desktop UI   │  │  REST API   │  │ AEGIS CLI   │  │ Admin Dash.  │   │
+│  │ (Port 5001)  │  │ (Port 3005) │  │  (Terminal) │  │   (Web SPA)  │   │
+│  └──────┬───────┘  └──────┬──────┘  └──────┬──────┘  └──────┬───────┘   │
 └─────────┼─────────────────┼────────────────┼────────────────┼───────────┘
           │                 │                │                │
 ┌─────────┼─────────────────┼────────────────┼────────────────┼───────────┐
@@ -134,7 +134,7 @@ AEGIS uses a tiered architecture separating user applications, orchestration ker
             │                   │                      │
 ┌───────────┼───────────────────┼──────────────────────┼──────────────────┐
 │                   RUNTIME KERNEL LAYER (Layer 2)                        │
-│  Bootloader · KernelAPI · EngineManager · Typed EventBus                 │
+│  Bootloader · KernelAPI · EngineManager · Typed EventBus                │
 │  ServiceRegistry · DI Container · IPC Control Channel                   │
 │  RuntimeExecutor · RuntimeSessionManager · CapabilityManager            │
 └───────────────────────────────────┬─────────────────────────────────────┘
@@ -142,7 +142,7 @@ AEGIS uses a tiered architecture separating user applications, orchestration ker
 ┌───────────────────────────────────┴─────────────────────────────────────┐
 │             NATIVE C++20 DISTRIBUTED RUNTIME - DIE (Layer 1)            │
 │  DistributedRuntime · NodeRuntime · DiscoveryManager · HeartbeatManager │
-│  MembershipManager · TcpTransport (AON) · MessageBus · EventDispatcher │
+│  MembershipManager · TcpTransport (AON) · MessageBus · EventDispatcher  │
 │  ResourceManager · AIR (AI Runtime) · DIS (Distributed Inference)       │
 └─────────────────────────────────────────────────────────────────────────┘
 ```

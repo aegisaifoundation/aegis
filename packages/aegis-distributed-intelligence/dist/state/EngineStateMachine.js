@@ -4,7 +4,7 @@ export class EngineStateMachine {
     listeners = [];
     static VALID_TRANSITIONS = {
         [EngineState.UNINITIALIZED]: new Set([EngineState.INITIALIZING]),
-        [EngineState.INITIALIZING]: new Set([EngineState.STARTING, EngineState.FAILED]),
+        [EngineState.INITIALIZING]: new Set([EngineState.STARTING, EngineState.STOPPING, EngineState.STOPPED, EngineState.FAILED]),
         [EngineState.STARTING]: new Set([EngineState.HANDSHAKING, EngineState.FAILED, EngineState.STOPPING]),
         [EngineState.HANDSHAKING]: new Set([EngineState.LOADING, EngineState.FAILED, EngineState.STOPPING]),
         [EngineState.LOADING]: new Set([EngineState.READY, EngineState.FAILED, EngineState.STOPPING]),

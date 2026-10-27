@@ -1,0 +1,603 @@
+# AEGIS — End-to-End Two-Node Connectivity Implementation and Verification
+
+## Role
+
+Act as a senior distributed-systems engineer, TypeScript/Node.js systems architect, networking engineer, and test automation engineer.
+
+You are working on the existing AEGIS monorepo. Your task is to inspect, debug, repair, implement, and verify the complete peer-to-peer networking pipeline so that two independent AEGIS nodes can establish a connection, authenticate their identities, exchange application messages bidirectionally, detect disconnections, and reconnect reliably.
+
+Do not merely provide recommendations or generate a plan. Work directly in the repository, make the necessary code changes, execute the available tests, and report the actual results.
+
+**Primary objective: prove that two distinct AEGIS nodes can communicate end to end.**
+
+Do not claim success unless supported by executed tests and observable evidence.
+
+---
+
+## 1. Project Context and Architectural Constraints
+
+The project is an existing TypeScript-based decentralized intelligence system.
+
+Relevant components may include:
+
+- `packages/aegis-runtime`
+- `packages/aegis-node`
+- `packages/aegis-core`
+- `packages/aegis-distributed-intelligence`
+- `tests/PeerNetworkingPhase2.test.ts`
+- `connect_node.ts`
+- `DistributedIntelligenceEngine.ts`
+- `ConnectionManager.ts`
+- `NodeTcpTransportAdapter.ts`
+- `LanDiscoveryProvider.ts`
+- `NodeManager.ts`
+- `AegisMessageRouter`
+- `AegisMessageBus`
+- `AckManager`
+- `Deduplication`
+
+These paths are based on the currently known project structure. Search the repository and confirm the actual locations, exported APIs, package names, and current implementation before editing anything.
+
+Preserve the existing AEGIS architecture:
+
+- Canonical node identities use the `aegis://<uuid>` format.
+- The runtime remains the microkernel layer.
+- Distributed intelligence remains responsible for its existing networking and coordination responsibilities.
+- Existing engines, message buses, event systems, discovery providers, and transport abstractions should be reused.
+- Persistent node identity must remain stable across restarts.
+- Every independently deployed node must have its own identity.
+- The TypeScript networking layer and any native C++ transport or service must remain compatible.
+- Do not replace the existing networking architecture with a new framework or a simplified demonstration implementation.
+- Do not bypass identity verification, protocol validation, message routing, or connection-state management to make tests pass.
+
+First inspect the repository's current state, package scripts, build configuration, test framework, and Git working tree. Preserve unrelated user changes.
+
+---
+
+## 2. Phase One — Perform a Source-Level Audit
+
+Before changing code, inspect the complete communication path from startup to message delivery.
+
+Trace the following sequence:
+
+1. Node identity initialization.
+2. Runtime context construction.
+3. Distributed intelligence engine initialization.
+4. Transport creation and TCP listener binding.
+5. Peer endpoint registration.
+6. Peer discovery and endpoint resolution.
+7. Outbound TCP connection.
+8. Incoming TCP connection handling.
+9. HELLO message generation and transmission.
+10. Incoming HELLO validation.
+11. HELLO_ACK generation and transmission.
+12. HELLO_ACK validation.
+13. Connection-state transitions.
+14. Message serialization and framing.
+15. Message deserialization and validation.
+16. Message routing to the destination node.
+17. Application message-handler invocation.
+18. Acknowledgement and deduplication behavior.
+19. Disconnect detection.
+20. Reconnection and connection cleanup.
+
+Inspect the actual implementations and all relevant callers.
+
+Pay particular attention to these potential defects and verify each against the current source:
+
+### A. Missing runtime identity
+
+The existing `connect_node.ts` helper may create a runtime context without a canonical `nodeId` or the required identity accessor.
+
+Inspect `IRuntimeContext_v1`, `DistributedIntelligenceEngine.initialize()`, and the actual `NodeManager` API.
+
+Ensure the runtime receives a valid canonical identity through the project's existing identity mechanism.
+
+Do not invent a replacement API or generate a new random identity on each startup.
+
+### B. Configuration and listener initialization order
+
+The current implementation may bind the TypeScript TCP listener to `this.port + 1` during initialization, while `connect_node.ts` calls `configure()` afterward.
+
+Determine whether configuration is being applied after the listener has already bound.
+
+Fix the lifecycle so configuration is validated and applied before the relevant transport starts.
+
+Ensure the actual listening endpoint, the configured endpoint, and the advertised discovery endpoint are consistent.
+
+### C. Incorrect peer identity registration
+
+The existing standalone script may register a placeholder such as `remote-node`.
+
+Ensure every connection is associated with the remote node's actual canonical `aegis://<uuid>` identity.
+
+Ensure that the ID registered in peer discovery, the ID expected by the handshake, the ID reported by the remote node, and the ID used for message routing are consistent.
+
+### D. Actual bound-port handling
+
+Inspect the return value of `NodeTcpTransportAdapter.listen()`.
+
+Determine whether the adapter can bind to an alternative or dynamically assigned port when the requested port is unavailable.
+
+If it can, ensure the actual bound port becomes the authoritative endpoint used by the engine, connection manager, and discovery service.
+
+Alternatively, support a strict-port mode that fails startup clearly if the requested port is unavailable.
+
+Do not advertise a port that is not actually listening.
+
+### E. Incoming connections
+
+Inspect `handleIncomingTransportConnection()` and the subsequent HELLO processing.
+
+Ensure accepted incoming sockets are handled through the same lifecycle and validation rules as outbound connections.
+
+Ensure inbound connections are correctly associated with their remote identities and tracked by the connection manager.
+
+Ensure duplicate connections, simultaneous connection attempts, invalid handshakes, and stale sockets cannot corrupt connection state.
+
+### F. Handshake correctness
+
+Verify the HELLO and HELLO_ACK message schemas, protocol version, identity validation, pending connection lookup, timeouts, and failure handling.
+
+Confirm that a connection cannot become `ACTIVE` merely because a TCP socket was opened.
+
+Ensure both sides agree on the peer identity and protocol version before application traffic is accepted.
+
+Ensure pending handshakes are cleaned up when they fail or time out.
+
+### G. Message framing and routing
+
+Inspect the actual wire protocol.
+
+Confirm that partial TCP reads, multiple messages arriving in one read, malformed frames, oversized messages, invalid JSON, and socket closure are handled safely.
+
+Preserve the existing framing format and protocol compatibility.
+
+Verify that the destination node ID is correctly mapped to the active connection and that incoming messages are dispatched to the correct application handler.
+
+### H. Discovery and networking configuration
+
+Inspect `LanDiscoveryProvider.ts` and every endpoint registration or announcement path.
+
+Determine whether UDP broadcast discovery works only on the local network and whether it is required for manual peer connections.
+
+Ensure manual peer registration works independently of automatic discovery.
+
+Check loopback validation, wildcard bind addresses, advertised addresses, port consistency, and network-interface selection.
+
+Do not confuse binding to `0.0.0.0` with advertising `0.0.0.0` as a reachable peer address.
+
+### Deliverable for this phase
+
+Create a concise audit report documenting:
+
+- Confirmed defects.
+- Potential defects that require testing.
+- Relevant file paths and functions.
+- Root causes.
+- Required fixes.
+- Existing behavior that must remain unchanged.
+
+Then proceed to implementation without waiting for approval, unless a destructive or genuinely ambiguous decision is necessary.
+
+---
+
+## 3. Phase Two — Repair the Startup and Identity Lifecycle
+
+Implement the minimum architectural changes needed for reliable startup.
+
+Requirements:
+
+1. Load or create the node's persistent canonical identity through the existing identity manager.
+2. Validate the identity before initializing networking.
+3. Supply all required runtime context fields using the actual declared interface.
+4. Preserve identity across restarts.
+5. Prevent two independent nodes from unintentionally sharing the same persistent identity.
+6. Ensure runtime configuration is applied before listeners bind.
+7. Make transport initialization deterministic.
+8. Ensure partially initialized transports are cleaned up if startup fails.
+9. Make startup and shutdown safe to call according to the project's lifecycle contract.
+10. Log the node identity, actual bound endpoint, and advertised endpoint without exposing secrets.
+
+Use the existing project APIs rather than duplicating identity-management logic.
+
+If `NodeManager` already manages persistent identity, use it according to its actual implementation. Do not assume method names or return shapes without inspecting the source.
+
+Update `connect_node.ts` or its actual equivalent to use the corrected lifecycle.
+
+---
+
+## 4. Phase Three — Establish a Single Source of Truth for Endpoints
+
+Audit every networking port and distinguish the roles of:
+
+- Native transport.
+- TypeScript peer messaging.
+- LAN discovery.
+- Administrative or health endpoints, if present.
+
+The currently documented or observed configuration includes TCP ports 9900 and 9901 and UDP discovery port 9888. Verify their actual use in the source before relying on these values.
+
+Requirements:
+
+1. Configure ports before starting listeners.
+2. Record the actual bound port returned by the transport.
+3. Advertise the actual reachable endpoint.
+4. Ensure peer registration uses the same endpoint.
+5. Detect port conflicts and report useful errors.
+6. Avoid silently changing ports without updating discovery.
+7. Ensure shutdown releases all listeners and sockets.
+8. Support explicit bind and advertised addresses where required.
+9. Keep the existing transport abstraction intact.
+
+If you refactor configuration, update the relevant interfaces and callers consistently.
+
+Do not introduce duplicated port state across multiple components.
+
+---
+
+## 5. Phase Four — Repair Connection Management and the Handshake
+
+Implement a complete, reliable handshake lifecycle.
+
+### Outbound connection
+
+The initiating node must:
+
+1. Resolve the target's canonical identity.
+2. Resolve its reachable endpoint.
+3. Establish the TCP connection.
+4. Create or update the pending connection record.
+5. Send a correctly framed HELLO.
+6. Validate the received HELLO_ACK.
+7. Validate the expected remote identity.
+8. Validate the protocol version.
+9. Transition to `ACTIVE` only after all required checks pass.
+10. Emit the appropriate connection event.
+
+### Inbound connection
+
+The receiving node must:
+
+1. Accept the TCP connection.
+2. Create the appropriate pending connection state.
+3. Decode the incoming frame safely.
+4. Validate the HELLO schema and protocol version.
+5. Validate the canonical remote identity.
+6. Reject self-connections.
+7. Handle duplicate or simultaneous connections deterministically.
+8. Send the appropriate HELLO_ACK or failure response.
+9. Register the verified peer and connection.
+10. Transition to `ACTIVE` according to the protocol's state machine.
+11. Emit the appropriate event.
+
+Ensure the state transitions are consistent with the existing architecture. Do not invent a new state machine if one already exists.
+
+### Failure handling
+
+Handle:
+
+- Connection refused.
+- Connection timeout.
+- Handshake timeout.
+- Invalid identity.
+- Self-connection.
+- Protocol mismatch.
+- Malformed HELLO.
+- Malformed HELLO_ACK.
+- Duplicate connection.
+- Unexpected socket closure.
+- Peer process termination.
+- Partial startup failure.
+- Reconnection after a remote node restarts.
+
+Every failure must leave the connection manager in a consistent state.
+
+Prevent unhandled promise rejections, stale pending connections, orphaned timers, and duplicate reconnect loops.
+
+Add bounded retries with backoff where appropriate.
+
+Do not automatically trust a peer merely because it supplies a syntactically valid `aegis://` string. If the project already supports cryptographic identity verification, use it. If it does not, document that limitation and implement identity authentication only in a way compatible with the existing identity architecture.
+
+---
+
+## 6. Phase Five — Verify Message Delivery End to End
+
+Use the existing AEGIS messaging service, message bus, router, acknowledgements, and deduplication components.
+
+Do not implement a parallel messaging system just for the test.
+
+Create or update an integration test that proves all of the following:
+
+1. Node A starts with identity A.
+2. Node B starts with identity B.
+3. Identity A and identity B are different.
+4. Both nodes start their TCP listeners.
+5. Node A registers Node B using B's real canonical identity and reachable endpoint.
+6. Node A initiates a connection.
+7. The handshake completes successfully.
+8. The relevant connection state becomes `ACTIVE`.
+9. Node A registers a message handler.
+10. Node B registers a message handler.
+11. Node A sends a uniquely identified test message to Node B.
+12. Node B receives the message.
+13. The payload is correct.
+14. The reported sender identity is A.
+15. Node B sends a different uniquely identified message to Node A.
+16. Node A receives the message.
+17. The payload is correct.
+18. The reported sender identity is B.
+19. The test verifies acknowledgement behavior if supported by the existing messaging protocol.
+20. The test verifies duplicate suppression if supported by the existing deduplication implementation.
+21. Both nodes shut down cleanly.
+
+Use explicit asynchronous waits and timeouts.
+
+Do not use arbitrary sleeps as the only proof that a message was delivered.
+
+A successful `sendMessage()` call, successful TCP connection, or `ACTIVE` state alone is not sufficient evidence of bidirectional application-level communication.
+
+Capture the received payloads and sender IDs and assert their exact values.
+
+Ensure all test resources are cleaned up even when an assertion fails.
+
+---
+
+## 7. Phase Six — Build a Layered Test Suite
+
+Implement or repair tests in these categories.
+
+### Test A: Unit tests
+
+Cover:
+
+- Canonical identity validation.
+- Endpoint validation.
+- Port configuration.
+- TCP framing.
+- HELLO validation.
+- HELLO_ACK validation.
+- Invalid protocol versions.
+- Connection-state transitions.
+- Handshake timeout cleanup.
+- Duplicate connection handling.
+- Malformed frames.
+- Message routing.
+- Disconnect handling.
+
+### Test B: Same-machine, multi-process integration
+
+Use two independent node processes with distinct persistent identities and separate listening ports.
+
+Use loopback only when explicitly enabled for testing.
+
+Verify:
+
+- Connection establishment.
+- Handshake completion.
+- Bidirectional messaging.
+- Disconnect detection.
+- Reconnection after restart.
+
+Do not treat this test as proof of physical-network connectivity.
+
+### Test C: Physical LAN integration
+
+Create a documented manual test procedure that runs one real node on Computer A and another on Computer B.
+
+The test must support:
+
+- Different canonical node IDs.
+- Reachable LAN addresses.
+- Explicit TCP listening ports.
+- Manual peer registration.
+- TCP connectivity checks.
+- Bidirectional message delivery.
+- Correct sender identity.
+- Firewall and bind-address diagnostics.
+
+Provide a script or command-line configuration that lets the operator supply each machine's identity, bind address, advertised address, and port without hardcoding private IP addresses into production code.
+
+If the environment only provides one computer, do not pretend that a physical LAN test has been performed. Implement the procedure and report the unverified step explicitly.
+
+### Test D: Failure and recovery
+
+Test:
+
+- Peer offline at startup.
+- Peer becomes available later.
+- Peer disconnects during communication.
+- Peer restarts.
+- Port already in use.
+- Incorrect advertised endpoint.
+- Invalid identity.
+- Protocol version mismatch.
+- Handshake timeout.
+- Repeated connection attempts.
+
+Verify that the system recovers without requiring a full application restart, where that behavior is part of the existing design.
+
+---
+
+## 8. Phase Seven — Verify LAN Discovery Separately
+
+Manual peer connectivity and automatic peer discovery are separate capabilities.
+
+Test them independently.
+
+For LAN discovery:
+
+1. Start two nodes on the same supported network.
+2. Confirm both announce their canonical identities and reachable endpoints.
+3. Confirm the discovery listener receives and validates announcements.
+4. Confirm discovered endpoints are registered correctly.
+5. Confirm a discovered peer can establish the normal authenticated handshake.
+6. Confirm stale peers expire or are removed according to the existing discovery design.
+7. Confirm duplicate announcements do not create duplicate peer records.
+8. Test interface selection and firewall restrictions.
+
+Do not assume UDP broadcast works across subnets, VPNs, Wi-Fi client isolation, or routers.
+
+If discovery is unavailable, manual registration must still be able to establish a connection when the remote endpoint is reachable.
+
+---
+
+## 9. Phase Eight — Security and Protocol Integrity
+
+Before considering the networking layer production-ready, inspect and document:
+
+- Whether peer identities are cryptographically authenticated.
+- Whether messages are protected against tampering.
+- Whether replayed messages are rejected.
+- Whether framing has a maximum size.
+- Whether malformed input can crash the process.
+- Whether protocol versions are negotiated or strictly matched.
+- Whether duplicate peer connections are handled safely.
+- Whether unauthorized peers can consume excessive resources.
+- Whether reconnect attempts are bounded.
+- Whether secrets or private keys can leak into logs.
+
+Use existing AEGIS cryptographic and identity facilities where available.
+
+Do not claim encryption or authentication unless it is implemented and tested.
+
+Do not introduce a breaking protocol change without updating all affected consumers and tests.
+
+Clearly separate requirements for a trusted LAN demonstration from requirements for production deployment across untrusted networks.
+
+---
+
+## 10. Phase Nine — Build, Test, and Validate
+
+Inspect the actual package scripts before choosing commands.
+
+Then:
+
+1. Run the relevant unit tests before changes, if feasible.
+2. Record the existing failures.
+3. Implement fixes.
+4. Run TypeScript type checking.
+5. Build every modified workspace in dependency order.
+6. Run the existing `PeerNetworkingPhase2.test.ts`.
+7. Run all relevant networking tests.
+8. Run the multi-process integration test.
+9. Run failure/recovery tests.
+10. Run linting if configured.
+11. Check that the compiled `dist` artifacts used by the standalone script reflect the new source.
+12. Verify that no existing tests were weakened or removed to obtain a passing result.
+13. Check the Git diff for unrelated changes.
+14. Document the physical LAN test procedure and whether it was actually executed.
+
+Use the repository's real package scripts and workspace names. Do not blindly copy a guessed build command.
+
+Do not change unrelated application functionality to fix networking.
+
+If a test fails, investigate the root cause and fix the code. Do not suppress the failure, loosen assertions, or mark the test as passing.
+
+---
+
+## 11. Required Final Deliverables
+
+When the implementation is complete, provide the following.
+
+### A. Root-cause report
+
+For every confirmed defect:
+
+- File path.
+- Function or component.
+- Original behavior.
+- Root cause.
+- Implemented correction.
+- Why the correction is necessary.
+
+### B. Changed files
+
+List every modified or created file and explain its purpose.
+
+### C. Build and test report
+
+Include:
+
+- Commands executed.
+- Build results.
+- Number of tests passed and failed, where available.
+- Multi-process communication results.
+- Bidirectional payload verification.
+- Failure/recovery test results.
+- Any tests that could not run and why.
+
+Never fabricate test results.
+
+### D. Two-computer deployment guide
+
+Provide exact instructions for:
+
+**Computer A**
+- Install dependencies or build the required artifacts.
+- Initialize its own persistent identity.
+- Configure its listening and advertised endpoints.
+- Start the node.
+- Record its canonical identity and actual listening port.
+
+**Computer B**
+- Perform the same setup with a different identity.
+- Start the node.
+- Verify TCP reachability.
+
+**Connection**
+- Register the actual remote canonical identity and endpoint.
+- Initiate the handshake.
+- Wait for `ACTIVE`.
+- Send a test message in both directions.
+- Verify payloads and sender identities.
+
+Use environment variables or command-line arguments for machine-specific configuration.
+
+Do not hardcode example IP addresses into the production implementation.
+
+### E. Remaining limitations
+
+Explicitly list anything not verified, including:
+
+- Physical two-computer communication if unavailable.
+- Cross-subnet connectivity.
+- NAT traversal.
+- Relay fallback.
+- Cryptographic peer authentication.
+- Other untested transports.
+
+### F. Final status
+
+Choose exactly one status based on evidence:
+
+- `PASS — Same-process or same-machine tests only`
+- `PASS — Two independent local processes`
+- `PASS — Two physical computers on a LAN`
+- `PASS — Cross-network communication verified`
+- `BLOCKED — Specific unresolved defect`
+
+Use the strongest status whose criteria have actually been satisfied.
+
+---
+
+## 12. Non-Negotiable Engineering Rules
+
+- Inspect before editing.
+- Implement fixes rather than merely suggesting them.
+- Use the real repository APIs.
+- Preserve canonical identity and protocol invariants.
+- Keep configuration, actual listeners and advertised endpoints consistent.
+- Do not bypass handshake verification.
+- Do not substitute a mock for a real TCP connection in integration tests.
+- Do not treat localhost testing as physical LAN verification.
+- Do not silently swallow errors.
+- Do not fabricate build or test results.
+- Do not delete existing tests or weaken assertions.
+- Do not modify unrelated functionality.
+- Do not claim completion while known critical defects remain.
+- If blocked by a missing dependency, environment limitation, or unavailable second computer, complete the work that can be verified and report the exact remaining blocker.
+
+Begin by inspecting the repository and its current Git status. Then trace the existing networking path, implement the necessary fixes, run the tests, and deliver the final evidence-based report.
+
+**Success criterion:** Two distinct AEGIS nodes must complete the existing handshake protocol, reach the appropriate active connection state, exchange verified application messages in both directions, detect a disconnection, and recover according to the project's reconnection design. Physical LAN connectivity must be reported separately and must not be claimed unless it has been tested on two actual computers.

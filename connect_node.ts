@@ -1,80 +1,152 @@
 import path from 'path';
-import { fileURLToPath } from 'url';
+import os from 'os';
 import readline from 'readline';
-import { DistributedIntelligenceEngine } from './packages/aegis-distributed-intelligence/dist/adapter/DistributedIntelligenceEngine.js';
-import { CollaborationEngine } from './packages/aegis-collaboration/dist/CollaborationEngine.js';
+import { fileURLToPath } from 'url';
+import { NodeManager } from './packages/aegis-node/src/NodeManager/NodeManager.js';
+import { DistributedIntelligenceEngine, getLocalIpAddress } from './packages/aegis-distributed-intelligence/src/adapter/DistributedIntelligenceEngine.js';
+import { IRuntimeContext_v1 } from '@aegis/sdk';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Helper to construct a runtime context for standalone engines
-const buildContext = (nodeName: string) => ({
-  runtimeId: `node-${nodeName}`,
-  kernelVersion: '1.0.0',
-  bootId: `boot-${nodeName}`,
-  platform: process.platform,
-  architecture: process.arch,
-  bootMode: 'NORMAL' as const,
-  getWorkspacePath: () => path.resolve(__dirname, 'workspace'),
-  getLogger: () => ({
-    info:  (msg: string, src: string) => console.log(`[${nodeName}:${src}] ${msg}`),
-    warn:  (msg: string, src: string) => console.warn(`[${nodeName}:${src}] WARN: ${msg}`),
-    error: (msg: string, src: string) => console.error(`[${nodeName}:${src}] ERROR: ${msg}`),
-  }),
-  getConfig:   () => ({}),
-  getSecrets:  () => ({}),
-  getService:  (_: string) => undefined,
-  getEventBus: () => ({
-    on: () => {},
-    off: () => {},
-    emit: (ev: string, payload: any) => console.log(`[EventBus] ${ev}:`, JSON.stringify(payload)),
-  }),
-});
-
 async function main() {
-  const targetIp = '10.179.223.54';
-  const targetPort = 9900;
-  const localPort = 9901; // Avoid conflict with default port 9900 if daemon is running locally
-  const localNodeName = 'my-node';
+  const args = process.argv.slice(2);
+  let nodeName = process.env.AEGIS_NODE_NAME || 'AEGIS Node';
+  let port = parseInt(process.env.AEGIS_PORT || '19910', 10);
+  let workspaceDir = process.env.AEGIS_WORKSPACE || '';
+  let targetId = process.env.AEGIS_TARGET_ID || '';
+  let targetIp = process.env.AEGIS_TARGET_IP || '';
+  let targetPort = parseInt(process.env.AEGIS_TARGET_PORT || '0', 10);
+  let singleMessage = '';
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--node-name' && args[i + 1]) nodeName = args[++i];
+    else if (args[i] === '--port' && args[i + 1]) port = parseInt(args[++i], 10);
+    else if (args[i] === '--workspace' && args[i + 1]) workspaceDir = path.resolve(args[++i]);
+    else if (args[i] === '--target-id' && args[i + 1]) targetId = args[++i];
+    else if (args[i] === '--target-ip' && args[i + 1]) targetIp = args[++i];
+    else if (args[i] === '--target-port' && args[i + 1]) targetPort = parseInt(args[++i], 10);
+    else if (args[i] === '--send-message' && args[i + 1]) singleMessage = args[++i];
+  }
+
+  if (!workspaceDir) {
+    workspaceDir = path.resolve(os.homedir(), '.aegis', `node-${port}`);
+  }
 
   console.log('===========================================================');
-  console.log('      AEGIS Node P2P Connection & Communication tool      ');
+  console.log('      AEGIS Node P2P Connection & Communication Tool       ');
   console.log('===========================================================');
-  console.log(`Local Node name   : ${localNodeName}`);
-  console.log(`Local Node Port   : ${localPort}`);
-  console.log(`Target Remote IP  : ${targetIp}`);
-  console.log(`Target Remote Port: ${targetPort}\n`);
 
-  console.log('[1] Initializing P2P Distributed Intelligence Engine...');
+  // 1. Initialize persistent cryptographic identity via NodeManager
+  console.log('[1] Loading / Initializing persistent node identity...');
+  const nodeMgr = new NodeManager(workspaceDir);
+  nodeMgr.initialize(nodeName);
+  const identity = nodeMgr.getIdentity();
+
+  if (!identity || !identity.nodeId.startsWith('aegis://')) {
+    throw new Error(`Failed to load valid canonical identity from ${workspaceDir}`);
+  }
+
+  const localIp = getLocalIpAddress();
+  console.log(`  • Canonical Node ID : ${identity.nodeId}`);
+  console.log(`  • Node Display Name : ${identity.name}`);
+  console.log(`  • Workspace Root    : ${workspaceDir}`);
+  console.log(`  • Local LAN IP      : ${localIp}`);
+  console.log(`  • Configured Base   : ${port}`);
+  console.log(`  • Message Port Req  : ${port + 1}`);
+
+  // 2. Build full runtime context
+  const context: IRuntimeContext_v1 = {
+    nodeId: identity.nodeId,
+    runtimeId: `runtime-${port}`,
+    kernelVersion: '1.0.0',
+    bootId: `boot-${identity.nodeId.replace('aegis://', '')}`,
+    platform: os.platform(),
+    architecture: os.arch(),
+    bootMode: 'NORMAL',
+    getNodeIdentity: () => ({
+      nodeId: identity.nodeId,
+      nodeName: identity.name,
+      createdAt: identity.createdAt,
+      publicKey: identity.publicKey,
+      fingerprint: identity.fingerprint
+    }),
+    getWorkspacePath: () => workspaceDir,
+    getLogger: () => ({
+      info:  (msg: string, src?: string) => console.log(`[${identity.name}:${src || 'log'}] ${msg}`),
+      warn:  (msg: string, src?: string) => console.warn(`[${identity.name}:${src || 'log'}] WARN: ${msg}`),
+      error: (msg: string, src?: string) => console.error(`[${identity.name}:${src || 'log'}] ERROR: ${msg}`),
+    }),
+    getConfig: () => ({ port, nodeName: identity.name }),
+    getSecrets: () => ({}),
+    getService: () => undefined as any,
+    getEventBus: () => ({
+      on: () => {},
+      off: () => {},
+      emit: () => {}
+    })
+  };
+
+  // 3. Initialize DistributedIntelligenceEngine
+  console.log('\n[2] Initializing Distributed Intelligence Engine...');
   const node = new DistributedIntelligenceEngine();
-  await node.initialize(buildContext(localNodeName));
+  node.port = port;
+  node.nodeName = identity.name;
+  await node.initialize(context);
 
-  console.log('[2] Configuring engine local network settings...');
-  await node.configure({ nodeName: localNodeName, port: localPort });
+  const actualMsgPort = node.getBoundMessagePort();
+  console.log(`✔ P2P Transport active and listening on ${actualMsgPort}`);
 
-  console.log('[3] Starting local node P2P services...');
-  await node.start();
-  console.log('✔ P2P Service Engine active.');
-
-  // Set up message listener for incoming replies/messages
-  node.messagingService.onMessage('hello_p2p', (payload, senderId) => {
-    console.log(`\n📬 [Message Received] from ${senderId}: "${payload.text}"`);
+  // 4. Set up incoming message listeners
+  node.messagingService.onMessage('hello_p2p', (payload: any, senderId: string) => {
+    console.log(`\n📬 [Message Received] from ${senderId}: "${payload.text || JSON.stringify(payload)}"`);
   });
 
-  node.messagingService.onMessage('reply_p2p', (payload, senderId) => {
-    console.log(`\n📬 [Reply Received] from ${senderId}: "${payload.text}"`);
+  node.messagingService.onMessage('reply_p2p', (payload: any, senderId: string) => {
+    console.log(`\n📬 [Reply Received] from ${senderId}: "${payload.text || JSON.stringify(payload)}"`);
   });
 
-  console.log('\n[4] Registering target remote node in local Discovery Registry...');
-  await node.discoveryService.registerNode('remote-node', targetIp, targetPort);
-  console.log(`✔ Registered target remote node: 'remote-node' @ ${targetIp}:${targetPort}`);
+  node.messagingService.onMessage('cli_chat', (payload: any, senderId: string) => {
+    console.log(`\n📬 [Chat Received] from ${senderId}: "${payload.text || JSON.stringify(payload)}"`);
+  });
 
-  console.log('\n[5] Attempting peer discovery check...');
-  const peers = await node.discoveryService.discoverNodes();
-  console.log('Discovered active peers list:', peers);
+  // 5. If target peer parameters provided, register and connect
+  if (targetId && targetIp && targetPort) {
+    if (!targetId.startsWith('aegis://')) {
+      console.error(`[ERROR] Target ID "${targetId}" is not a canonical aegis:// identity.`);
+      await node.shutdown();
+      process.exit(1);
+    }
 
-  console.log('\n[6] Initializing interactive communication terminal...');
-  console.log('    Type your message to send. Type "exit" or "quit" to stop.');
+    console.log(`\n[3] Registering target peer: ${targetId} @ ${targetIp}:${targetPort}`);
+    await node.discoveryService.registerNode(targetId, targetIp, targetPort);
+
+    console.log(`[4] Connecting to target peer ${targetId}...`);
+    try {
+      await node.connectionManager.connectToPeer(targetId);
+      console.log(`✔ Handshake verified and connection ACTIVE with ${targetId}`);
+
+      if (singleMessage) {
+        console.log(`[5] Sending message: "${singleMessage}"...`);
+        await node.messagingService.sendMessage(targetId, 'hello_p2p', { text: singleMessage });
+        console.log(`✔ Message successfully transmitted.`);
+        // Allow brief flush window before clean shutdown
+        await new Promise(r => setTimeout(r, 1000));
+        await node.shutdown();
+        process.exit(0);
+      }
+    } catch (err: any) {
+      console.error(`✖ Connection to ${targetId} failed: ${err.message}`);
+    }
+  }
+
+  // 6. Interactive Terminal
+  console.log('\n[Ready] Interactive terminal ready. Commands:');
+  console.log('  register <targetNodeId> <ip> <port> - Register remote peer');
+  console.log('  connect <targetNodeId>              - Connect & perform handshake');
+  console.log('  send <targetNodeId> <message>       - Send message to peer');
+  console.log('  list                                - List peers in registry');
+  console.log('  exit / quit                         - Stop and shutdown node');
   console.log('-----------------------------------------------------------');
 
   const rl = readline.createInterface({
@@ -83,25 +155,66 @@ async function main() {
   });
 
   const promptUser = () => {
-    rl.question('\nSend Message > ', async (input) => {
-      const msg = input.trim();
-      if (msg.toLowerCase() === 'exit' || msg.toLowerCase() === 'quit') {
-        console.log('\nShutting down client connection...');
+    rl.question('\nAEGIS > ', async (input) => {
+      const line = input.trim();
+      if (!line) {
+        promptUser();
+        return;
+      }
+
+      const parts = line.split(' ');
+      const cmd = parts[0].toLowerCase();
+
+      if (cmd === 'exit' || cmd === 'quit') {
+        console.log('\nShutting down AEGIS node...');
         rl.close();
         await node.shutdown();
-        console.log('✔ Engine stopped cleanly. Goodbye!');
+        console.log('✔ Clean shutdown complete. Goodbye!');
         process.exit(0);
       }
 
-      if (msg.length > 0) {
-        try {
-          console.log(`Sending message to 'remote-node'...`);
-          await node.messagingService.sendMessage('remote-node', 'hello_p2p', { text: msg });
-          console.log('✔ Sent.');
-        } catch (err: any) {
-          console.error(`✖ Failed to send message: ${err.message}`);
+      if (cmd === 'list') {
+        const peers = node.peerRegistry.listPeers();
+        console.log(`\nKnown Peers (${peers.length}):`);
+        for (const p of peers) {
+          console.log(`  • ${p.nodeId} (${p.nodeName || 'unknown'}) - State: ${p.connectionState}`);
+          for (const ep of p.endpoints) {
+            console.log(`    └─ ${ep.transport}://${ep.host}:${ep.port} (prio: ${ep.priority ?? 10})`);
+          }
         }
+      } else if (cmd === 'register' && parts.length >= 4) {
+        const tId = parts[1];
+        const tIp = parts[2];
+        const tPort = parseInt(parts[3], 10);
+        if (!tId.startsWith('aegis://')) {
+          console.error('Error: Peer ID must be a canonical aegis:// identity');
+        } else {
+          await node.discoveryService.registerNode(tId, tIp, tPort);
+          console.log(`✔ Registered peer ${tId} at ${tIp}:${tPort}`);
+        }
+      } else if (cmd === 'connect' && parts[1]) {
+        const tId = parts[1];
+        try {
+          console.log(`Connecting to ${tId}...`);
+          await node.connectionManager.connectToPeer(tId);
+          console.log(`✔ Connection ACTIVE with ${tId}`);
+        } catch (err: any) {
+          console.error(`✖ Connection failed: ${err.message}`);
+        }
+      } else if (cmd === 'send' && parts.length >= 3) {
+        const tId = parts[1];
+        const text = parts.slice(2).join(' ');
+        try {
+          console.log(`Sending to ${tId}...`);
+          await node.messagingService.sendMessage(tId, 'cli_chat', { text });
+          console.log('✔ Message sent.');
+        } catch (err: any) {
+          console.error(`✖ Send failed: ${err.message}`);
+        }
+      } else {
+        console.log('Commands: register <id> <ip> <port>, connect <id>, send <id> <text>, list, exit');
       }
+
       promptUser();
     });
   };
