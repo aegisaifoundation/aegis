@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.0.2">
+  <link rel="stylesheet" href="style.css?v=2.0.0">
 </head>
 
 <body>
@@ -225,13 +225,6 @@
         <!-- Page Section: Home (Chatbot Interface) -->
         <section id="page-home" class="page-section active">
 
-          <!-- Goal Display Banner -->
-          <div class="goal-banner">
-            <div class="goal-banner-label">Active Session Objective</div>
-            <div id="active-session-subtitle" class="goal-banner-text">Goal: Delete a specific folder and all its
-              contained files.</div>
-          </div>
-
           <!-- GGUF Controls Panel (Hidden by default unless active provider is local/gguf) -->
           <div id="gguf-controls" class="hidden">
             <div class="gguf-control-header">
@@ -267,10 +260,35 @@
 
           <!-- Chat Conversation Scroll Area -->
           <div id="chat-messages" class="chat-viewport">
-            <!-- Messages inserted dynamically via app.js -->
-            <div class="message-bubble bot system-message">
-              <div class="message-content">
-                <strong>System Booted.</strong> Welcome to Aegis. Start a conversation or select a session on the left.
+            <!-- Welcome empty state -->
+            <div class="chat-empty-state" id="chat-empty-state">
+              <div class="empty-state-glow"></div>
+              <div class="empty-state-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                  <path d="M2 17l10 5 10-5"/>
+                  <path d="M2 12l10 5 10-5"/>
+                </svg>
+              </div>
+              <h2 class="empty-state-title">Ready when you are.</h2>
+              <p class="empty-state-sub">Ask AEGIS anything — code, research, planning, or system tasks.</p>
+              <div class="empty-state-suggestions">
+                <button class="suggestion-chip" onclick="document.getElementById('chat-input').value='What can you do?'; document.getElementById('chat-input').focus();">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  What can you do?
+                </button>
+                <button class="suggestion-chip" onclick="document.getElementById('chat-input').value='/status'; document.getElementById('chat-input').focus();">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                  System status
+                </button>
+                <button class="suggestion-chip" onclick="document.getElementById('chat-input').value='/tools'; document.getElementById('chat-input').focus();">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                  Browse tools
+                </button>
+                <button class="suggestion-chip" onclick="document.getElementById('chat-input').value='/sessions'; document.getElementById('chat-input').focus();">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  View sessions
+                </button>
               </div>
             </div>
           </div>
@@ -300,55 +318,17 @@
             </div>
           </div>
 
-          <!-- Quick Actions Panel -->
-          <div class="quick-actions-bar">
-            <button class="quick-action-chip"
-              onclick="document.getElementById('chat-input').value = '/status'; document.getElementById('chat-input').focus();">/status</button>
-            <button class="quick-action-chip"
-              onclick="document.getElementById('chat-input').value = '/tools'; document.getElementById('chat-input').focus();">/tools</button>
-            <button class="quick-action-chip"
-              onclick="document.getElementById('chat-input').value = '/sessions'; document.getElementById('chat-input').focus();">/sessions</button>
-          </div>
-
           <!-- Sticky Chat Input Section -->
           <div class="chat-input-container">
             <div class="input-form-wrapper">
-              <div class="input-tool-tray">
-                <button class="btn-input-icon" title="Attachments">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path
-                      d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48">
-                    </path>
-                  </svg>
-                </button>
-                <button class="btn-input-icon" title="Image Upload">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                    <polyline points="21 15 16 10 5 21"></polyline>
-                  </svg>
-                </button>
-                <button class="btn-input-icon" title="Voice Input">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                    <line x1="12" y1="19" x2="12" y2="23"></line>
-                    <line x1="8" y1="23" x2="16" y2="23"></line>
-                  </svg>
-                </button>
-              </div>
-
-              <textarea id="chat-input" placeholder="Enter instructions, medical queries, or commands..."
-                rows="1"></textarea>
-
-              <button id="btn-send" class="btn-send-mono" title="Run Command">
+              <textarea id="chat-input" placeholder="Message AEGIS..." rows="1"></textarea>
+              <button id="btn-send" class="btn-send-mono" title="Send">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <line x1="22" y1="2" x2="11" y2="13"></line>
                   <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                 </svg>
               </button>
             </div>
-            <div class="input-hotkey-hint">Press Enter to Run. Shift+Enter for new line.</div>
           </div>
         </section>
 
@@ -743,7 +723,7 @@
   </footer>
 
   <!-- Main JavaScript File -->
-  <script src="app.js?v=1.0.4"></script>
+  <script src="app.js?v=2.0.0"></script>
 </body>
 
 </html>

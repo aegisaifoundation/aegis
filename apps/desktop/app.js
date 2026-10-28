@@ -307,12 +307,6 @@ async function loadActiveSession() {
     const name = getStoredSessionName({ sessionId: id, displayName: metadata?.displayName });
     document.getElementById("active-session-title").innerText = name;
 
-    let subtitleText = "AEGIS Agent";
-    if (state?.goal) {
-      subtitleText = `Goal: ${state.goal}`;
-    }
-    document.getElementById("active-session-subtitle").innerText = subtitleText;
-
     // Update right details panel
     const detailId = document.getElementById("session-details-id");
     const detailCreated = document.getElementById("session-details-created");
@@ -361,12 +355,6 @@ async function refreshSessionDetails() {
     // Update headers
     const name = getStoredSessionName({ sessionId: id, displayName: metadata?.displayName });
     document.getElementById("active-session-title").innerText = name;
-
-    let subtitleText = "AEGIS Agent";
-    if (state?.goal) {
-      subtitleText = `Goal: ${state.goal}`;
-    }
-    document.getElementById("active-session-subtitle").innerText = subtitleText;
 
     // Update right details panel
     const detailId = document.getElementById("session-details-id");
@@ -425,41 +413,124 @@ function renderChatHistory(messages) {
   container.innerHTML = "";
 
   if (!messages || messages.length === 0) {
+    // Show empty state
     container.innerHTML = `
-      <div class="message-bubble bot system-message">
-        <div class="message-content">
-          Conversation context starts here. Ask Aegis anything.
+      <div class="chat-empty-state" id="chat-empty-state">
+        <div class="empty-state-glow"></div>
+        <div class="empty-state-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <h2 class="empty-state-title">Ready when you are.</h2>
+        <p class="empty-state-sub">Ask AEGIS anything — code, research, planning, or system tasks.</p>
+        <div class="empty-state-suggestions">
+          <button class="suggestion-chip" onclick="document.getElementById('chat-input').value='What can you do?'; document.getElementById('chat-input').focus();">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            What can you do?
+          </button>
+          <button class="suggestion-chip" onclick="document.getElementById('chat-input').value='/status'; document.getElementById('chat-input').focus();">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            System status
+          </button>
+          <button class="suggestion-chip" onclick="document.getElementById('chat-input').value='/tools'; document.getElementById('chat-input').focus();">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            Browse tools
+          </button>
+          <button class="suggestion-chip" onclick="document.getElementById('chat-input').value='/sessions'; document.getElementById('chat-input').focus();">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            View sessions
+          </button>
         </div>
       </div>
     `;
+    container.classList.remove("has-messages");
     return;
   }
 
-  messages.forEach(msg => {
-    // We ignore raw tool output messages in main chat unless they are formatted,
-    // as they will be displayed inline inside assistant bubbles.
-    if (msg.role === 'tool') return;
+  // Has messages — create thread wrapper
+  container.classList.add("has-messages");
+  const thread = document.createElement("div");
+  thread.className = "chat-thread";
+  container.appendChild(thread);
 
-    appendMessageBubble(msg.role, msg.content, msg.metadata);
+  messages.forEach(msg => {
+    if (msg.role === 'tool') return;
+    appendMessageBubble(msg.role, msg.content, msg.metadata, thread);
   });
 
   scrollChatToBottom();
 }
 
-function appendMessageBubble(role, content, metadata = null) {
+function getOrCreateThread() {
   const container = document.getElementById("chat-messages");
-  const bubble = document.createElement("div");
-  bubble.className = `message-bubble ${role === 'user' ? 'user' : 'bot'}`;
+  // Remove empty state if present
+  const emptyState = document.getElementById("chat-empty-state");
+  if (emptyState) emptyState.remove();
+  container.classList.add("has-messages");
 
-  const contentDiv = document.createElement("div");
-  contentDiv.className = "message-content";
-  contentDiv.textContent = content;
+  let thread = container.querySelector(".chat-thread");
+  if (!thread) {
+    thread = document.createElement("div");
+    thread.className = "chat-thread";
+    container.appendChild(thread);
+  }
+  return thread;
+}
 
-  bubble.appendChild(contentDiv);
-  container.appendChild(bubble);
+function appendMessageBubble(role, content, metadata = null, threadEl = null) {
+  const thread = threadEl || getOrCreateThread();
 
-  scrollChatToBottom();
-  return bubble;
+  if (role === 'user') {
+    const row = document.createElement("div");
+    row.className = "message-row user-row";
+    row.innerHTML = `
+      <div class="msg-body">
+        <div class="user-bubble">${escapeHtml(content)}</div>
+      </div>
+      <div class="msg-avatar user-avatar">OP</div>
+    `;
+    thread.appendChild(row);
+    scrollChatToBottom();
+    return row;
+  } else {
+    // bot / assistant
+    const row = document.createElement("div");
+    row.className = "message-row bot-row";
+    row.innerHTML = `
+      <div class="msg-avatar bot-avatar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="msg-body">
+        <div class="bot-text"></div>
+        <div class="msg-actions">
+          <button class="msg-action-btn" title="Copy" onclick="navigator.clipboard.writeText(this.closest('.msg-body').querySelector('.bot-text').textContent)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          <button class="msg-action-btn" title="Thumbs up">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+          </button>
+          <button class="msg-action-btn" title="Thumbs down">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+          </button>
+          <button class="msg-action-btn" title="Regenerate">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
+        </div>
+      </div>
+    `;
+    const textEl = row.querySelector(".bot-text");
+    if (content) textEl.textContent = content;
+    thread.appendChild(row);
+    scrollChatToBottom();
+    return row;
+  }
 }
 
 function scrollChatToBottom() {
@@ -484,7 +555,7 @@ async function sendMessage() {
   showThinkingIndicator(true);
   clearLiveActivity();
 
-  // Create Bot Message bubble that we will stream text into
+  // Create Bot Message row that we will stream text into
   currentBotBubble = appendMessageBubble("bot", "");
   currentBotText = "";
   currentStepBlock = null;
@@ -497,7 +568,8 @@ async function sendMessage() {
     });
 
     if (response.status === 409) {
-      currentBotBubble.querySelector(".message-content").textContent = "Error: Agent is busy. Please try again.";
+      const textEl = currentBotBubble.querySelector(".bot-text");
+      if (textEl) textEl.textContent = "Error: Agent is busy. Please try again.";
       showThinkingIndicator(false);
       setAgentStatus("online", "Core Node Idle");
       return;
@@ -539,7 +611,8 @@ async function sendMessage() {
   } catch (err) {
     console.error("Stream error:", err);
     if (currentBotBubble) {
-      currentBotBubble.querySelector(".message-content").textContent += `\n[Fatal Connection Error: ${err.message}]`;
+      const textEl = currentBotBubble.querySelector(".bot-text");
+      if (textEl) textEl.textContent += `\n[Fatal Connection Error: ${err.message}]`;
     }
   } finally {
     showThinkingIndicator(false);
@@ -551,58 +624,48 @@ async function sendMessage() {
 }
 
 function handleSSEEvent(eventData) {
-  const contentDiv = currentBotBubble.querySelector(".message-content");
+  const textEl = currentBotBubble ? currentBotBubble.querySelector(".bot-text") : null;
 
   if (eventData.chunk) {
     // Streaming assistant tokens
     currentBotText += eventData.chunk;
-    contentDiv.textContent = currentBotText;
-
-    // Re-append step blocks if any were added
-    if (currentStepBlock && !contentDiv.contains(currentStepBlock)) {
-      contentDiv.appendChild(currentStepBlock);
-    }
-
+    if (textEl) textEl.textContent = currentBotText;
     scrollChatToBottom();
   }
   else if (eventData.name && eventData.input !== undefined) {
     // Tool execution started
     addLiveActivity(`🔧 Executing Tool: ${eventData.name}`, "blue");
-
-    // Create detailed steps inside assistant chat bubble
     createAgentStepBlock(eventData.name, eventData.input);
   }
   else if (eventData.name && eventData.output !== undefined) {
     // Tool execution finished
     addLiveActivity(`✅ Tool Finished: ${eventData.name}`, "green");
-
-    // Fill step block output
     if (currentStepBlock) {
       const body = currentStepBlock.querySelector(".agent-step-body");
-      if (body) {
-        body.textContent = eventData.output;
-      }
+      if (body) body.textContent = eventData.output;
     }
   }
   else if (eventData.error) {
     // Error encountered
     addLiveActivity(`❌ Error: ${eventData.error}`, "red");
-    contentDiv.textContent += `\n[Agent Error: ${eventData.error}]`;
+    if (textEl) textEl.textContent += `\n[Agent Error: ${eventData.error}]`;
   }
 }
 
 function createAgentStepBlock(toolName, input) {
-  const contentDiv = currentBotBubble.querySelector(".message-content");
+  // Attach tool step block inside the bot message body
+  const msgBody = currentBotBubble ? currentBotBubble.querySelector(".msg-body") : null;
+  if (!msgBody) return;
 
   const block = document.createElement("div");
   block.className = "agent-step-block";
 
   block.innerHTML = `
     <div class="agent-step-header">
-      <span>🛠️ Tool Execution: ${toolName}</span>
+      <span>🛠️ Tool Execution: ${escapeHtml(toolName)}</span>
       <span class="chevron-step">▼</span>
     </div>
-    <div class="agent-step-body">Running action with input: ${JSON.stringify(input, null, 2)}...</div>
+    <div class="agent-step-body">Running action with input: ${escapeHtml(JSON.stringify(input, null, 2))}...</div>
   `;
 
   // Accordion toggle
@@ -616,7 +679,7 @@ function createAgentStepBlock(toolName, input) {
     chevron.textContent = isHidden ? "▼" : "▲";
   });
 
-  contentDiv.appendChild(block);
+  msgBody.appendChild(block);
   currentStepBlock = block;
   scrollChatToBottom();
 }
