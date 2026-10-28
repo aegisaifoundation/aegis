@@ -1,5 +1,5 @@
 # AEGIS
-### Advanced Enterprise General Intelligence System
+### Autonomous Emergent General Intelligence System
 
 > **Building Intelligence Through Connection.**  
 > *A High-Assurance Distributed Intelligent Infrastructure connected and orchestrated by an OS-like kernel layer.*  
@@ -15,7 +15,7 @@
 
 ## What is AEGIS?
 
-**AEGIS** (**A**dvanced **E**nterprise **G**eneral **I**ntelligence **S**ystem) is a **High-Assurance Distributed Intelligent Infrastructure** designed for sovereign compute, privacy-preserving multi-node intelligence, federated model training, and peer-to-peer mesh execution.
+**AEGIS** (**A**utonomous **E**mergent **G**eneral **I**ntelligence **S**ystem) is a **High-Assurance Distributed Intelligent Infrastructure** designed for sovereign compute, privacy-preserving multi-node intelligence, federated model training, and peer-to-peer mesh execution.
 
 AEGIS is not just a single AI model or a simple cloud API wrapper. It is a distributed intelligent infrastructure connected, orchestrated, and governed by an **OS-like Microkernel Runtime & Native C++ Engine**. This OS connection layer provides the operating environment where:
 
