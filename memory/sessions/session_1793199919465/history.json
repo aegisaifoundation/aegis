@@ -1,0 +1,95 @@
+{
+  "messages": [
+    {
+      "id": "34e9ba7e-ecd2-41d4-b8b6-a689c679b199",
+      "role": "user",
+      "content": "/status",
+      "createdAt": "2026-10-28T15:06:04.592Z"
+    },
+    {
+      "id": "d8612a88-d0eb-4676-8a24-a57aee666d49",
+      "role": "assistant",
+      "content": "[Mock Response to: \"/status\"] This is a mock response from the Mock Provider. ",
+      "createdAt": "2026-10-28T15:06:05.412Z"
+    },
+    {
+      "id": "1f6c1990-fe88-48d4-b443-76d59b329566",
+      "role": "user",
+      "content": "what is 3 + 5",
+      "createdAt": "2026-10-28T15:06:19.044Z"
+    },
+    {
+      "id": "ae2b37c3-58bc-4bfc-9821-902dda869ac0",
+      "role": "assistant",
+      "content": "8",
+      "createdAt": "2026-10-28T15:06:38.345Z"
+    },
+    {
+      "id": "3b511d58-7f0c-4c30-8c2a-5b144b1ca646",
+      "role": "user",
+      "content": "/status",
+      "createdAt": "2026-10-28T15:06:54.737Z"
+    },
+    {
+      "id": "53965e3d-157d-4ae3-b16c-aaea5c82bfc2",
+      "role": "assistant",
+      "content": "**System Status Report**\n\n**Health Status:**\n*   **Runtime Health Status:** HEALTHY\n*   **Runtime Lock State:** SWITCHING\n*   **Runtime Epoch:** 1\n\n**Session Details:**\n*   **Active Session:** session_1793199919465\n\n**Memory & Context:**\n*   **Goal:** None\n*   **Current Objective:** None\n*   **Stable Facts:** None\n\n**Tools Available:**\n*   `memory-read` (Read key from session or profile memory)\n*   `FolderTool` (Perform folder operations: create, list, delete)\n*   `FileTool` (Perform file operations: createFile, read, write, append, deleteFile)\n\n**Active Plugins:**\n*   `logging` (v1.0.0): ACTIVE (Handles logging, telemetry, caching, encryption, etc.)\n\nThe system is operational and ready to process requests.",
+      "createdAt": "2026-10-28T15:07:01.948Z"
+    },
+    {
+      "id": "c91c925f-f22c-4356-882a-94ca1779ac93",
+      "role": "user",
+      "content": "create a file named 12345.txt",
+      "createdAt": "2026-10-28T15:47:02.348Z"
+    },
+    {
+      "id": "ec9258bc-e8ee-4471-a19c-8d1929ebb2cb",
+      "role": "assistant",
+      "content": "<tool>{\"name\": \"FileTool\", \"input\": {\"action\": \"createFile\", \"path\": \"12345.txt\", \"content\": \"\"}}</tool>",
+      "createdAt": "2026-10-28T15:47:06.869Z"
+    },
+    {
+      "id": "6b4159cb-6d58-4973-9aa7-4b6ef2082425",
+      "role": "tool",
+      "content": "File created successfully: C:\\aegis\\workspace\\12345.txt",
+      "metadata": {
+        "toolName": "FileTool"
+      },
+      "createdAt": "2026-10-28T15:47:06.886Z"
+    },
+    {
+      "id": "1734b19e-1f95-420a-ae2c-49861d4e625a",
+      "role": "assistant",
+      "content": "The file `12345.txt` has been successfully created.",
+      "createdAt": "2026-10-28T15:47:09.279Z"
+    },
+    {
+      "id": "c3c46cbd-9851-4f2e-b1c5-2781c8f877e7",
+      "role": "user",
+      "content": "write the session memory in the file.",
+      "createdAt": "2026-10-28T15:48:35.050Z"
+    },
+    {
+      "id": "d1c9b904-b103-46a9-99f6-0c3469f8b558",
+      "role": "assistant",
+      "content": "<tool>{\"name\": \"FileTool\", \"input\": {\"action\": \"write\", \"path\": \"12345.txt\", \"content\": \"# Session Memory Dump\\n\\n## Goals\\n- **Current Goal**: Retrieve the internal session memory data and use the FileTool to write this data to a specified file format.\\n\\n## Preferences\\nNone\\n\\n## Stable Facts\\nNone\\n\\n--- End of Memory Dump ---\"}}</tool>",
+      "createdAt": "2026-10-28T15:48:43.316Z"
+    },
+    {
+      "id": "9e4e4394-527a-4094-963d-8eea941bdff6",
+      "role": "tool",
+      "content": "Successfully wrote to C:\\aegis\\workspace\\12345.txt",
+      "metadata": {
+        "toolName": "FileTool"
+      },
+      "createdAt": "2026-10-28T15:48:43.334Z"
+    },
+    {
+      "id": "f732f140-4ed0-4fee-81e9-af7a731bf9f6",
+      "role": "assistant",
+      "content": "The current session memory has been successfully written to the file `12345.txt`.",
+      "createdAt": "2026-10-28T15:48:43.979Z"
+    }
+  ],
+  "memoryVersion": "1.0.0"
+}

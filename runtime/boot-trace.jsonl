@@ -69,3 +69,9 @@
 {"timestamp":"2026-10-27T07:42:12.477Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
 {"timestamp":"2026-10-27T07:42:58.132Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
 {"timestamp":"2026-10-27T07:43:36.595Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-10-28T15:05:19.625Z","stage":"CHECKPOINT_CREATED","name":"pre-switch-checkpoint"}
+{"timestamp":"2026-10-28T15:06:04.583Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-10-28T15:06:19.034Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-10-28T15:06:54.703Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-10-28T15:46:42.942Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}
+{"timestamp":"2026-10-28T15:48:21.095Z","stage":"CHECKPOINT_CREATED","name":"pre-mutation-checkpoint"}

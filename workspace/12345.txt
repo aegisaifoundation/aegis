@@ -1,0 +1,12 @@
+# Session Memory Dump
+
+## Goals
+- **Current Goal**: Retrieve the internal session memory data and use the FileTool to write this data to a specified file format.
+
+## Preferences
+None
+
+## Stable Facts
+None
+
+--- End of Memory Dump ---

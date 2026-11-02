@@ -49,6 +49,14 @@
       "updatedAt": "2026-10-27T07:42:08.578Z",
       "lastAccessedAt": "2026-10-27T07:42:09.794Z",
       "lifecycleState": "ACTIVE"
+    },
+    "session_1793199919465": {
+      "sessionId": "session_1793199919465",
+      "tags": [],
+      "createdAt": "2026-10-28T15:05:19.499Z",
+      "updatedAt": "2026-10-28T15:05:19.499Z",
+      "lastAccessedAt": "2026-10-28T15:05:19.690Z",
+      "lifecycleState": "ACTIVE"
     }
   }
 }

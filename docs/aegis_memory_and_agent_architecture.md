@@ -18,7 +18,7 @@ The system explicitly isolates the Application Layer (Desktop UI, Terminal CLI, 
 │                                                                                                 │
 │  ┌───────────────────────────┐    ┌───────────────────────────┐    ┌─────────────────────────┐  │
 │  │   Desktop UI / Web SPA    │    │      External Clients     │    │   AEGIS CLI / Scripts   │  │
-│  │  Browser @ http://127.0.0.1│    │   Python / Dart / SDK     │    │   Terminal / Admin CLI  │  │
+│  │ Browser @ http://127.0.0.1│    │   Python / Dart / SDK     │    │   Terminal / Admin CLI  │  │
 │  │       [PORT 5001]         │    │       [PORT 3005]         │    │    [Named Pipe IPC]     │  │
 │  └─────────────┬─────────────┘    └─────────────┬─────────────┘    └────────────┬────────────┘  │
 └────────────────┼────────────────────────────────┼───────────────────────────────┼───────────────┘
@@ -28,11 +28,11 @@ The system explicitly isolates the Application Layer (Desktop UI, Terminal CLI, 
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
 │                           COMMUNICATION BROKER & KERNEL GATEWAY                                 │
 │  ┌────────────────────────────────────────────────────────┐ ┌─────────────────────────────────┐ │
-│  │        aegis-api Engine (Express / HTTP Server)        │ │   IPC Server (Named Pipe Protocol)│ │
-│  │  • POST /api/chat (SSE event-stream)                   │ │   • reloadEngine / startEngine    │ │
-│  │  • GET/POST /api/sessions (Checkout, list, trash)      │ │   • node:connect / node:send-msg  │ │
-│  │  • GET/POST /api/capabilities (Tool/Skill hot-swaps)   │ │   • status / engineInfo           │ │
-│  │  • POST /api/train (LoRA fine-tuning stream)           │ │   • shutdown                      │ │
+│  │        aegis-api Engine (Express / HTTP Server)        │ │ IPC Server (Named Pipe Protocol)│ │
+│  │  • POST /api/chat (SSE event-stream)                   │ │ • reloadEngine / startEngine    │ │
+│  │  • GET/POST /api/sessions (Checkout, list, trash)      │ │ • node:connect / node:send-msg  │ │
+│  │  • GET/POST /api/capabilities (Tool/Skill hot-swaps)   │ │ • status / engineInfo           │ │
+│  │  • POST /api/train (LoRA fine-tuning stream)           │ │ • shutdown                      │ │
 │  └───────────────────────────┬────────────────────────────┘ └───────────────┬─────────────────┘ │
 │                              │                                              │                   │
 │                              ▼                                              ▼                   │
